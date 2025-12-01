@@ -1507,8 +1507,8 @@
 |&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;unsorted||boolean||
 |&emsp;&emsp;&emsp;&emsp;pageSize||integer||
 |&emsp;&emsp;&emsp;&emsp;pageNumber||integer||
-|&emsp;&emsp;&emsp;&emsp;paged||boolean||
 |&emsp;&emsp;&emsp;&emsp;unpaged||boolean||
+|&emsp;&emsp;&emsp;&emsp;paged||boolean||
 |&emsp;&emsp;empty||boolean||
 |timestamp|时间戳|integer(int64)|integer(int64)|
 |success||boolean||
@@ -1555,8 +1555,8 @@
 			},
 			"pageSize": 0,
 			"pageNumber": 0,
-			"paged": true,
-			"unpaged": true
+			"unpaged": true,
+			"paged": true
 		},
 		"empty": true
 	},
@@ -4376,8 +4376,8 @@
 |&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;unsorted||boolean||
 |&emsp;&emsp;&emsp;&emsp;pageSize||integer||
 |&emsp;&emsp;&emsp;&emsp;pageNumber||integer||
-|&emsp;&emsp;&emsp;&emsp;paged||boolean||
 |&emsp;&emsp;&emsp;&emsp;unpaged||boolean||
+|&emsp;&emsp;&emsp;&emsp;paged||boolean||
 |&emsp;&emsp;empty||boolean||
 |timestamp|时间戳|integer(int64)|integer(int64)|
 |success||boolean||
@@ -4463,8 +4463,8 @@
 			},
 			"pageSize": 0,
 			"pageNumber": 0,
-			"paged": true,
-			"unpaged": true
+			"unpaged": true,
+			"paged": true
 		},
 		"empty": true
 	},
@@ -5317,6 +5317,2991 @@
 ```
 
 
+# 账本管理
+
+
+## 批量更新明细
+
+
+**接口地址**:`/code-ledger/api/ledgers/{id}/items`
+
+
+**请求方式**:`PUT`
+
+
+**请求数据类型**:`application/x-www-form-urlencoded,application/json`
+
+
+**响应数据类型**:`*/*`
+
+
+**接口描述**:<p>批量新增、修改、删除账单明细</p>
+
+
+
+**请求示例**:
+
+
+```javascript
+{
+  "items": [
+    {
+      "id": 0,
+      "productId": 0,
+      "productName": "",
+      "skuId": 0,
+      "skuName": "",
+      "price": 0,
+      "quantity": 0,
+      "amount": 0
+    }
+  ]
+}
+```
+
+
+**请求参数**:
+
+
+| 参数名称 | 参数说明 | 请求类型    | 是否必须 | 数据类型 | schema |
+| -------- | -------- | ----- | -------- | -------- | ------ |
+|id||path|true|integer(int64)||
+|updateLedgerItemsDTO|UpdateLedgerItemsDTO|body|true|UpdateLedgerItemsDTO|UpdateLedgerItemsDTO|
+|&emsp;&emsp;items|||true|array|LedgerItemDTO|
+|&emsp;&emsp;&emsp;&emsp;id|||false|integer||
+|&emsp;&emsp;&emsp;&emsp;productId|||true|integer||
+|&emsp;&emsp;&emsp;&emsp;productName|||true|string||
+|&emsp;&emsp;&emsp;&emsp;skuId|||false|integer||
+|&emsp;&emsp;&emsp;&emsp;skuName|||false|string||
+|&emsp;&emsp;&emsp;&emsp;price|||true|number||
+|&emsp;&emsp;&emsp;&emsp;quantity|||true|integer||
+|&emsp;&emsp;&emsp;&emsp;amount|||true|number||
+
+
+**响应状态**:
+
+
+| 状态码 | 说明 | schema |
+| -------- | -------- | ----- | 
+|200|OK|ResultLedgerVO|
+|400|Bad Request|ResultObject|
+|401|Unauthorized|ResultObject|
+|403|Forbidden|ResultObject|
+|404|Not Found|ResultObject|
+|405|Method Not Allowed|ResultObject|
+|409|Conflict|ResultObject|
+|500|Internal Server Error|ResultObject|
+
+
+**响应状态码-200**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data||LedgerVO|LedgerVO|
+|&emsp;&emsp;id||integer(int64)||
+|&emsp;&emsp;customerId||integer(int64)||
+|&emsp;&emsp;customerName||string||
+|&emsp;&emsp;totalAmount||number||
+|&emsp;&emsp;paidAmount||number||
+|&emsp;&emsp;discountAmount||number||
+|&emsp;&emsp;remainingAmount||number||
+|&emsp;&emsp;ledgerStatus|可用值:1,2,3,4,5|string||
+|&emsp;&emsp;ledgerStatusDesc||string||
+|&emsp;&emsp;items||array|LedgerItemVO|
+|&emsp;&emsp;&emsp;&emsp;id||integer||
+|&emsp;&emsp;&emsp;&emsp;productId||integer||
+|&emsp;&emsp;&emsp;&emsp;productName||string||
+|&emsp;&emsp;&emsp;&emsp;skuId||integer||
+|&emsp;&emsp;&emsp;&emsp;skuName||string||
+|&emsp;&emsp;&emsp;&emsp;price||number||
+|&emsp;&emsp;&emsp;&emsp;quantity||integer||
+|&emsp;&emsp;&emsp;&emsp;amount||number||
+|&emsp;&emsp;paymentRecords||array|PaymentRecordVO|
+|&emsp;&emsp;&emsp;&emsp;id||integer||
+|&emsp;&emsp;&emsp;&emsp;ledgerId||integer||
+|&emsp;&emsp;&emsp;&emsp;amount||number||
+|&emsp;&emsp;&emsp;&emsp;paymentMethod|可用值:1,2,3,4|string||
+|&emsp;&emsp;&emsp;&emsp;paymentMethodDesc||string||
+|&emsp;&emsp;&emsp;&emsp;memo||string||
+|&emsp;&emsp;&emsp;&emsp;createInstant||string||
+|&emsp;&emsp;createInstant||string(date-time)||
+|&emsp;&emsp;modifyInstant||string(date-time)||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {
+		"id": 0,
+		"customerId": 0,
+		"customerName": "",
+		"totalAmount": 0,
+		"paidAmount": 0,
+		"discountAmount": 0,
+		"remainingAmount": 0,
+		"ledgerStatus": "",
+		"ledgerStatusDesc": "",
+		"items": [
+			{
+				"id": 0,
+				"productId": 0,
+				"productName": "",
+				"skuId": 0,
+				"skuName": "",
+				"price": 0,
+				"quantity": 0,
+				"amount": 0
+			}
+		],
+		"paymentRecords": [
+			{
+				"id": 0,
+				"ledgerId": 0,
+				"amount": 0,
+				"paymentMethod": "",
+				"paymentMethodDesc": "",
+				"memo": "",
+				"createInstant": ""
+			}
+		],
+		"createInstant": "",
+		"modifyInstant": ""
+	},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-400**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-401**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-403**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-404**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-405**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-409**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-500**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+## 根据客户查询账单列表
+
+
+**接口地址**:`/code-ledger/api/ledgers`
+
+
+**请求方式**:`GET`
+
+
+**请求数据类型**:`application/x-www-form-urlencoded`
+
+
+**响应数据类型**:`*/*`
+
+
+**接口描述**:<p>支持按状态和创建时间过滤，返回分页数据</p>
+
+
+
+**请求参数**:
+
+
+| 参数名称 | 参数说明 | 请求类型    | 是否必须 | 数据类型 | schema |
+| -------- | -------- | ----- | -------- | -------- | ------ |
+|queryDTO|账单查询条件|query|true|LedgerQueryDTO|LedgerQueryDTO|
+|&emsp;&emsp;customerId|客户ID||false|integer(int64)||
+|&emsp;&emsp;ledgerStatus|账单状态,可用值:1,2,3,4,5||false|string||
+|&emsp;&emsp;createdAtStart|创建时间-开始||false|string(date)||
+|&emsp;&emsp;createdAtEnd|创建时间-结束||false|string(date)||
+|pageable||query|true|Pageable|Pageable|
+|&emsp;&emsp;page|||false|integer(int32)||
+|&emsp;&emsp;size|||false|integer(int32)||
+|&emsp;&emsp;sort|||false|array|string|
+
+
+**响应状态**:
+
+
+| 状态码 | 说明 | schema |
+| -------- | -------- | ----- | 
+|200|OK|ResultPageLedgerListVO|
+|400|Bad Request|ResultObject|
+|401|Unauthorized|ResultObject|
+|403|Forbidden|ResultObject|
+|404|Not Found|ResultObject|
+|405|Method Not Allowed|ResultObject|
+|409|Conflict|ResultObject|
+|500|Internal Server Error|ResultObject|
+
+
+**响应状态码-200**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data||PageLedgerListVO|PageLedgerListVO|
+|&emsp;&emsp;totalPages||integer(int32)||
+|&emsp;&emsp;totalElements||integer(int64)||
+|&emsp;&emsp;size||integer(int32)||
+|&emsp;&emsp;content||array|LedgerListVO|
+|&emsp;&emsp;&emsp;&emsp;id||integer||
+|&emsp;&emsp;&emsp;&emsp;customerId||integer||
+|&emsp;&emsp;&emsp;&emsp;customerName||string||
+|&emsp;&emsp;&emsp;&emsp;totalAmount||number||
+|&emsp;&emsp;&emsp;&emsp;paidAmount||number||
+|&emsp;&emsp;&emsp;&emsp;discountAmount||number||
+|&emsp;&emsp;&emsp;&emsp;remainingAmount||number||
+|&emsp;&emsp;&emsp;&emsp;ledgerStatus|可用值:1,2,3,4,5|string||
+|&emsp;&emsp;&emsp;&emsp;ledgerStatusDesc||string||
+|&emsp;&emsp;&emsp;&emsp;createInstant||string||
+|&emsp;&emsp;number||integer(int32)||
+|&emsp;&emsp;sort||SortObject|SortObject|
+|&emsp;&emsp;&emsp;&emsp;empty||boolean||
+|&emsp;&emsp;&emsp;&emsp;sorted||boolean||
+|&emsp;&emsp;&emsp;&emsp;unsorted||boolean||
+|&emsp;&emsp;first||boolean||
+|&emsp;&emsp;last||boolean||
+|&emsp;&emsp;numberOfElements||integer(int32)||
+|&emsp;&emsp;pageable||PageableObject|PageableObject|
+|&emsp;&emsp;&emsp;&emsp;offset||integer||
+|&emsp;&emsp;&emsp;&emsp;sort||SortObject|SortObject|
+|&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;empty||boolean||
+|&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;sorted||boolean||
+|&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;unsorted||boolean||
+|&emsp;&emsp;&emsp;&emsp;pageSize||integer||
+|&emsp;&emsp;&emsp;&emsp;pageNumber||integer||
+|&emsp;&emsp;&emsp;&emsp;unpaged||boolean||
+|&emsp;&emsp;&emsp;&emsp;paged||boolean||
+|&emsp;&emsp;empty||boolean||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {
+		"totalPages": 0,
+		"totalElements": 0,
+		"size": 0,
+		"content": [
+			{
+				"id": 0,
+				"customerId": 0,
+				"customerName": "",
+				"totalAmount": 0,
+				"paidAmount": 0,
+				"discountAmount": 0,
+				"remainingAmount": 0,
+				"ledgerStatus": "",
+				"ledgerStatusDesc": "",
+				"createInstant": ""
+			}
+		],
+		"number": 0,
+		"sort": {
+			"empty": true,
+			"sorted": true,
+			"unsorted": true
+		},
+		"first": true,
+		"last": true,
+		"numberOfElements": 0,
+		"pageable": {
+			"offset": 0,
+			"sort": {
+				"empty": true,
+				"sorted": true,
+				"unsorted": true
+			},
+			"pageSize": 0,
+			"pageNumber": 0,
+			"unpaged": true,
+			"paged": true
+		},
+		"empty": true
+	},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-400**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-401**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-403**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-404**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-405**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-409**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-500**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+## 新增账单
+
+
+**接口地址**:`/code-ledger/api/ledgers`
+
+
+**请求方式**:`POST`
+
+
+**请求数据类型**:`application/x-www-form-urlencoded,application/json`
+
+
+**响应数据类型**:`*/*`
+
+
+**接口描述**:<p>创建新账单并添加明细</p>
+
+
+
+**请求示例**:
+
+
+```javascript
+{
+  "customerId": 0,
+  "items": [
+    {
+      "id": 0,
+      "productId": 0,
+      "productName": "",
+      "skuId": 0,
+      "skuName": "",
+      "price": 0,
+      "quantity": 0,
+      "amount": 0
+    }
+  ],
+  "memo": ""
+}
+```
+
+
+**请求参数**:
+
+
+| 参数名称 | 参数说明 | 请求类型    | 是否必须 | 数据类型 | schema |
+| -------- | -------- | ----- | -------- | -------- | ------ |
+|createLedgerDTO|CreateLedgerDTO|body|true|CreateLedgerDTO|CreateLedgerDTO|
+|&emsp;&emsp;customerId|||true|integer(int64)||
+|&emsp;&emsp;items|||false|array|LedgerItemDTO|
+|&emsp;&emsp;&emsp;&emsp;id|||false|integer||
+|&emsp;&emsp;&emsp;&emsp;productId|||true|integer||
+|&emsp;&emsp;&emsp;&emsp;productName|||true|string||
+|&emsp;&emsp;&emsp;&emsp;skuId|||false|integer||
+|&emsp;&emsp;&emsp;&emsp;skuName|||false|string||
+|&emsp;&emsp;&emsp;&emsp;price|||true|number||
+|&emsp;&emsp;&emsp;&emsp;quantity|||true|integer||
+|&emsp;&emsp;&emsp;&emsp;amount|||true|number||
+|&emsp;&emsp;memo|||false|string||
+
+
+**响应状态**:
+
+
+| 状态码 | 说明 | schema |
+| -------- | -------- | ----- | 
+|200|OK|ResultLedgerVO|
+|400|Bad Request|ResultObject|
+|401|Unauthorized|ResultObject|
+|403|Forbidden|ResultObject|
+|404|Not Found|ResultObject|
+|405|Method Not Allowed|ResultObject|
+|409|Conflict|ResultObject|
+|500|Internal Server Error|ResultObject|
+
+
+**响应状态码-200**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data||LedgerVO|LedgerVO|
+|&emsp;&emsp;id||integer(int64)||
+|&emsp;&emsp;customerId||integer(int64)||
+|&emsp;&emsp;customerName||string||
+|&emsp;&emsp;totalAmount||number||
+|&emsp;&emsp;paidAmount||number||
+|&emsp;&emsp;discountAmount||number||
+|&emsp;&emsp;remainingAmount||number||
+|&emsp;&emsp;ledgerStatus|可用值:1,2,3,4,5|string||
+|&emsp;&emsp;ledgerStatusDesc||string||
+|&emsp;&emsp;items||array|LedgerItemVO|
+|&emsp;&emsp;&emsp;&emsp;id||integer||
+|&emsp;&emsp;&emsp;&emsp;productId||integer||
+|&emsp;&emsp;&emsp;&emsp;productName||string||
+|&emsp;&emsp;&emsp;&emsp;skuId||integer||
+|&emsp;&emsp;&emsp;&emsp;skuName||string||
+|&emsp;&emsp;&emsp;&emsp;price||number||
+|&emsp;&emsp;&emsp;&emsp;quantity||integer||
+|&emsp;&emsp;&emsp;&emsp;amount||number||
+|&emsp;&emsp;paymentRecords||array|PaymentRecordVO|
+|&emsp;&emsp;&emsp;&emsp;id||integer||
+|&emsp;&emsp;&emsp;&emsp;ledgerId||integer||
+|&emsp;&emsp;&emsp;&emsp;amount||number||
+|&emsp;&emsp;&emsp;&emsp;paymentMethod|可用值:1,2,3,4|string||
+|&emsp;&emsp;&emsp;&emsp;paymentMethodDesc||string||
+|&emsp;&emsp;&emsp;&emsp;memo||string||
+|&emsp;&emsp;&emsp;&emsp;createInstant||string||
+|&emsp;&emsp;createInstant||string(date-time)||
+|&emsp;&emsp;modifyInstant||string(date-time)||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {
+		"id": 0,
+		"customerId": 0,
+		"customerName": "",
+		"totalAmount": 0,
+		"paidAmount": 0,
+		"discountAmount": 0,
+		"remainingAmount": 0,
+		"ledgerStatus": "",
+		"ledgerStatusDesc": "",
+		"items": [
+			{
+				"id": 0,
+				"productId": 0,
+				"productName": "",
+				"skuId": 0,
+				"skuName": "",
+				"price": 0,
+				"quantity": 0,
+				"amount": 0
+			}
+		],
+		"paymentRecords": [
+			{
+				"id": 0,
+				"ledgerId": 0,
+				"amount": 0,
+				"paymentMethod": "",
+				"paymentMethodDesc": "",
+				"memo": "",
+				"createInstant": ""
+			}
+		],
+		"createInstant": "",
+		"modifyInstant": ""
+	},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-400**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-401**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-403**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-404**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-405**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-409**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-500**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+## 结账
+
+
+**接口地址**:`/code-ledger/api/ledgers/{id}/settle`
+
+
+**请求方式**:`POST`
+
+
+**请求数据类型**:`application/x-www-form-urlencoded,application/json`
+
+
+**响应数据类型**:`*/*`
+
+
+**接口描述**:<p>结账操作，差额作为优惠</p>
+
+
+
+**请求示例**:
+
+
+```javascript
+{
+  "paymentAmount": 0,
+  "paymentMethod": "",
+  "memo": ""
+}
+```
+
+
+**请求参数**:
+
+
+| 参数名称 | 参数说明 | 请求类型    | 是否必须 | 数据类型 | schema |
+| -------- | -------- | ----- | -------- | -------- | ------ |
+|id||path|true|integer(int64)||
+|settleLedgerDTO|SettleLedgerDTO|body|true|SettleLedgerDTO|SettleLedgerDTO|
+|&emsp;&emsp;paymentAmount|||true|number||
+|&emsp;&emsp;paymentMethod|可用值:1,2,3,4||false|string||
+|&emsp;&emsp;memo|||false|string||
+
+
+**响应状态**:
+
+
+| 状态码 | 说明 | schema |
+| -------- | -------- | ----- | 
+|200|OK|ResultLedgerVO|
+|400|Bad Request|ResultObject|
+|401|Unauthorized|ResultObject|
+|403|Forbidden|ResultObject|
+|404|Not Found|ResultObject|
+|405|Method Not Allowed|ResultObject|
+|409|Conflict|ResultObject|
+|500|Internal Server Error|ResultObject|
+
+
+**响应状态码-200**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data||LedgerVO|LedgerVO|
+|&emsp;&emsp;id||integer(int64)||
+|&emsp;&emsp;customerId||integer(int64)||
+|&emsp;&emsp;customerName||string||
+|&emsp;&emsp;totalAmount||number||
+|&emsp;&emsp;paidAmount||number||
+|&emsp;&emsp;discountAmount||number||
+|&emsp;&emsp;remainingAmount||number||
+|&emsp;&emsp;ledgerStatus|可用值:1,2,3,4,5|string||
+|&emsp;&emsp;ledgerStatusDesc||string||
+|&emsp;&emsp;items||array|LedgerItemVO|
+|&emsp;&emsp;&emsp;&emsp;id||integer||
+|&emsp;&emsp;&emsp;&emsp;productId||integer||
+|&emsp;&emsp;&emsp;&emsp;productName||string||
+|&emsp;&emsp;&emsp;&emsp;skuId||integer||
+|&emsp;&emsp;&emsp;&emsp;skuName||string||
+|&emsp;&emsp;&emsp;&emsp;price||number||
+|&emsp;&emsp;&emsp;&emsp;quantity||integer||
+|&emsp;&emsp;&emsp;&emsp;amount||number||
+|&emsp;&emsp;paymentRecords||array|PaymentRecordVO|
+|&emsp;&emsp;&emsp;&emsp;id||integer||
+|&emsp;&emsp;&emsp;&emsp;ledgerId||integer||
+|&emsp;&emsp;&emsp;&emsp;amount||number||
+|&emsp;&emsp;&emsp;&emsp;paymentMethod|可用值:1,2,3,4|string||
+|&emsp;&emsp;&emsp;&emsp;paymentMethodDesc||string||
+|&emsp;&emsp;&emsp;&emsp;memo||string||
+|&emsp;&emsp;&emsp;&emsp;createInstant||string||
+|&emsp;&emsp;createInstant||string(date-time)||
+|&emsp;&emsp;modifyInstant||string(date-time)||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {
+		"id": 0,
+		"customerId": 0,
+		"customerName": "",
+		"totalAmount": 0,
+		"paidAmount": 0,
+		"discountAmount": 0,
+		"remainingAmount": 0,
+		"ledgerStatus": "",
+		"ledgerStatusDesc": "",
+		"items": [
+			{
+				"id": 0,
+				"productId": 0,
+				"productName": "",
+				"skuId": 0,
+				"skuName": "",
+				"price": 0,
+				"quantity": 0,
+				"amount": 0
+			}
+		],
+		"paymentRecords": [
+			{
+				"id": 0,
+				"ledgerId": 0,
+				"amount": 0,
+				"paymentMethod": "",
+				"paymentMethodDesc": "",
+				"memo": "",
+				"createInstant": ""
+			}
+		],
+		"createInstant": "",
+		"modifyInstant": ""
+	},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-400**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-401**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-403**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-404**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-405**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-409**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-500**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+## 记账
+
+
+**接口地址**:`/code-ledger/api/ledgers/{id}/record`
+
+
+**请求方式**:`POST`
+
+
+**请求数据类型**:`application/x-www-form-urlencoded,application/json`
+
+
+**响应数据类型**:`*/*`
+
+
+**接口描述**:<p>记账操作，支持部分/全额支付或赊账</p>
+
+
+
+**请求示例**:
+
+
+```javascript
+{
+  "paymentAmount": 0,
+  "paymentMethod": "",
+  "memo": ""
+}
+```
+
+
+**请求参数**:
+
+
+| 参数名称 | 参数说明 | 请求类型    | 是否必须 | 数据类型 | schema |
+| -------- | -------- | ----- | -------- | -------- | ------ |
+|id||path|true|integer(int64)||
+|recordLedgerDTO|RecordLedgerDTO|body|true|RecordLedgerDTO|RecordLedgerDTO|
+|&emsp;&emsp;paymentAmount|||true|number||
+|&emsp;&emsp;paymentMethod|可用值:1,2,3,4||false|string||
+|&emsp;&emsp;memo|||false|string||
+
+
+**响应状态**:
+
+
+| 状态码 | 说明 | schema |
+| -------- | -------- | ----- | 
+|200|OK|ResultLedgerVO|
+|400|Bad Request|ResultObject|
+|401|Unauthorized|ResultObject|
+|403|Forbidden|ResultObject|
+|404|Not Found|ResultObject|
+|405|Method Not Allowed|ResultObject|
+|409|Conflict|ResultObject|
+|500|Internal Server Error|ResultObject|
+
+
+**响应状态码-200**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data||LedgerVO|LedgerVO|
+|&emsp;&emsp;id||integer(int64)||
+|&emsp;&emsp;customerId||integer(int64)||
+|&emsp;&emsp;customerName||string||
+|&emsp;&emsp;totalAmount||number||
+|&emsp;&emsp;paidAmount||number||
+|&emsp;&emsp;discountAmount||number||
+|&emsp;&emsp;remainingAmount||number||
+|&emsp;&emsp;ledgerStatus|可用值:1,2,3,4,5|string||
+|&emsp;&emsp;ledgerStatusDesc||string||
+|&emsp;&emsp;items||array|LedgerItemVO|
+|&emsp;&emsp;&emsp;&emsp;id||integer||
+|&emsp;&emsp;&emsp;&emsp;productId||integer||
+|&emsp;&emsp;&emsp;&emsp;productName||string||
+|&emsp;&emsp;&emsp;&emsp;skuId||integer||
+|&emsp;&emsp;&emsp;&emsp;skuName||string||
+|&emsp;&emsp;&emsp;&emsp;price||number||
+|&emsp;&emsp;&emsp;&emsp;quantity||integer||
+|&emsp;&emsp;&emsp;&emsp;amount||number||
+|&emsp;&emsp;paymentRecords||array|PaymentRecordVO|
+|&emsp;&emsp;&emsp;&emsp;id||integer||
+|&emsp;&emsp;&emsp;&emsp;ledgerId||integer||
+|&emsp;&emsp;&emsp;&emsp;amount||number||
+|&emsp;&emsp;&emsp;&emsp;paymentMethod|可用值:1,2,3,4|string||
+|&emsp;&emsp;&emsp;&emsp;paymentMethodDesc||string||
+|&emsp;&emsp;&emsp;&emsp;memo||string||
+|&emsp;&emsp;&emsp;&emsp;createInstant||string||
+|&emsp;&emsp;createInstant||string(date-time)||
+|&emsp;&emsp;modifyInstant||string(date-time)||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {
+		"id": 0,
+		"customerId": 0,
+		"customerName": "",
+		"totalAmount": 0,
+		"paidAmount": 0,
+		"discountAmount": 0,
+		"remainingAmount": 0,
+		"ledgerStatus": "",
+		"ledgerStatusDesc": "",
+		"items": [
+			{
+				"id": 0,
+				"productId": 0,
+				"productName": "",
+				"skuId": 0,
+				"skuName": "",
+				"price": 0,
+				"quantity": 0,
+				"amount": 0
+			}
+		],
+		"paymentRecords": [
+			{
+				"id": 0,
+				"ledgerId": 0,
+				"amount": 0,
+				"paymentMethod": "",
+				"paymentMethodDesc": "",
+				"memo": "",
+				"createInstant": ""
+			}
+		],
+		"createInstant": "",
+		"modifyInstant": ""
+	},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-400**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-401**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-403**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-404**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-405**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-409**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-500**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+## 新增支付记录
+
+
+**接口地址**:`/code-ledger/api/ledgers/{id}/payment-records`
+
+
+**请求方式**:`POST`
+
+
+**请求数据类型**:`application/x-www-form-urlencoded,application/json`
+
+
+**响应数据类型**:`*/*`
+
+
+**接口描述**:<p>统一支付接口，不考虑状态，只要未结清未关闭就可以添加支付记录</p>
+
+
+
+**请求示例**:
+
+
+```javascript
+{
+  "paymentAmount": 0,
+  "paymentMethod": "",
+  "memo": ""
+}
+```
+
+
+**请求参数**:
+
+
+| 参数名称 | 参数说明 | 请求类型    | 是否必须 | 数据类型 | schema |
+| -------- | -------- | ----- | -------- | -------- | ------ |
+|id||path|true|integer(int64)||
+|addPaymentRecordDTO|AddPaymentRecordDTO|body|true|AddPaymentRecordDTO|AddPaymentRecordDTO|
+|&emsp;&emsp;paymentAmount|||true|number||
+|&emsp;&emsp;paymentMethod|可用值:1,2,3,4||true|string||
+|&emsp;&emsp;memo|||false|string||
+
+
+**响应状态**:
+
+
+| 状态码 | 说明 | schema |
+| -------- | -------- | ----- | 
+|200|OK|ResultLedgerVO|
+|400|Bad Request|ResultObject|
+|401|Unauthorized|ResultObject|
+|403|Forbidden|ResultObject|
+|404|Not Found|ResultObject|
+|405|Method Not Allowed|ResultObject|
+|409|Conflict|ResultObject|
+|500|Internal Server Error|ResultObject|
+
+
+**响应状态码-200**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data||LedgerVO|LedgerVO|
+|&emsp;&emsp;id||integer(int64)||
+|&emsp;&emsp;customerId||integer(int64)||
+|&emsp;&emsp;customerName||string||
+|&emsp;&emsp;totalAmount||number||
+|&emsp;&emsp;paidAmount||number||
+|&emsp;&emsp;discountAmount||number||
+|&emsp;&emsp;remainingAmount||number||
+|&emsp;&emsp;ledgerStatus|可用值:1,2,3,4,5|string||
+|&emsp;&emsp;ledgerStatusDesc||string||
+|&emsp;&emsp;items||array|LedgerItemVO|
+|&emsp;&emsp;&emsp;&emsp;id||integer||
+|&emsp;&emsp;&emsp;&emsp;productId||integer||
+|&emsp;&emsp;&emsp;&emsp;productName||string||
+|&emsp;&emsp;&emsp;&emsp;skuId||integer||
+|&emsp;&emsp;&emsp;&emsp;skuName||string||
+|&emsp;&emsp;&emsp;&emsp;price||number||
+|&emsp;&emsp;&emsp;&emsp;quantity||integer||
+|&emsp;&emsp;&emsp;&emsp;amount||number||
+|&emsp;&emsp;paymentRecords||array|PaymentRecordVO|
+|&emsp;&emsp;&emsp;&emsp;id||integer||
+|&emsp;&emsp;&emsp;&emsp;ledgerId||integer||
+|&emsp;&emsp;&emsp;&emsp;amount||number||
+|&emsp;&emsp;&emsp;&emsp;paymentMethod|可用值:1,2,3,4|string||
+|&emsp;&emsp;&emsp;&emsp;paymentMethodDesc||string||
+|&emsp;&emsp;&emsp;&emsp;memo||string||
+|&emsp;&emsp;&emsp;&emsp;createInstant||string||
+|&emsp;&emsp;createInstant||string(date-time)||
+|&emsp;&emsp;modifyInstant||string(date-time)||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {
+		"id": 0,
+		"customerId": 0,
+		"customerName": "",
+		"totalAmount": 0,
+		"paidAmount": 0,
+		"discountAmount": 0,
+		"remainingAmount": 0,
+		"ledgerStatus": "",
+		"ledgerStatusDesc": "",
+		"items": [
+			{
+				"id": 0,
+				"productId": 0,
+				"productName": "",
+				"skuId": 0,
+				"skuName": "",
+				"price": 0,
+				"quantity": 0,
+				"amount": 0
+			}
+		],
+		"paymentRecords": [
+			{
+				"id": 0,
+				"ledgerId": 0,
+				"amount": 0,
+				"paymentMethod": "",
+				"paymentMethodDesc": "",
+				"memo": "",
+				"createInstant": ""
+			}
+		],
+		"createInstant": "",
+		"modifyInstant": ""
+	},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-400**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-401**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-403**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-404**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-405**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-409**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-500**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+## 关闭账单
+
+
+**接口地址**:`/code-ledger/api/ledgers/{id}/close`
+
+
+**请求方式**:`POST`
+
+
+**请求数据类型**:`application/x-www-form-urlencoded,application/json`
+
+
+**响应数据类型**:`*/*`
+
+
+**接口描述**:<p>关闭未支付的账单</p>
+
+
+
+**请求示例**:
+
+
+```javascript
+{
+  "reason": ""
+}
+```
+
+
+**请求参数**:
+
+
+| 参数名称 | 参数说明 | 请求类型    | 是否必须 | 数据类型 | schema |
+| -------- | -------- | ----- | -------- | -------- | ------ |
+|id||path|true|integer(int64)||
+|closeLedgerDTO|CloseLedgerDTO|body|true|CloseLedgerDTO|CloseLedgerDTO|
+|&emsp;&emsp;reason|||true|string||
+
+
+**响应状态**:
+
+
+| 状态码 | 说明 | schema |
+| -------- | -------- | ----- | 
+|200|OK|ResultVoid|
+|400|Bad Request|ResultObject|
+|401|Unauthorized|ResultObject|
+|403|Forbidden|ResultObject|
+|404|Not Found|ResultObject|
+|405|Method Not Allowed|ResultObject|
+|409|Conflict|ResultObject|
+|500|Internal Server Error|ResultObject|
+
+
+**响应状态码-200**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-400**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-401**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-403**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-404**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-405**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-409**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-500**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+## 查询账单详情
+
+
+**接口地址**:`/code-ledger/api/ledgers/{id}`
+
+
+**请求方式**:`GET`
+
+
+**请求数据类型**:`application/x-www-form-urlencoded`
+
+
+**响应数据类型**:`*/*`
+
+
+**接口描述**:<p>获取账单完整信息，包括明细和支付记录</p>
+
+
+
+**请求参数**:
+
+
+| 参数名称 | 参数说明 | 请求类型    | 是否必须 | 数据类型 | schema |
+| -------- | -------- | ----- | -------- | -------- | ------ |
+|id||path|true|integer(int64)||
+
+
+**响应状态**:
+
+
+| 状态码 | 说明 | schema |
+| -------- | -------- | ----- | 
+|200|OK|ResultLedgerVO|
+|400|Bad Request|ResultObject|
+|401|Unauthorized|ResultObject|
+|403|Forbidden|ResultObject|
+|404|Not Found|ResultObject|
+|405|Method Not Allowed|ResultObject|
+|409|Conflict|ResultObject|
+|500|Internal Server Error|ResultObject|
+
+
+**响应状态码-200**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data||LedgerVO|LedgerVO|
+|&emsp;&emsp;id||integer(int64)||
+|&emsp;&emsp;customerId||integer(int64)||
+|&emsp;&emsp;customerName||string||
+|&emsp;&emsp;totalAmount||number||
+|&emsp;&emsp;paidAmount||number||
+|&emsp;&emsp;discountAmount||number||
+|&emsp;&emsp;remainingAmount||number||
+|&emsp;&emsp;ledgerStatus|可用值:1,2,3,4,5|string||
+|&emsp;&emsp;ledgerStatusDesc||string||
+|&emsp;&emsp;items||array|LedgerItemVO|
+|&emsp;&emsp;&emsp;&emsp;id||integer||
+|&emsp;&emsp;&emsp;&emsp;productId||integer||
+|&emsp;&emsp;&emsp;&emsp;productName||string||
+|&emsp;&emsp;&emsp;&emsp;skuId||integer||
+|&emsp;&emsp;&emsp;&emsp;skuName||string||
+|&emsp;&emsp;&emsp;&emsp;price||number||
+|&emsp;&emsp;&emsp;&emsp;quantity||integer||
+|&emsp;&emsp;&emsp;&emsp;amount||number||
+|&emsp;&emsp;paymentRecords||array|PaymentRecordVO|
+|&emsp;&emsp;&emsp;&emsp;id||integer||
+|&emsp;&emsp;&emsp;&emsp;ledgerId||integer||
+|&emsp;&emsp;&emsp;&emsp;amount||number||
+|&emsp;&emsp;&emsp;&emsp;paymentMethod|可用值:1,2,3,4|string||
+|&emsp;&emsp;&emsp;&emsp;paymentMethodDesc||string||
+|&emsp;&emsp;&emsp;&emsp;memo||string||
+|&emsp;&emsp;&emsp;&emsp;createInstant||string||
+|&emsp;&emsp;createInstant||string(date-time)||
+|&emsp;&emsp;modifyInstant||string(date-time)||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {
+		"id": 0,
+		"customerId": 0,
+		"customerName": "",
+		"totalAmount": 0,
+		"paidAmount": 0,
+		"discountAmount": 0,
+		"remainingAmount": 0,
+		"ledgerStatus": "",
+		"ledgerStatusDesc": "",
+		"items": [
+			{
+				"id": 0,
+				"productId": 0,
+				"productName": "",
+				"skuId": 0,
+				"skuName": "",
+				"price": 0,
+				"quantity": 0,
+				"amount": 0
+			}
+		],
+		"paymentRecords": [
+			{
+				"id": 0,
+				"ledgerId": 0,
+				"amount": 0,
+				"paymentMethod": "",
+				"paymentMethodDesc": "",
+				"memo": "",
+				"createInstant": ""
+			}
+		],
+		"createInstant": "",
+		"modifyInstant": ""
+	},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-400**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-401**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-403**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-404**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-405**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-409**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-500**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+## 查询进行中的账单
+
+
+**接口地址**:`/code-ledger/api/ledgers/in-progress`
+
+
+**请求方式**:`GET`
+
+
+**请求数据类型**:`application/x-www-form-urlencoded`
+
+
+**响应数据类型**:`*/*`
+
+
+**接口描述**:<p>获取所有进行中状态的账单列表</p>
+
+
+
+**请求参数**:
+
+
+| 参数名称 | 参数说明 | 请求类型    | 是否必须 | 数据类型 | schema |
+| -------- | -------- | ----- | -------- | -------- | ------ |
+|pageable||query|true|Pageable|Pageable|
+|&emsp;&emsp;page|||false|integer(int32)||
+|&emsp;&emsp;size|||false|integer(int32)||
+|&emsp;&emsp;sort|||false|array|string|
+
+
+**响应状态**:
+
+
+| 状态码 | 说明 | schema |
+| -------- | -------- | ----- | 
+|200|OK|ResultPageLedgerListVO|
+|400|Bad Request|ResultObject|
+|401|Unauthorized|ResultObject|
+|403|Forbidden|ResultObject|
+|404|Not Found|ResultObject|
+|405|Method Not Allowed|ResultObject|
+|409|Conflict|ResultObject|
+|500|Internal Server Error|ResultObject|
+
+
+**响应状态码-200**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data||PageLedgerListVO|PageLedgerListVO|
+|&emsp;&emsp;totalPages||integer(int32)||
+|&emsp;&emsp;totalElements||integer(int64)||
+|&emsp;&emsp;size||integer(int32)||
+|&emsp;&emsp;content||array|LedgerListVO|
+|&emsp;&emsp;&emsp;&emsp;id||integer||
+|&emsp;&emsp;&emsp;&emsp;customerId||integer||
+|&emsp;&emsp;&emsp;&emsp;customerName||string||
+|&emsp;&emsp;&emsp;&emsp;totalAmount||number||
+|&emsp;&emsp;&emsp;&emsp;paidAmount||number||
+|&emsp;&emsp;&emsp;&emsp;discountAmount||number||
+|&emsp;&emsp;&emsp;&emsp;remainingAmount||number||
+|&emsp;&emsp;&emsp;&emsp;ledgerStatus|可用值:1,2,3,4,5|string||
+|&emsp;&emsp;&emsp;&emsp;ledgerStatusDesc||string||
+|&emsp;&emsp;&emsp;&emsp;createInstant||string||
+|&emsp;&emsp;number||integer(int32)||
+|&emsp;&emsp;sort||SortObject|SortObject|
+|&emsp;&emsp;&emsp;&emsp;empty||boolean||
+|&emsp;&emsp;&emsp;&emsp;sorted||boolean||
+|&emsp;&emsp;&emsp;&emsp;unsorted||boolean||
+|&emsp;&emsp;first||boolean||
+|&emsp;&emsp;last||boolean||
+|&emsp;&emsp;numberOfElements||integer(int32)||
+|&emsp;&emsp;pageable||PageableObject|PageableObject|
+|&emsp;&emsp;&emsp;&emsp;offset||integer||
+|&emsp;&emsp;&emsp;&emsp;sort||SortObject|SortObject|
+|&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;empty||boolean||
+|&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;sorted||boolean||
+|&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;unsorted||boolean||
+|&emsp;&emsp;&emsp;&emsp;pageSize||integer||
+|&emsp;&emsp;&emsp;&emsp;pageNumber||integer||
+|&emsp;&emsp;&emsp;&emsp;unpaged||boolean||
+|&emsp;&emsp;&emsp;&emsp;paged||boolean||
+|&emsp;&emsp;empty||boolean||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {
+		"totalPages": 0,
+		"totalElements": 0,
+		"size": 0,
+		"content": [
+			{
+				"id": 0,
+				"customerId": 0,
+				"customerName": "",
+				"totalAmount": 0,
+				"paidAmount": 0,
+				"discountAmount": 0,
+				"remainingAmount": 0,
+				"ledgerStatus": "",
+				"ledgerStatusDesc": "",
+				"createInstant": ""
+			}
+		],
+		"number": 0,
+		"sort": {
+			"empty": true,
+			"sorted": true,
+			"unsorted": true
+		},
+		"first": true,
+		"last": true,
+		"numberOfElements": 0,
+		"pageable": {
+			"offset": 0,
+			"sort": {
+				"empty": true,
+				"sorted": true,
+				"unsorted": true
+			},
+			"pageSize": 0,
+			"pageNumber": 0,
+			"unpaged": true,
+			"paged": true
+		},
+		"empty": true
+	},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-400**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-401**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-403**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-404**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-405**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-409**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
+**响应状态码-500**:
+
+
+**响应参数**:
+
+
+| 参数名称 | 参数说明 | 类型 | schema |
+| -------- | -------- | ----- |----- | 
+|code|响应码|integer(int32)|integer(int32)|
+|message|响应消息|string||
+|data|响应数据|object||
+|timestamp|时间戳|integer(int64)|integer(int64)|
+|success||boolean||
+
+
+**响应示例**:
+```javascript
+{
+	"code": 200,
+	"message": "操作成功",
+	"data": {},
+	"timestamp": 1700000000000,
+	"success": true
+}
+```
+
+
 # 客户管理
 
 
@@ -5636,7 +8621,9 @@
   "alias": "小张",
   "gender": "1",
   "age": 30,
-  "customerType": "1"
+  "customerType": "1",
+  "关联地址ID": 0,
+  "详细地址": "村"
 }
 ```
 
@@ -5654,6 +8641,8 @@
 |&emsp;&emsp;gender|性别: 1=男, 2=女, 0=未知,可用值:0,1,2||false|string||
 |&emsp;&emsp;age|年龄||false|integer(int32)||
 |&emsp;&emsp;customerType|客户类型: 1=活跃, 2=潜在, 3=流失,可用值:0,1||false|string||
+|&emsp;&emsp;关联地址ID|||false|integer(int64)||
+|&emsp;&emsp;详细地址|||false|string||
 
 
 **响应状态**:
@@ -6569,8 +9558,8 @@
 |&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;unsorted||boolean||
 |&emsp;&emsp;&emsp;&emsp;pageSize||integer||
 |&emsp;&emsp;&emsp;&emsp;pageNumber||integer||
-|&emsp;&emsp;&emsp;&emsp;paged||boolean||
 |&emsp;&emsp;&emsp;&emsp;unpaged||boolean||
+|&emsp;&emsp;&emsp;&emsp;paged||boolean||
 |&emsp;&emsp;empty||boolean||
 |timestamp|时间戳|integer(int64)|integer(int64)|
 |success||boolean||
@@ -6621,8 +9610,8 @@
 			},
 			"pageSize": 0,
 			"pageNumber": 0,
-			"paged": true,
-			"unpaged": true
+			"unpaged": true,
+			"paged": true
 		},
 		"empty": true
 	},
