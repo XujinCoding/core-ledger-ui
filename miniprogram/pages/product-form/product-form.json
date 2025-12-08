@@ -1,6 +1,0 @@
-{
-  "navigationBarTitleText": "商品信息",
-  "usingComponents": {
-    "category-filter": "../../components/category-filter/category-filter"
-  }
-}

@@ -1,6 +1,0 @@
-{
-  "component": true,
-  "usingComponents": {
-    "category-tree-item": "./category-tree-item"
-  }
-}
