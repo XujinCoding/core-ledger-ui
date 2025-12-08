@@ -52,7 +52,7 @@ export const getUserList = (params) => {
 ```
 
 #### 2.2 统一处理的内容
-请求工具(utils/request.js)自动处理：
+请求工具(utils/request.ts)自动处理：
 - ✅ Token携带（自动从storage读取）
 - ✅ 请求头统一配置
 - ✅ HTTP状态码错误处理
@@ -102,7 +102,7 @@ project/
 │   ├── variables.scss   # 变量
 │   └── common.scss      # 公共样式
 ├── utils/               # 工具函数
-│   ├── request.js       # ⭐请求工具（核心）
+│   ├── request.ts       # ⭐请求工具（核心）
 │   ├── storage.js       # 存储工具
 │   ├── validate.js      # 验证工具
 │   └── format.js        # 格式化工具
