@@ -62,7 +62,8 @@ type BusinessCodeMap = Record<number, string>
 // ==================== 配置 ====================
 
 const CONFIG = {
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://api.example.com',
+  // baseURL: import.meta.env.VITE_API_BASE_URL || 'https://api.example.com',
+  baseURL: 'http://10.0.63.247:8080/code-ledger/api',
   timeout: 30000,
   tokenKey: 'ACCESS_TOKEN',
   

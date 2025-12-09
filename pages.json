@@ -1,15 +1,64 @@
 {
-	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+	"pages": [
 		{
-			"path": "pages/index/index",
+			"path": "pages/login/index",
 			"style": {
-				"navigationBarTitleText": "uni-app"
+				"navigationBarTitleText": "登录",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/login/customer",
+			"style": {
+				"navigationBarTitleText": "客户登录"
+			}
+		},
+		{
+			"path": "pages/login/merchant",
+			"style": {
+				"navigationBarTitleText": "商户登录"
+			}
+		},
+		{
+			"path": "pages/login/select-customer",
+			"style": {
+				"navigationBarTitleText": "选择客户"
+			}
+		},
+		{
+			"path": "pages/login/select-merchant",
+			"style": {
+				"navigationBarTitleText": "选择商户"
+			}
+		},
+		{
+			"path": "pages/register/customer",
+			"style": {
+				"navigationBarTitleText": "客户注册"
+			}
+		},
+		{
+			"path": "pages/register/bind-merchant",
+			"style": {
+				"navigationBarTitleText": "绑定商户"
+			}
+		},
+		{
+			"path": "pages/register/merchant",
+			"style": {
+				"navigationBarTitleText": "商户注册"
+			}
+		},
+		{
+			"path": "pages/home/index",
+			"style": {
+				"navigationBarTitleText": "首页"
 			}
 		}
 	],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
-		"navigationBarTitleText": "uni-app",
+		"navigationBarTitleText": "Core Ledger",
 		"navigationBarBackgroundColor": "#F8F8F8",
 		"backgroundColor": "#F8F8F8"
 	},

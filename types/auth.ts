@@ -31,7 +31,7 @@ export interface PasswordLoginDTO {
  */
 export interface MerchantRegisterDTO {
   /** 微信OpenID */
-  openid: string
+  code: string
   /** 手机号 */
   phone: string
   /** 用户名 */
@@ -51,7 +51,7 @@ export interface MerchantRegisterDTO {
  */
 export interface CustomerRegisterDTO {
   /** 微信OpenID */
-  openid: string
+  code: string
   /** 手机号 */
   phone: string
   /** 微信昵称 */
@@ -70,6 +70,8 @@ export interface CustomerRegisterDTO {
   addressId: number
   /** 详细地址 */
   addressDetail?: string
+  /** 商户邀请码*/
+  inviteCode: string
 }
 
 /**
@@ -93,31 +95,27 @@ export interface SwitchIdentityDTO {
 }
 
 /**
- * 用户信息VO
+ * 用户信息VO - 当前登录用户身份
  */
 export interface UserInfoVO {
-  /** 用户ID */
+  /** 标识 (customer.id / merchant.id 根据身份确定) */
   id: number
-  /** 用户名 */
-  username: string
-  /** 手机号 */
+  /** 用户ID */
+  userId: number
+  /** 名称 (customer.name / merchant.name 根据身份确定) */
+  name: string
+  /** 手机号 (customer.phone / merchant.phone 根据身份确定) */
   phone: string
-  /** 商户ID */
+  /** 编码 (customer.code / merchant.code 根据身份确定) */
+  code: string
+  /** 关联地址标识 (customer.addressId / merchant.addressId 根据身份确定) */
+  addressId?: number
+  /** 详细地址 (customer.addressDetail / merchant.addressDetail 根据身份确定) */
+  addressDetail?: string
+  /** 商户标识 (如果没有商户标识, 标识客户当前没有选择任何商户) */
   merchantId?: number
-  /** 商户名称 */
-  merchantName?: string
-  /** 商户编号 */
-  merchantNo?: string
-  /** 客户ID */
-  customerId?: number
-  /** 客户名称 */
-  customerName?: string
-  /** 客户编号 */
-  customerNo?: string
-  /** 客户手机号 */
-  customerPhone?: string
-  /** 身份类型 */
-  identityType?: IdentityType
+  /** 身份类型：MERCHANT_OWNER 或 CUSTOMER */
+  identityType: IdentityType
 }
 
 /**
@@ -125,13 +123,19 @@ export interface UserInfoVO {
  */
 export interface LoginVO {
   /** 访问令牌 */
-  token: string
+  token?: string
   /** 用户信息 */
   userInfo: UserInfoVO
   /** 过期时间（毫秒） */
-  expireTime: number
-  /** 是否需要选择身份 */
-  needIdentity?: boolean
+  expireTime?: number
+  /** 是否需要注册 */
+  needRegister?: boolean
+  /** 注册类型 */
+  registerType?: IdentityType
+  /** 商户列表（多个商户时） */
+  merchants?: MerchantIdentity[]
+  /** 客户列表（多个客户时） */
+  customers?: CustomerIdentity[]
   /** 提示消息 */
   message?: string
 }
