@@ -1,102 +1,129 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { merchantWechatRegister } from '@/api/modules/auth'
-import type { MerchantRegisterDTO } from '@/types/auth'
+/**
+ * 商户注册页面
+ * @author Core Ledger Team
+ * @since 1.0.0
+ */
 
-const form = ref<Partial<MerchantRegisterDTO>>({
+import { ref, reactive, onMounted } from 'vue'
+import { merchantWechatRegister } from '@/api/modules/auth'
+import { listAddresses, listAddressesByParent } from '@/api/modules/address'
+import { useUserStore } from '@/stores/modules/user'
+import type { AddressVO } from '@/types/address'
+import { AddressSelector } from '@/components/AddressSelector.vue'
+import { useWechatLogin } from '@/composables/useWechatLogin'
+
+
+const { handleLoginResponse } = useWechatLogin()
+
+// 使用 uni 的 showToast 替代 WOT-UI 的 useToast
+const showToast = (message: string, type: 'success' | 'error' | 'warning' = 'error') => {
+  uni.showToast({
+    title: message,
+    icon: type === 'success' ? 'success' : 'none',
+    duration: 2000
+  })
+}
+const userStore = useUserStore()
+
+// ==================== 表单数据 ====================
+
+interface MerchantForm {
+  phone: string
+  username: string
+  password: string
+  merchantName: string
+  addressId: number | null
+  addressDetail: string
+}
+
+const form = reactive<MerchantForm>({
+  phone: '',
   username: '',
   password: '',
-  phone: '',
   merchantName: '',
-  nickname: '',
-  avatarUrl: ''
+  addressId: null,
+  addressDetail: ''
 })
 
-const loading = ref<boolean>(false)
+// ==================== 其他状态 ====================
+
+const loading = ref(false)
+// ==================== 验证 ====================
 
 /**
- * 提交注册
+ * 验证表单
+ */
+const validateForm = (): boolean => {
+  if (!form.phone) {
+    showToast('请输入手机号')
+    return false
+  }
+  if (!/^1[3-9]\d{9}$/.test(form.phone)) {
+    showToast('手机号格式不正确')
+    return false
+  }
+  if (!form.username) {
+    showToast('请输入用户名')
+    return false
+  }
+  if (form.username.length < 3 || form.username.length > 20) {
+    showToast('用户名长度应为3-20个字符')
+    return false
+  }
+  if (!form.password) {
+    showToast('请输入密码')
+    return false
+  }
+  if (form.password.length < 6 || form.password.length > 20) {
+    showToast('密码长度应为6-20个字符')
+    return false
+  }
+  if (!form.merchantName) {
+    showToast('请输入商户名称')
+    return false
+  }
+  if (!form.addressId) {
+    showToast('请选择地址')
+    return false
+  }
+  if (!form.addressDetail) {
+    showToast('请输入详细地址')
+    return false
+  }
+
+  return true
+}
+
+// ==================== 提交 ====================
+
+/**
+ * 处理注册
  */
 const handleRegister = async () => {
-  // 验证必填字段
-  if (!form.value.username) {
-    uni.showToast({
-      title: '请填写用户名',
-      icon: 'error',
-      duration: 2000
-    })
+  if (!validateForm()) {
     return
   }
-
-  if (!form.value.password) {
-    uni.showToast({
-      title: '请填写密码',
-      icon: 'error',
-      duration: 2000
-    })
-    return
-  }
-
-  if (!form.value.phone) {
-    uni.showToast({
-      title: '请填写手机号',
-      icon: 'error',
-      duration: 2000
-    })
-    return
-  }
-
-  // 简单的手机号验证
-  const phoneRegex = /^1[3-9]\d{9}$/
-  if (!phoneRegex.test(form.value.phone)) {
-    uni.showToast({
-      title: '请输入有效的手机号',
-      icon: 'error',
-      duration: 2000
-    })
-    return
-  }
-
-  if (!form.value.merchantName) {
-    uni.showToast({
-      title: '请填写商户名称',
-      icon: 'error',
-      duration: 2000
-    })
-    return
-  }
-
-  loading.value = true
 
   try {
-    // 获取微信信息
-    const loginRes = await uni.login({ provider: 'weixin' })
+    loading.value = true
 
+    // 调用注册接口
     const response = await merchantWechatRegister({
-      code: loginRes.code,
-      phone: form.value.phone || '',
-      username: form.value.username!,
-      password: form.value.password!,
-      merchantName: form.value.merchantName!,
-      nickname: form.value.nickname,
-      avatarUrl: form.value.avatarUrl
+      code: '', // 从微信登录流程中获取，这里暂时为空
+      phone: form.phone,
+      username: form.username,
+      password: form.password,
+      merchantName: form.merchantName,
+      addressId: 1, // 需要补充选择的地址标识
+      addressDetail: form.addressDetail
     })
 
-    if (response.token) {
-      uni.setStorageSync('ACCESS_TOKEN', response.token)
-      uni.setStorageSync('USER_INFO', JSON.stringify(response.userInfo))
-      uni.setStorageSync('IDENTITY_TYPE', response.userInfo.identityType)
+	await handleLoginResponse(response)
 
-      uni.reLaunch({
-        url: '/pages/home/index'
-      })
-    }
   } catch (error) {
-    uni.showToast({
-      title: '注册失败，请重试',
-      icon: 'error',
-      duration: 2000
-    })
+    console.error('[Merchant Register] 注册失败:', error)
+    showToast('注册失败，请重试')
   } finally {
     loading.value = false
   }
@@ -105,124 +132,140 @@ const handleRegister = async () => {
 
 <template>
   <view class="merchant-register-page">
-    <view class="form-container">
-      <!-- 用户名 -->
-      <view class="form-group">
-        <text class="form-label">用户名 <text class="required">*</text></text>
-        <input
-          v-model="form.username"
-          class="form-input"
-          type="text"
-          placeholder="请输入用户名"
-        />
-      </view>
-
-      <!-- 密码 -->
-      <view class="form-group">
-        <text class="form-label">密码 <text class="required">*</text></text>
-        <input
-          v-model="form.password"
-          class="form-input"
-          type="password"
-          placeholder="请输入密码"
-        />
-      </view>
-
-      <!-- 手机号 -->
-      <view class="form-group">
-        <text class="form-label">手机号 <text class="required">*</text></text>
-        <input
+    <!-- 表单内容 -->
+    <view class="content">
+      <wd-cell-group border>
+        <!-- 手机号 -->
+        <wd-input
           v-model="form.phone"
-          class="form-input"
-          type="tel"
+          label="手机号"
           placeholder="请输入手机号"
+          type="number"
+          clearable
+          required
         />
-      </view>
 
-      <!-- 商户名称 -->
-      <view class="form-group">
-        <text class="form-label">商户名称 <text class="required">*</text></text>
-        <input
+        <!-- 用户名 -->
+        <wd-input
+          v-model="form.username"
+          label="用户名"
+          placeholder="请输入用户名"
+          clearable
+          required
+        />
+
+        <!-- 密码 -->
+        <wd-input
+          v-model="form.password"
+          label="密码"
+          placeholder="请输入密码"
+          show-password
+          clearable
+          required
+        >
+        </wd-input>
+
+        <!-- 商户名称 -->
+        <wd-input
           v-model="form.merchantName"
-          class="form-input"
-          type="text"
+          label="商户名称"
           placeholder="请输入商户名称"
+          clearable
+          required
         />
-      </view>
+		<AddressSelector></AddressSelector>
+      </wd-cell-group>
 
-      <!-- 昵称 -->
-      <view class="form-group">
-        <text class="form-label">昵称</text>
-        <input
-          v-model="form.nickname"
-          class="form-input"
-          type="text"
-          placeholder="请输入昵称"
-        />
-      </view>
 
-      <!-- 提交按钮 -->
-      <button
-        class="btn-submit"
-        @click="handleRegister"
+      <!-- 详细地址 -->
+      <view class="detail-section">
+        <wd-cell-group border>
+          <wd-textarea
+            v-model="form.addressDetail"
+            label="详细地址"
+            placeholder="请输入详细地址"
+            :maxlength="200"
+            show-word-limit
+            required
+          />
+        </wd-cell-group>
+      </view>
+    </view>
+
+    <!-- 底部按钮 -->
+    <view class="footer">
+      <wd-button
+        type="primary"
+        block
+        size="large"
         :loading="loading"
+        @click="handleRegister"
       >
-        创建商户
-      </button>
+        注册
+      </wd-button>
     </view>
   </view>
 </template>
 
 <style lang="scss" scoped>
 .merchant-register-page {
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
-  background: #f5f5f5;
-  padding: 20rpx;
+  background-color: #f5f5f5;
 }
 
-.form-container {
-  background: white;
-  border-radius: 8rpx;
-  padding: 30rpx 20rpx;
-  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.05);
-  margin-top: 20rpx;
-}
-
-.form-group {
-  margin-bottom: 24rpx;
-
-  .form-label {
-    display: block;
-    font-size: 26rpx;
-    color: #333;
-    margin-bottom: 10rpx;
-    font-weight: 500;
-
-    .required {
-      color: #f56c6c;
-    }
-  }
-
-  .form-input {
-    width: 100%;
-    padding: 12rpx 16rpx;
-    border: 2rpx solid #e0e0e0;
-    border-radius: 6rpx;
-    font-size: 26rpx;
-    color: #333;
-    background: #f9f9f9;
-  }
-}
-
-.btn-submit {
-  width: 100%;
-  padding: 16rpx 0;
+.header {
+  flex: 0 0 auto;
+  padding: 40rpx;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  border: none;
-  border-radius: 6rpx;
-  font-size: 28rpx;
-  font-weight: bold;
-  margin-top: 20rpx;
+
+  .title {
+    font-size: 36rpx;
+    font-weight: bold;
+  }
+}
+
+.content {
+  flex: 1;
+  padding: 20rpx;
+  overflow-y: auto;
+
+  :deep(.wd-cell-group) {
+    margin-bottom: 20rpx;
+    background: white;
+    border-radius: 8rpx;
+  }
+}
+
+.address-section {
+  margin-bottom: 20rpx;
+
+  .section-title {
+    display: block;
+    padding: 20rpx;
+    font-size: 28rpx;
+    font-weight: bold;
+    color: #333;
+  }
+}
+
+.detail-section {
+  margin-bottom: 20rpx;
+}
+
+.password-toggle {
+  font-size: 24rpx;
+  color: #667eea;
+  cursor: pointer;
+  padding: 0 10rpx;
+}
+
+.footer {
+  flex: 0 0 auto;
+  padding: 20rpx;
+  background: white;
+  border-top: 1rpx solid #eee;
 }
 </style>

@@ -94,11 +94,11 @@ export const useWechatLogin = () => {
     // 第二步：没有 token，检查是否需要注册
     if (response.needRegister) {
       // 需要注册，根据 registerType 跳转到对应的注册页面
-      if (response.registerType === 'MERCHANT_OWNER' || response.registerType === 1) {
+      if ( response.registerType === 1) {
         uni.navigateTo({
           url: '/pages/register/merchant'
         })
-      } else if (response.registerType === 'CUSTOMER' || response.registerType === 2) {
+      } else if (response.registerType === 2) {
         uni.navigateTo({
           url: '/pages/register/customer'
         })

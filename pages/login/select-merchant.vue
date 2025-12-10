@@ -1,136 +1,193 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { onLoad } from '@dcloudio/uni-app'
+/**
+ * 商户身份选择页面
+ * @author Core Ledger Team
+ * @since 1.0.0
+ */
+
+import { ref, onMounted } from 'vue'
 import { switchIdentity } from '@/api/modules/auth'
-import type { MerchantIdentity, UserInfoVO } from '@/types/auth'
+import { useUserStore } from '@/stores/modules/user'
+import type { MerchantIdentity } from '@/types/auth'
+
+// 使用 uni 的 showToast 替代 WOT-UI 的 useToast
+const showToast = (message: string, type: 'success' | 'error' | 'warning' = 'error') => {
+  uni.showToast({
+    title: message,
+    icon: type === 'success' ? 'success' : 'none',
+    duration: 2000
+  })
+}
+const userStore = useUserStore()
 
 const merchants = ref<MerchantIdentity[]>([])
-const userInfo = ref<UserInfoVO | null>(null)
-const loading = ref<boolean>(false)
+const loading = ref(false)
+const selectedId = ref<number | null>(null)
 
-onLoad((options: any) => {
-  if (options.merchants) {
-    merchants.value = JSON.parse(options.merchants)
+/**
+ * 初始化页面，获取商户列表
+ */
+onMounted(() => {
+  // 从路由参数获取商户列表
+  const pages = getCurrentPages()
+  const currentPage = pages[pages.length - 1]
+  
+  // 尝试从路由参数获取
+  if (currentPage.$route?.params?.merchants) {
+    merchants.value = currentPage.$route.params.merchants
   }
-  if (options.userInfo) {
-    userInfo.value = JSON.parse(options.userInfo)
+  
+  // 如果没有获取到，尝试从事件获取
+  if (merchants.value.length === 0 && currentPage.$route?.query?.merchants) {
+    try {
+      merchants.value = JSON.parse(currentPage.$route.query.merchants as string)
+    } catch (error) {
+      console.error('[Select Merchant] 解析商户列表失败:', error)
+    }
   }
+
+  console.log('[Select Merchant] 商户列表:', merchants.value)
 })
 
 /**
- * 选择商户
+ * 处理商户选择
  */
-const selectMerchant = async (merchant: MerchantIdentity) => {
-  loading.value = true
-
+const handleSelectMerchant = async (merchant: MerchantIdentity) => {
   try {
+    loading.value = true
+    selectedId.value = merchant.id
+
+    console.log('[Select Merchant] 选择商户:', merchant.id)
+
+    // 调用切换身份接口
     const response = await switchIdentity({
       identityType: 'MERCHANT_OWNER',
       merchantId: merchant.id
     })
 
-    if (response.token) {
-      uni.setStorageSync('ACCESS_TOKEN', response.token)
-      uni.setStorageSync('USER_INFO', JSON.stringify(response.userInfo))
-      uni.setStorageSync('IDENTITY_TYPE', response.userInfo.identityType)
+    console.log('[Select Merchant] 切换身份响应:', response)
 
+    if (response?.token) {
+      // 保存 token 和用户信息
+      userStore.setToken(response.token)
+      userStore.setUserInfo(response.userInfo)
+      userStore.setIdentityType(response.userInfo.identityType)
+
+      showToast('切换成功', 'success')
+
+      // 跳转到首页
       uni.reLaunch({
         url: '/pages/home/index'
       })
+    } else {
+      showToast('切换失败，请重试', 'error')
     }
   } catch (error) {
-    uni.showToast({
-      title: '选择失败，请重试',
-      icon: 'error',
-      duration: 2000
-    })
+    console.error('[Select Merchant] 切换身份失败:', error)
+    showToast('切换失败，请重试', 'error')
   } finally {
     loading.value = false
+    selectedId.value = null
   }
 }
 </script>
 
 <template>
   <view class="select-merchant-page">
-    <view class="merchant-list">
-      <view
-        v-for="merchant in merchants"
-        :key="merchant.id"
-        class="merchant-item"
-        @click="selectMerchant(merchant)"
-      >
-        <view class="merchant-info">
-          <text class="merchant-name">{{ merchant.merchantName }}</text>
-          <text class="merchant-no">{{ merchant.merchantNo }}</text>
-        </view>
-        <text class="icon">›</text>
-      </view>
+    <!-- 顶部说明 -->
+    <view class="header">
+      <text class="title">选择商户</text>
+      <text class="subtitle">请选择要登录的商户</text>
     </view>
 
-    <view v-if="loading" class="loading-overlay">
-      <u-loading-page></u-loading-page>
+    <!-- 商户列表 -->
+    <view class="content">
+      <wd-cell-group border>
+        <wd-cell
+          v-for="merchant in merchants"
+          :key="merchant.id"
+          :title="merchant.merchantName"
+          :label="merchant.merchantNo"
+          is-link
+          :clickable="!loading"
+          @click="handleSelectMerchant(merchant)"
+        >
+          <template #right-icon>
+            <wd-loading
+              v-if="loading && selectedId === merchant.id"
+              type="ring"
+              size="24rpx"
+            />
+          </template>
+        </wd-cell>
+      </wd-cell-group>
+    </view>
+
+    <!-- 空状态 -->
+    <view v-if="merchants.length === 0" class="empty">
+      <text class="empty-text">暂无商户数据</text>
     </view>
   </view>
 </template>
 
 <style lang="scss" scoped>
 .select-merchant-page {
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
-  background: #f5f5f5;
+  background-color: #f5f5f5;
+}
+
+.header {
+  flex: 0 0 auto;
+  padding: 40rpx;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+
+  .title {
+    display: block;
+    font-size: 36rpx;
+    font-weight: bold;
+    margin-bottom: 8rpx;
+  }
+
+  .subtitle {
+    display: block;
+    font-size: 26rpx;
+    opacity: 0.9;
+  }
+}
+
+.content {
+  flex: 1;
   padding: 20rpx;
+
+  :deep(.wd-cell-group) {
+    background: white;
+    border-radius: 8rpx;
+    overflow: hidden;
+  }
+
+  :deep(.wd-cell) {
+    padding: 20rpx;
+    border-bottom: 1rpx solid #eee;
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
 }
 
-.merchant-list {
-  margin-top: 20rpx;
-}
-
-.merchant-item {
+.empty {
+  flex: 1;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 20rpx;
-  background: white;
-  border-radius: 8rpx;
-  margin-bottom: 12rpx;
-  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.05);
-
-  &:active {
-    background: #f9f9f9;
-  }
-
-  .merchant-info {
-    display: flex;
-    flex-direction: column;
-    gap: 8rpx;
-
-    .merchant-name {
-      font-size: 30rpx;
-      color: #333;
-      font-weight: 500;
-    }
-
-    .merchant-no {
-      font-size: 26rpx;
-      color: #999;
-    }
-  }
-
-  .icon {
-    font-size: 32rpx;
-    color: #ccc;
-  }
-}
-
-.loading-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
   justify-content: center;
-  align-items: center;
-  z-index: 999;
+  padding: 40rpx;
+
+  .empty-text {
+    font-size: 28rpx;
+    color: #999;
+  }
 }
 </style>

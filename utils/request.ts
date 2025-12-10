@@ -135,7 +135,7 @@ function handleHttpError(statusCode: number, url: string): void {
       duration: 2000,
       success: () => {
         setTimeout(() => {
-          uni.reLaunch({ url: '/pages/login/login' })
+          uni.reLaunch({ url: '/pages/login/index' })
         }, 2000)
       }
     })
@@ -171,7 +171,7 @@ function handleBusinessError(code: number, message: string, url: string): void {
       duration: 2000,
       success: () => {
         setTimeout(() => {
-          uni.reLaunch({ url: '/pages/login/login' })
+          uni.reLaunch({ url: '/pages/login/index' })
         }, 2000)
       }
     })

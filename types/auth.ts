@@ -44,6 +44,10 @@ export interface MerchantRegisterDTO {
   nickname?: string
   /** 微信头像URL */
   avatarUrl?: string
+  /** 地址ID */
+  addressId?: number
+  /** 详细地址 */
+  addressDetail?: string
 }
 
 /**
