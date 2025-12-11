@@ -10,6 +10,34 @@ import type { LoginVO, UserInfoVO } from '@/types/auth'
 import type { IdentityType } from '@/enums'
 
 /**
+ * 获取微信登录 code
+ */
+export const getWechatCode = async (): Promise<string> => {
+  const loginRes = await new Promise<any>((resolve, reject) => {
+    uni.login({
+      provider: 'weixin',
+      success: (res: any) => {
+        console.log('[Login] 微信登录成功:', res)
+        resolve(res)
+      },
+      fail: (err: any) => {
+        console.error('[Login] 微信登录失败:', err)
+        reject(new Error('微信登录失败，请检查微信配置'))
+      }
+    })
+  })
+
+  const code = loginRes.code
+
+  if (!code) {
+    throw new Error('获取微信登录凭证失败')
+  }
+
+  console.log('[Login] 获取到微信 code')
+  return code
+}
+
+/**
  * 微信登录 Composable
  */
 export const useWechatLogin = () => {
@@ -27,27 +55,9 @@ export const useWechatLogin = () => {
       // 1. 调用微信登录获取 code
       console.log('[Login] 开始微信登录，身份类型:', identityType)
       
-      const loginRes = await new Promise<any>((resolve, reject) => {
-        uni.login({
-          provider: 'weixin',
-          success: (res: any) => {
-            console.log('[Login] 微信登录成功:', res)
-            resolve(res)
-          },
-          fail: (err: any) => {
-            console.error('[Login] 微信登录失败:', err)
-            reject(new Error('微信登录失败，请检查微信配置'))
-          }
-        })
-      })
+      const code = await getWechatCode()
 
-      const code = loginRes.code
-
-      if (!code) {
-        throw new Error('获取微信登录凭证失败')
-      }
-
-      console.log('[Login] 获取到微信 code，准备调用后端接口')
+      console.log('[Login] 准备调用后端接口')
 
       // 2. 调用后端登录接口
       const response = await wechatLogin({

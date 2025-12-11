@@ -7,9 +7,9 @@
 
 import { ref, reactive, onMounted } from 'vue'
 import { customerWechatRegister } from '@/api/modules/auth'
-import { listAddresses, listAddressesByParent } from '@/api/modules/address'
 import { useUserStore } from '@/stores/modules/user'
-import type { AddressVO } from '@/types/address'
+import AddressSelector from '@/components/AddressSelector.vue'
+import { getWechatCode } from '@/composables/useWechatLogin'
 
 // 使用 uni 的 showToast 替代 WOT-UI 的 useToast
 const showToast = (message: string, type: 'success' | 'error' | 'warning' = 'error') => {
@@ -45,17 +45,7 @@ const form = reactive<CustomerForm>({
 
 // ==================== 地址选择 ====================
 
-const provinces = ref<AddressVO[]>([])
-const cities = ref<AddressVO[]>([])
-const districts = ref<AddressVO[]>([])
-
-const selectedProvince = ref<number | null>(null)
-const selectedCity = ref<number | null>(null)
-const selectedDistrict = ref<number | null>(null)
-
-const showProvincePicke = ref(false)
-const showCityPicker = ref(false)
-const showDistrictPicker = ref(false)
+const selectedAddressIds = ref<number[]>([])
 
 // ==================== 性别选择 ====================
 
@@ -73,48 +63,19 @@ const loading = ref(false)
 // ==================== 初始化 ====================
 
 onMounted(async () => {
-  await loadProvinces()
+  // 地址选择器组件自动加载数据
 })
 
-// ==================== 地址加载 ====================
+// ==================== 地址选择处理 ====================
 
 /**
- * 加载省份列表
+ * 处理地址选择变化
  */
-const loadProvinces = async () => {
-  try {
-    provinces.value = await listAddresses({ level: 1 })
-  } catch (error) {
-    console.error('[Customer Register] 加载省份失败:', error)
-    Toast.error('加载地址失败')
-  }
-}
-
-/**
- * 加载城市列表
- */
-const loadCities = async (provinceId: number) => {
-  try {
-    cities.value = await listAddressesByParent(provinceId)
-    selectedCity.value = null
-    selectedDistrict.value = null
-    districts.value = []
-  } catch (error) {
-    console.error('[Customer Register] 加载城市失败:', error)
-    Toast.error('加载城市失败')
-  }
-}
-
-/**
- * 加载区县列表
- */
-const loadDistricts = async (cityId: number) => {
-  try {
-    districts.value = await listAddressesByParent(cityId)
-    selectedDistrict.value = null
-  } catch (error) {
-    console.error('[Customer Register] 加载区县失败:', error)
-    Toast.error('加载区县失败')
+const handleAddressChange = (addressIds: number[]) => {
+  selectedAddressIds.value = addressIds
+  if (addressIds.length > 0) {
+    // 将最后一个ID作为地址ID
+    form.addressId = addressIds[addressIds.length - 1]
   }
 }
 
@@ -136,7 +97,7 @@ const validateForm = (): boolean => {
     showToast('请输入客户姓名')
     return false
   }
-  if (!selectedDistrict.value) {
+  if (!form.addressId) {
     showToast('请选择地址')
     return false
   }
@@ -165,14 +126,17 @@ const handleRegister = async () => {
   try {
     loading.value = true
 
+    // 获取微信 code
+    const code = await getWechatCode()
+
     // 调用注册接口
     const response = await customerWechatRegister({
-      code: '', // 从微信登录流程中获取，这里暂时为空
+      code,
       phone: form.phone,
       customerName: form.customerName,
       gender: form.gender ? parseInt(form.gender) : undefined,
       age: form.age,
-      addressId: selectedDistrict.value!,
+      addressId: form.addressId!,
       addressDetail: form.addressDetail,
       inviteCode: form.inviteCode
     })
@@ -262,63 +226,18 @@ const handleRegister = async () => {
       <!-- 地址选择 -->
       <view class="address-section">
         <text class="section-title">地址选择</text>
-
-        <wd-cell-group border>
-          <!-- 省份 -->
-          <wd-cell
-            title="省份"
-            :value="provinces.find(p => p.id === selectedProvince)?.name || '请选择'"
-            is-link
-            @click="showProvincePicke = true"
-          />
-
-          <!-- 城市 -->
-          <wd-cell
-            title="城市"
-            :value="cities.find(c => c.id === selectedCity)?.name || '请选择'"
-            is-link
-            :clickable="!!selectedProvince"
-            @click="selectedProvince && (showCityPicker = true)"
-          />
-
-          <!-- 区县 -->
-          <wd-cell
-            title="区县"
-            :value="districts.find(d => d.id === selectedDistrict)?.name || '请选择'"
-            is-link
-            :clickable="!!selectedCity"
-            @click="selectedCity && (showDistrictPicker = true)"
-          />
-        </wd-cell-group>
-
-        <!-- 地址选择器 -->
-        <wd-picker
-          v-model="selectedProvince"
-          :columns="provinces.map(p => ({ label: p.name, value: p.id }))"
-          v-model:visible="showProvincePicke"
-          @confirm="loadCities(selectedProvince!)"
-        />
-
-        <wd-picker
-          v-model="selectedCity"
-          :columns="cities.map(c => ({ label: c.name, value: c.id }))"
-          v-model:visible="showCityPicker"
-          @confirm="loadDistricts(selectedCity!)"
-        />
-
-        <wd-picker
-          v-model="selectedDistrict"
-          :columns="districts.map(d => ({ label: d.name, value: d.id }))"
-          v-model:visible="showDistrictPicker"
-        />
-
-        <!-- 性别选择器 -->
-        <wd-picker
-          v-model="form.gender"
-          :columns="genderOptions"
-          v-model:visible="showGenderPicker"
+        <AddressSelector 
+          v-model="selectedAddressIds"
+          @change="handleAddressChange"
         />
       </view>
+
+      <!-- 性别选择器 -->
+      <wd-picker
+        v-model="form.gender"
+        :columns="genderOptions"
+        v-model:visible="showGenderPicker"
+      />
 
       <!-- 详细地址 -->
       <view class="detail-section">

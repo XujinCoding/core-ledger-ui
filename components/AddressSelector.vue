@@ -41,7 +41,7 @@ onMounted(async () => {
 })
 
 // 监听父组件传递的值变化
-watch(() => props.modelValue, async (newVal) => {
+watch(() => props.modelValue, async (newVal: number[]) => {
 	if (newVal && newVal.length > 0 && JSON.stringify(newVal) !== JSON.stringify(value.value)) {
 		await initAddressDisplay()
 	}

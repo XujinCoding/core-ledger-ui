@@ -5,14 +5,11 @@
  * @since 1.0.0
  */
 
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive } from 'vue'
 import { merchantWechatRegister } from '@/api/modules/auth'
-import { listAddresses, listAddressesByParent } from '@/api/modules/address'
 import { useUserStore } from '@/stores/modules/user'
-import type { AddressVO } from '@/types/address'
-import { AddressSelector } from '@/components/AddressSelector.vue'
-import { useWechatLogin } from '@/composables/useWechatLogin'
-
+import AddressSelector from '@/components/AddressSelector.vue'
+import { useWechatLogin, getWechatCode } from '@/composables/useWechatLogin'
 
 const { handleLoginResponse } = useWechatLogin()
 
@@ -45,6 +42,21 @@ const form = reactive<MerchantForm>({
   addressId: null,
   addressDetail: ''
 })
+
+// ==================== 地址选择 ====================
+
+const selectedAddressIds = ref<number[]>([])
+
+/**
+ * 处理地址选择变化
+ */
+const handleAddressChange = (addressIds: number[]) => {
+  selectedAddressIds.value = addressIds
+  if (addressIds.length > 0) {
+    // 将最后一个ID作为地址ID
+    form.addressId = addressIds[addressIds.length - 1]
+  }
+}
 
 // ==================== 其他状态 ====================
 
@@ -108,14 +120,17 @@ const handleRegister = async () => {
   try {
     loading.value = true
 
+    // 获取微信 code
+    const code = await getWechatCode()
+
     // 调用注册接口
     const response = await merchantWechatRegister({
-      code: '', // 从微信登录流程中获取，这里暂时为空
+      code,
       phone: form.phone,
       username: form.username,
       password: form.password,
       merchantName: form.merchantName,
-      addressId: 1, // 需要补充选择的地址标识
+      addressId: form.addressId!,
       addressDetail: form.addressDetail
     })
 
@@ -173,9 +188,16 @@ const handleRegister = async () => {
           clearable
           required
         />
-		<AddressSelector></AddressSelector>
       </wd-cell-group>
 
+      <!-- 地址选择 -->
+      <view class="address-section">
+        <text class="section-title">地址选择</text>
+        <AddressSelector 
+          v-model="selectedAddressIds"
+          @change="handleAddressChange"
+        />
+      </view>
 
       <!-- 详细地址 -->
       <view class="detail-section">
