@@ -94,10 +94,16 @@ export const useWechatLogin = () => {
       uni.setStorageSync('ACCESS_TOKEN', response.token)
       uni.setStorageSync('USER_INFO', JSON.stringify(response.userInfo))
       uni.setStorageSync('IDENTITY_TYPE', response.userInfo.identityType)
-
-      uni.reLaunch({
-        url: '/pages/home/index'
-      })
+	  // 需要注册，根据 registerType 跳转到对应的注册页面
+      if (response.userInfo.identityType === 1) {
+        uni.reLaunch({
+          url: '/pages/home/merchant/index'
+        })
+      } else if (response.userInfo.identityType === 2) {
+        uni.reLaunch({
+          url: '/pages/home/customer/index'
+        })
+      }
       return
     }
 
