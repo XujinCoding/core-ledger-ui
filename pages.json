@@ -44,9 +44,21 @@
 			}
 		},
 		{
-			"path": "pages/home/index",
+			"path": "pages/home/merchant/index",
 			"style": {
-				"navigationBarTitleText": "首页"
+				"navigationBarTitleText": "商户首页"
+			}
+		},
+		{
+			"path": "pages/home/customer/index",
+			"style": {
+				"navigationBarTitleText": "客户首页"
+			}
+		},
+		{
+			"path": "pages/home/merchant/category/index",
+			"style": {
+				"navigationBarTitleText": "分类管理"
 			}
 		}
 	],
