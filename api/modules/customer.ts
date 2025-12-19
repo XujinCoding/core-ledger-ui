@@ -40,16 +40,23 @@ export const searchCustomers = (
     sort?: string
   }
 ) => {
+  const params: Record<string, any> = {
+    ...(query || {}),
+    ...(page || {})
+  }
+  Object.keys(params).forEach((k) => {
+    const v = params[k]
+    if (v === undefined || v === null || (typeof v === 'string' && v.trim() === '')) {
+      delete params[k]
+    }
+  })
   return request.get<{
     content: CustomerVO[]
     totalElements: number
     totalPages: number
     currentPage: number
     pageSize: number
-  }>('/customers', {
-    ...query,
-    ...page
-  })
+  }>('/customers', params)
 }
 
 /**

@@ -2,7 +2,7 @@
 	"easycom": {
 		"autoscan": true,
 		"custom": {
-			"^wd-(.*)": "wot-design-uni/components/wd-$1/wd-$1.vue"
+			"^wd-(.*)": "@/uni_modules/wot-design-uni/components/wd-$1/wd-$1.vue"
 		}
 	},
 	"pages": [
@@ -56,9 +56,15 @@
 			}
 		},
 		{
-			"path": "pages/home/merchant/category/index",
+			"path": "pages/home/merchant/customer-detail",
 			"style": {
-				"navigationBarTitleText": "分类管理"
+				"navigationBarTitleText": "客户详情"
+			}
+		},
+		{
+			"path": "pages/home/merchant/ledger-by-customer",
+			"style": {
+				"navigationBarTitleText": "客户账单"
 			}
 		}
 	],
