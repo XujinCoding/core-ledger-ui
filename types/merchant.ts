@@ -16,6 +16,10 @@ export interface CreateCustomerDTO {
   customerName: string
   /** 手机号 */
   phone: string
+  /** 地址ID（推荐使用） */
+  addressId?: number
+  /** 详细地址 */
+  addressDetail?: string
   /** 详细地址 */
   address?: string
   /** 性别 */

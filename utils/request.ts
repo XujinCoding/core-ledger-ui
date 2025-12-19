@@ -207,11 +207,16 @@ function requestInterceptor(config: RequestConfig): RequestConfig {
   config.header['X-Request-ID'] = generateRequestId()
   
   // GET请求添加时间戳防止缓存
-  if (config.method === 'GET' && config.data) {
-    config.data = {
-      ...config.data,
-      _t: Date.now()
-    }
+  if (config.method === 'GET') {
+    const params: Record<string, any> = { ...(config.data || {}) }
+    Object.keys(params).forEach((k) => {
+      const v = params[k]
+      if (v === undefined || v === null || (typeof v === 'string' && v.trim() === '')) {
+        delete params[k]
+      }
+    })
+    params._t = Date.now()
+    config.data = params
   }
   
   // 开发环境打印请求日志
