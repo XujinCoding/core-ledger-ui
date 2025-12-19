@@ -42,6 +42,18 @@
 			"style": {
 				"navigationBarTitleText": "商户注册"
 			}
+		},
+		{
+			"path": "pages/home/customer/index",
+			"style": {
+				"navigationBarTitleText": ""
+			}
+		},
+		{
+			"path": "pages/home/merchant/index",
+			"style": {
+				"navigationBarTitleText": ""
+			}
 		}
 	],
 	"globalStyle": {
