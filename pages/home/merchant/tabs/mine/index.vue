@@ -1,13 +1,32 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, computed } from 'vue'
+import { getCurrentUser } from '@/api/modules/auth'
+import type { UserInfoVO } from '@/types/auth'
 
 const refreshing = ref(false)
+const user = ref<UserInfoVO | null>(null)
+
+const load = async () => {
+  try {
+    const info = await getCurrentUser()
+    user.value = info
+  } finally {
+    refreshing.value = false
+  }
+}
 
 const onRefresh = async () => {
   refreshing.value = true
-  // TODO: 加载“我的”数据
-  refreshing.value = false
+  await load()
 }
+
+onMounted(() => {
+  load()
+})
+
+const merchantName = computed(() => user.value?.name || '商户')
+const merchantCode = computed(() => (user.value?.code ? `编号：${user.value.code}` : ''))
+const phone = computed(() => user.value?.phone || '-')
 </script>
 
 <template>
@@ -18,9 +37,10 @@ const onRefresh = async () => {
     :refresher-triggered="refreshing"
     @refresherrefresh="onRefresh"
   >
-    <view class="placeholder">
+    <view class="section">
       <wd-cell-group border>
-        <wd-cell title="我的" label="我的页内容开发中" />
+        <wd-cell :title="merchantName" :label="merchantCode" />
+        <wd-cell title="联系方式" :value="phone" />
       </wd-cell-group>
     </view>
   </scroll-view>
@@ -28,7 +48,7 @@ const onRefresh = async () => {
 
 <style lang="scss" scoped>
 .tab-scroll { height: 100%; }
-.placeholder :deep(.wd-cell-group) {
+.section :deep(.wd-cell-group) {
   margin: 16rpx;
   border-radius: 12rpx;
   overflow: hidden;

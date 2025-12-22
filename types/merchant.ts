@@ -14,6 +14,8 @@ export interface CreateCustomerDTO {
   merchantId: number
   /** 客户姓名 */
   customerName: string
+  /** 客户别名 */
+  alias?: string
   /** 手机号 */
   phone: string
   /** 地址ID（推荐使用） */

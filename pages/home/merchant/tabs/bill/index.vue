@@ -1,32 +1,13 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
-import { getCurrentUser } from '@/api/modules/auth'
-import type { UserInfoVO } from '@/types/auth'
+import { ref } from 'vue'
 
 const refreshing = ref(false)
-const user = ref<UserInfoVO | null>(null)
-
-const load = async () => {
-  try {
-    const info = await getCurrentUser()
-    user.value = info
-  } finally {
-    refreshing.value = false
-  }
-}
 
 const onRefresh = async () => {
   refreshing.value = true
-  await load()
+  // TODO: 加载“账单”数据
+  refreshing.value = false
 }
-
-onMounted(() => {
-  load()
-})
-
-const merchantName = computed(() => user.value?.name || '商户')
-const merchantCode = computed(() => (user.value?.code ? `编号：${user.value.code}` : ''))
-const phone = computed(() => user.value?.phone || '-')
 </script>
 
 <template>
@@ -37,10 +18,9 @@ const phone = computed(() => user.value?.phone || '-')
     :refresher-triggered="refreshing"
     @refresherrefresh="onRefresh"
   >
-    <view class="section">
+    <view class="placeholder">
       <wd-cell-group border>
-        <wd-cell :title="merchantName" :label="merchantCode" />
-        <wd-cell title="联系方式" :value="phone" />
+        <wd-cell title="账单" label="账单页内容开发中" />
       </wd-cell-group>
     </view>
   </scroll-view>
@@ -48,7 +28,7 @@ const phone = computed(() => user.value?.phone || '-')
 
 <style lang="scss" scoped>
 .tab-scroll { height: 100%; }
-.section :deep(.wd-cell-group) {
+.placeholder :deep(.wd-cell-group) {
   margin: 16rpx;
   border-radius: 12rpx;
   overflow: hidden;
