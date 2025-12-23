@@ -51,3 +51,29 @@ export interface MerchantVO {
   /** 更新时间 */
   updateTime?: string
 }
+
+/**
+ * 商户本月统计VO
+ */
+export interface MerchantStatsVO {
+  /** 本月销售额 */
+  monthlySales: number
+  /** 待收款金额 */
+  pendingAmount: number
+  /** 本月订单数 */
+  monthlyOrders: number
+}
+
+/**
+ * 今日汇总统计VO
+ */
+export interface TodayStatsVO {
+  /** 今日销售额 */
+  sales: number
+  /** 今日已收款 */
+  payment: number
+  /** 今日新增欠款 */
+  debt: number
+  /** 今日订单数 */
+  orders: number
+}

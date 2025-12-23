@@ -7,36 +7,51 @@
 
 import { ref, onMounted } from 'vue'
 import { queryInProgressLedgers } from '@/api/modules/ledger'
+import { getMerchantStats, getTodayStats } from '@/api/modules/merchant'
 import { useNavbarSafeArea } from '@/composables/useNavbarSafeArea'
+import { useUserStore } from '@/stores/modules/user'
 import type { LedgerListVO } from '@/types/ledger'
+import type { MerchantStatsVO, TodayStatsVO } from '@/types/merchant'
 
 // ==================== 数据状态 ====================
 
 const refreshing = ref(false)
 const loading = ref(false)
 
+// 用户状态
+const userStore = useUserStore()
+
 // 导航栏安全区域
 const { headerStyle, headerContentStyle } = useNavbarSafeArea()
 
-// 店铺信息 - TODO: 从接口获取
+// 店铺信息 - 从 storage 获取
 const storeInfo = ref({
-  name: '张记杂货铺',
+  name: '',
   avatar: ''
 })
 
-// 销售统计 - TODO: 从接口获取 merchant.getMerchantStats()
-const stats = ref({
-  monthlySales: 12580,
-  pendingAmount: 3200,
-  monthlyOrders: 156
+/**
+ * 初始化店铺信息
+ */
+const initStoreInfo = () => {
+  // 从 userStore 获取商户名称
+  userStore.initializeFromStorage()
+  storeInfo.value.name = userStore.userInfo?.name || '我的店铺'
+}
+
+// 销售统计
+const stats = ref<MerchantStatsVO>({
+  monthlySales: 0,
+  pendingAmount: 0,
+  monthlyOrders: 0
 })
 
-// 今日汇总 - TODO: 从接口获取 merchant.getTodayStats()
-const todayStats = ref({
-  sales: 1280,
-  payment: 580,
-  debt: 700,
-  orders: 8
+// 今日汇总
+const todayStats = ref<TodayStatsVO>({
+  sales: 0,
+  payment: 0,
+  debt: 0,
+  orders: 0
 })
 
 // 进行中账单列表
@@ -57,12 +72,45 @@ const loadInProgressLedgers = async () => {
 }
 
 /**
+ * 加载商户统计数据
+ */
+const loadMerchantStats = async () => {
+  const merchantId = userStore.userInfo?.id
+  if (!merchantId) return
+  
+  try {
+    const res = await getMerchantStats(merchantId)
+    stats.value = res
+  } catch (error) {
+    console.error('加载商户统计失败:', error)
+  }
+}
+
+/**
+ * 加载今日汇总数据
+ */
+const loadTodayStats = async () => {
+  const merchantId = userStore.userInfo?.id
+  if (!merchantId) return
+  
+  try {
+    const res = await getTodayStats(merchantId)
+    todayStats.value = res
+  } catch (error) {
+    console.error('加载今日汇总失败:', error)
+  }
+}
+
+/**
  * 刷新数据
  */
 const onRefresh = async () => {
   refreshing.value = true
-  await loadInProgressLedgers()
-  // TODO: 刷新统计数据
+  await Promise.all([
+    loadInProgressLedgers(),
+    loadMerchantStats(),
+    loadTodayStats()
+  ])
   refreshing.value = false
 }
 
@@ -113,7 +161,10 @@ const getStatusText = (status: string) => {
 // ==================== 生命周期 ====================
 
 onMounted(() => {
+  initStoreInfo()
   loadInProgressLedgers()
+  loadMerchantStats()
+  loadTodayStats()
 })
 </script>
 
