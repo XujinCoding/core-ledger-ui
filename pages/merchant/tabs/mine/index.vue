@@ -165,9 +165,8 @@ const handleLogout = () => {
     content: '确定要退出登录吗？',
     success: (res) => {
       if (res.confirm) {
-        uni.removeStorageSync('token')
-        uni.removeStorageSync('userInfo')
-        uni.reLaunch({ url: '/pages/login/index' })
+        // 使用 userStore 的 logout 方法清除所有数据
+        userStore.logout()
       }
     }
   })
