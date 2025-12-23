@@ -5,7 +5,7 @@
  * @since 1.0.0
  */
 
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { queryInProgressLedgers } from '@/api/modules/ledger'
 import { getMerchantStats, getTodayStats } from '@/api/modules/merchant'
 import { useNavbarSafeArea } from '@/composables/useNavbarSafeArea'
@@ -160,11 +160,29 @@ const getStatusText = (status: string) => {
 
 // ==================== 生命周期 ====================
 
+/**
+ * 商户切换事件处理
+ */
+const handleMerchantChanged = () => {
+  console.log('[Home] 商户已切换，刷新首页数据')
+  initStoreInfo()
+  loadInProgressLedgers()
+  loadMerchantStats()
+  loadTodayStats()
+}
+
 onMounted(() => {
   initStoreInfo()
   loadInProgressLedgers()
   loadMerchantStats()
   loadTodayStats()
+  // 监听商户切换事件
+  uni.$on('merchant-changed', handleMerchantChanged)
+})
+
+onUnmounted(() => {
+  // 移除事件监听，避免内存泄漏
+  uni.$off('merchant-changed', handleMerchantChanged)
 })
 </script>
 

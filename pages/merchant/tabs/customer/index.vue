@@ -5,7 +5,7 @@
  * @since 1.0.0
  */
 
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { searchCustomers } from '@/api/modules/customer'
 import { useNavbarSafeArea } from '@/composables/useNavbarSafeArea'
 import type { CustomerVO } from '@/types/customer'
@@ -109,8 +109,23 @@ const addCustomer = () => {
 
 // ==================== 生命周期 ====================
 
+/**
+ * 商户切换事件处理
+ */
+const handleMerchantChanged = () => {
+  console.log('[Customer] 商户已切换，刷新客户列表')
+  loadCustomers(true)
+}
+
 onMounted(() => {
   loadCustomers(true)
+  // 监听商户切换事件
+  uni.$on('merchant-changed', handleMerchantChanged)
+})
+
+onUnmounted(() => {
+  // 移除事件监听，避免内存泄漏
+  uni.$off('merchant-changed', handleMerchantChanged)
 })
 </script>
 

@@ -5,7 +5,7 @@
  * @since 1.0.0
  */
 
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { queryLedgers } from '@/api/modules/ledger'
 import { useNavbarSafeArea } from '@/composables/useNavbarSafeArea'
 import type { LedgerListVO } from '@/types/ledger'
@@ -184,6 +184,14 @@ const getStatusClass = (status: string) => {
 
 // ==================== 生命周期 ====================
 
+/**
+ * 商户切换事件处理
+ */
+const handleMerchantChanged = () => {
+  console.log('[Ledger] 商户已切换，刷新账单列表')
+  loadLedgers(true)
+}
+
 onMounted(() => {
   // 获取路由参数
   const pages = getCurrentPages()
@@ -196,6 +204,13 @@ onMounted(() => {
   
   // 加载数据
   loadLedgers(true)
+  // 监听商户切换事件
+  uni.$on('merchant-changed', handleMerchantChanged)
+})
+
+onUnmounted(() => {
+  // 移除事件监听，避免内存泄漏
+  uni.$off('merchant-changed', handleMerchantChanged)
 })
 </script>
 

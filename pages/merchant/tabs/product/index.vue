@@ -5,7 +5,7 @@
  * @since 1.0.0
  */
 
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { getCategoryTree } from '@/api/modules/category'
 import { useNavbarSafeArea } from '@/composables/useNavbarSafeArea'
 import { listProducts } from '@/api/modules/product'
@@ -192,9 +192,25 @@ const goCategoryManage = () => {
 
 // ==================== 生命周期 ====================
 
+/**
+ * 商户切换事件处理
+ */
+const handleMerchantChanged = () => {
+  console.log('[Product] 商户已切换，刷新商品列表')
+  loadCategories()
+  loadProducts(true)
+}
+
 onMounted(() => {
   loadCategories()
   loadProducts(true)
+  // 监听商户切换事件
+  uni.$on('merchant-changed', handleMerchantChanged)
+})
+
+onUnmounted(() => {
+  // 移除事件监听，避免内存泄漏
+  uni.$off('merchant-changed', handleMerchantChanged)
 })
 </script>
 

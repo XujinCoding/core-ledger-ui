@@ -110,6 +110,13 @@ const switchMerchant = async (id: number) => {
     userStore.setUserInfo(res.userInfo)
     currentMerchantId.value = id
     user.value = res.userInfo
+    
+    // 刷新当前页面统计数据
+    await loadOverview(id)
+    
+    // 发送商户切换事件，通知其他页面刷新数据
+    uni.$emit('merchant-changed', id)
+    
     uni.showToast({ title: '切换成功', icon: 'success' })
   } catch (error) {
     console.error('切换店铺失败:', error)
