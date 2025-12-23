@@ -77,6 +77,33 @@ export const closeLedger = (id: number, data: CloseLedgerDTO) => {
 }
 
 /**
+ * 查询账单列表
+ * @param query 查询条件
+ * @param page 分页参数
+ * @returns 分页账单列表
+ */
+export const queryLedgers = (
+  query?: LedgerQueryDTO,
+  page?: {
+    page?: number
+    size?: number
+    sort?: string
+  }
+) => {
+  return request.get<{
+    content: LedgerListVO[]
+    totalElements: number
+    totalPages: number
+    currentPage: number
+    pageSize: number
+    last: boolean
+  }>('/ledgers', {
+    ...query,
+    ...page
+  })
+}
+
+/**
  * 根据客户查询账单列表
  * @param query 查询条件
  * @param page 分页参数

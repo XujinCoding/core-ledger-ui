@@ -7,65 +7,265 @@
 
 	import { ref } from 'vue'
 	import { useWechatLogin } from '@/composables/useWechatLogin'
-	import { useUserStore } from '@/stores/modules/user'
 	import { IdentityType } from '@/enums'
 
-	const userStore = useUserStore()
 	const { loading, handleWechatLogin, handleLoginResponse } = useWechatLogin()
 
-	// 身份选择
-	const selectedIdentity = ref<number | null>(2)
+	// 身份选择：默认选择商户
+	const selectedIdentity = ref<IdentityType>(IdentityType.MERCHANT_OWNER)
 
-	// 身份选项
-	const identityOptions = [
-		{ label: '商家', value: IdentityType.MERCHANT_OWNER },
-		{ label: '用户', value: IdentityType.CUSTOMER }
-	]
+	/**
+	 * 选择身份
+	 */
+	const selectIdentity = (identity: IdentityType) => {
+	  selectedIdentity.value = identity
+	}
 
 	/**
 	 * 处理登录
 	 */
 	const handleLogin = async () => {
-		if (!selectedIdentity.value) {
-			uni.showToast({
-				title: '请选择身份',
-				icon: 'none',
-				duration: 2000
-			})
-			return
-		}
-
-		const response = await handleWechatLogin(selectedIdentity.value)
-
-		// 处理登录响应（跳转或显示注册/身份选择页面）
-		await handleLoginResponse(response)
+	  const response = await handleWechatLogin(selectedIdentity.value)
+	  // 处理登录响应（跳转或显示注册/身份选择页面）
+	  await handleLoginResponse(response)
 	}
 </script>
 
 <template>
-	<view class="login-page">
-		<view class="content">
-			core_ledger
-		</view>
-		<!-- 登录表单 -->
-		<view class="content">
-			<view class="form-group">
-				<!-- 身份选择 -->
-				<view class="form-item">
-					<view class="identity-selector">
-						<wd-picker :columns="identityOptions" label="选择身份" v-model="selectedIdentity" />
-					</view>
-				</view>
+  <view class="login-page">
+    <!-- Logo区域 -->
+    <view class="login-header">
+      <view class="login-logo">
+        <wd-icon name="notes" size="88rpx" color="#fff" />
+      </view>
+      <view class="login-title">账单管理</view>
+      <view class="login-subtitle">简单高效的商户记账工具</view>
+    </view>
 
-				<!-- 登录按钮 -->
-				<wd-button type="primary" block size="middle" :loading="loading" @click="handleLogin"
-					class="login-button">
-					微信一键登录
-				</wd-button>
-			</view>
-		</view>
-	</view>
+    <!-- 登录内容区 -->
+    <view class="login-content">
+      <!-- 身份选择 -->
+      <view class="identity-section">
+        <view class="identity-title">请选择您的身份</view>
+        <view class="identity-selector">
+          <view
+            class="identity-item"
+            :class="{ active: selectedIdentity === IdentityType.MERCHANT_OWNER, merchant: true }"
+            @tap="selectIdentity(IdentityType.MERCHANT_OWNER)"
+          >
+            <view class="identity-icon">
+              <wd-icon name="shop" size="48rpx" />
+            </view>
+            <view class="identity-name">我是商户</view>
+            <view class="identity-desc">管理店铺和客户账单</view>
+          </view>
+          <view
+            class="identity-item"
+            :class="{ active: selectedIdentity === IdentityType.CUSTOMER, customer: true }"
+            @tap="selectIdentity(IdentityType.CUSTOMER)"
+          >
+            <view class="identity-icon">
+              <wd-icon name="user" size="48rpx" />
+            </view>
+            <view class="identity-name">我是客户</view>
+            <view class="identity-desc">查看我的消费记录</view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 登录按钮区域 -->
+      <view class="login-action">
+        <button class="wechat-btn" :loading="loading" @tap="handleLogin">
+          <text v-if="!loading">微信一键登录</text>
+        </button>
+
+        <view class="agreement">
+          登录即表示同意
+          <text class="link">《用户协议》</text>
+          和
+          <text class="link">《隐私政策》</text>
+        </view>
+
+        <view class="login-tip">
+          <wd-icon name="info-outline" size="28rpx" />
+          <text>首次登录将自动跳转至注册页面</text>
+        </view>
+      </view>
+    </view>
+  </view>
 </template>
 
 <style lang="scss" scoped>
+.login-page {
+  min-height: 100vh;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+}
+
+.login-header {
+  padding: 120rpx 48rpx 100rpx;
+  text-align: center;
+}
+
+.login-logo {
+  width: 176rpx;
+  height: 176rpx;
+  background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+  border-radius: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 48rpx;
+  box-shadow: 0 16rpx 48rpx rgba(59, 130, 246, 0.3);
+}
+
+.login-title {
+  font-size: 52rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 16rpx;
+}
+
+.login-subtitle {
+  font-size: 30rpx;
+  color: #999;
+}
+
+.login-content {
+  flex: 1;
+  padding: 0 48rpx;
+  display: flex;
+  flex-direction: column;
+}
+
+.identity-section {
+  margin-bottom: 64rpx;
+}
+
+.identity-title {
+  font-size: 28rpx;
+  color: #666;
+  margin-bottom: 32rpx;
+  text-align: center;
+}
+
+.identity-selector {
+  display: flex;
+  gap: 32rpx;
+}
+
+.identity-item {
+  flex: 1;
+  padding: 40rpx 32rpx;
+  border: 4rpx solid #e5e5e5;
+  border-radius: 24rpx;
+  text-align: center;
+  transition: all 0.2s;
+
+  &.active {
+    border-color: #3B82F6;
+    background: #EBF5FF;
+  }
+
+  &.active.customer {
+    border-color: #10B981;
+    background: #D1FAE5;
+  }
+}
+
+.identity-icon {
+  width: 104rpx;
+  height: 104rpx;
+  border-radius: 50%;
+  background: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24rpx;
+  color: #999;
+
+  .identity-item.merchant & {
+    color: #3B82F6;
+  }
+
+  .identity-item.customer & {
+    color: #10B981;
+  }
+
+  .identity-item.active.merchant & {
+    background: #3B82F6;
+    color: #fff;
+  }
+
+  .identity-item.active.customer & {
+    background: #10B981;
+    color: #fff;
+  }
+}
+
+.identity-name {
+  font-size: 32rpx;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 8rpx;
+
+  .identity-item.active.merchant & {
+    color: #3B82F6;
+  }
+
+  .identity-item.active.customer & {
+    color: #10B981;
+  }
+}
+
+.identity-desc {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.login-action {
+  margin-top: auto;
+  padding-bottom: 80rpx;
+}
+
+.wechat-btn {
+  width: 100%;
+  height: 100rpx;
+  background: #07C160;
+  color: #fff;
+  font-size: 34rpx;
+  font-weight: 500;
+  border-radius: 50rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+
+  &::after {
+    border: none;
+  }
+}
+
+.agreement {
+  margin-top: 32rpx;
+  font-size: 24rpx;
+  color: #999;
+  text-align: center;
+
+  .link {
+    color: #3B82F6;
+  }
+}
+
+.login-tip {
+  text-align: center;
+  margin-top: 48rpx;
+  font-size: 26rpx;
+  color: #999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+}
 </style>

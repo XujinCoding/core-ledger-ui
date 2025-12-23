@@ -7,21 +7,19 @@
 
 import { ref, reactive } from 'vue'
 import { merchantWechatRegister } from '@/api/modules/auth'
-import { useUserStore } from '@/stores/modules/user'
 import AddressSelector from '@/components/AddressSelector.vue'
 import { useWechatLogin, getWechatCode } from '@/composables/useWechatLogin'
 
 const { handleLoginResponse } = useWechatLogin()
 
-// 使用 uni 的 showToast 替代 WOT-UI 的 useToast
-const showToast = (message: string, type: 'success' | 'error' | 'warning' = 'error') => {
+// 使用 uni 的 showToast
+const showToast = (message: string) => {
   uni.showToast({
     title: message,
-    icon: type === 'success' ? 'success' : 'none',
+    icon: 'none',
     duration: 2000
   })
 }
-const userStore = useUserStore()
 
 // ==================== 表单数据 ====================
 
@@ -29,6 +27,7 @@ interface MerchantForm {
   phone: string
   username: string
   password: string
+  confirmPassword: string
   merchantName: string
   addressId: number | null
   addressDetail: string
@@ -38,6 +37,7 @@ const form = reactive<MerchantForm>({
   phone: '',
   username: '',
   password: '',
+  confirmPassword: '',
   merchantName: '',
   addressId: null,
   addressDetail: ''
@@ -53,7 +53,6 @@ const selectedAddressIds = ref<number[]>([])
 const handleAddressChange = (addressIds: number[]) => {
   selectedAddressIds.value = addressIds
   if (addressIds.length > 0) {
-    // 将最后一个ID作为地址ID
     form.addressId = addressIds[addressIds.length - 1]
   }
 }
@@ -61,18 +60,15 @@ const handleAddressChange = (addressIds: number[]) => {
 // ==================== 其他状态 ====================
 
 const loading = ref(false)
+
 // ==================== 验证 ====================
 
 /**
  * 验证表单
  */
 const validateForm = (): boolean => {
-  if (!form.phone) {
-    showToast('请输入手机号')
-    return false
-  }
-  if (!/^1[3-9]\d{9}$/.test(form.phone)) {
-    showToast('手机号格式不正确')
+  if (!form.merchantName) {
+    showToast('请输入店铺名称')
     return false
   }
   if (!form.username) {
@@ -83,6 +79,14 @@ const validateForm = (): boolean => {
     showToast('用户名长度应为3-20个字符')
     return false
   }
+  if (!form.phone) {
+    showToast('请输入手机号')
+    return false
+  }
+  if (!/^1[3-9]\d{9}$/.test(form.phone)) {
+    showToast('手机号格式不正确')
+    return false
+  }
   if (!form.password) {
     showToast('请输入密码')
     return false
@@ -91,19 +95,14 @@ const validateForm = (): boolean => {
     showToast('密码长度应为6-20个字符')
     return false
   }
-  if (!form.merchantName) {
-    showToast('请输入商户名称')
+  if (form.password !== form.confirmPassword) {
+    showToast('两次输入的密码不一致')
     return false
   }
   if (!form.addressId) {
-    showToast('请选择地址')
+    showToast('请选择所在地区')
     return false
   }
-  if (!form.addressDetail) {
-    showToast('请输入详细地址')
-    return false
-  }
-
   return true
 }
 
@@ -119,11 +118,7 @@ const handleRegister = async () => {
 
   try {
     loading.value = true
-
-    // 获取微信 code
     const code = await getWechatCode()
-
-    // 调用注册接口
     const response = await merchantWechatRegister({
       code,
       phone: form.phone,
@@ -133,9 +128,7 @@ const handleRegister = async () => {
       addressId: form.addressId!,
       addressDetail: form.addressDetail
     })
-
-	await handleLoginResponse(response)
-
+    await handleLoginResponse(response)
   } catch (error) {
     console.error('[Merchant Register] 注册失败:', error)
     showToast('注册失败，请重试')
@@ -146,148 +139,303 @@ const handleRegister = async () => {
 </script>
 
 <template>
-  <view class="merchant-register-page">
+  <view class="register-page">
+    <!-- 头部 -->
+    <view class="register-header">
+      <view class="register-icon">
+        <wd-icon name="shop" size="56rpx" color="#fff" />
+      </view>
+      <view class="register-title">注册成为商户</view>
+      <view class="register-subtitle">开启您的智能记账之旅</view>
+    </view>
+
     <!-- 表单内容 -->
-    <view class="content">
-      <wd-cell-group border>
-        <!-- 手机号 -->
-        <wd-input
-          v-model="form.phone"
-          label="手机号"
-          placeholder="请输入手机号"
-          type="number"
-          clearable
-          required
-        />
-
-        <!-- 用户名 -->
-        <wd-input
-          v-model="form.username"
-          label="用户名"
-          placeholder="请输入用户名"
-          clearable
-          required
-        />
-
-        <!-- 密码 -->
-        <wd-input
-          v-model="form.password"
-          label="密码"
-          placeholder="请输入密码"
-          show-password
-          clearable
-          required
-        >
-        </wd-input>
-
-        <!-- 商户名称 -->
-        <wd-input
-          v-model="form.merchantName"
-          label="商户名称"
-          placeholder="请输入商户名称"
-          clearable
-          required
-        />
-      </wd-cell-group>
-
-      <!-- 地址选择 -->
-      <view class="address-section">
-        <text class="section-title">地址选择</text>
-        <AddressSelector 
-          v-model="selectedAddressIds"
-          @change="handleAddressChange"
-        />
+    <view class="page-content">
+      <!-- 微信账号信息 -->
+      <view class="form-section">
+        <view class="section-title">
+          <wd-icon name="user" size="32rpx" color="#3B82F6" />
+          <text>微信账号</text>
+        </view>
+        <view class="wechat-info">
+          <view class="wechat-avatar">
+            <wd-icon name="user" size="40rpx" color="#fff" />
+          </view>
+          <view class="wechat-detail">
+            <view class="wechat-name">微信用户</view>
+            <view class="wechat-status">
+              <wd-icon name="check-outline" size="24rpx" color="#10B981" />
+              <text>已授权</text>
+            </view>
+          </view>
+        </view>
       </view>
 
-      <!-- 详细地址 -->
-      <view class="detail-section">
-        <wd-cell-group border>
-          <wd-textarea
-            v-model="form.addressDetail"
-            label="详细地址"
-            placeholder="请输入详细地址"
-            :maxlength="200"
-            show-word-limit
-            required
+      <!-- 店铺信息 -->
+      <view class="form-section">
+        <view class="section-title">
+          <wd-icon name="shop" size="32rpx" color="#3B82F6" />
+          <text>店铺信息</text>
+        </view>
+        <view class="form-group">
+          <view class="form-label">店铺名称 <text class="required">*</text></view>
+          <input
+            class="form-input"
+            v-model="form.merchantName"
+            placeholder="请输入店铺名称"
+            placeholder-class="placeholder"
           />
-        </wd-cell-group>
+          <view class="form-tip">店铺名称将展示给您的客户</view>
+        </view>
+      </view>
+
+      <!-- 账号信息 -->
+      <view class="form-section">
+        <view class="section-title">
+          <wd-icon name="user" size="32rpx" color="#3B82F6" />
+          <text>账号信息</text>
+        </view>
+        <view class="form-group">
+          <view class="form-label">用户名 <text class="required">*</text></view>
+          <input
+            class="form-input"
+            v-model="form.username"
+            placeholder="请输入用户名（用于后台登录）"
+            placeholder-class="placeholder"
+          />
+        </view>
+        <view class="form-group">
+          <view class="form-label">手机号 <text class="required">*</text></view>
+          <input
+            class="form-input"
+            v-model="form.phone"
+            type="number"
+            placeholder="请输入手机号"
+            placeholder-class="placeholder"
+            maxlength="11"
+          />
+        </view>
+        <view class="form-group">
+          <view class="form-label">登录密码 <text class="required">*</text></view>
+          <input
+            class="form-input"
+            v-model="form.password"
+            password
+            placeholder="请设置6-20位登录密码"
+            placeholder-class="placeholder"
+          />
+        </view>
+        <view class="form-group">
+          <view class="form-label">确认密码 <text class="required">*</text></view>
+          <input
+            class="form-input"
+            v-model="form.confirmPassword"
+            password
+            placeholder="请再次输入密码"
+            placeholder-class="placeholder"
+          />
+        </view>
+      </view>
+
+      <!-- 地址信息 -->
+      <view class="form-section">
+        <view class="section-title">
+          <wd-icon name="location" size="32rpx" color="#3B82F6" />
+          <text>地址信息</text>
+        </view>
+        <view class="form-group">
+          <view class="form-label">所在地区 <text class="required">*</text></view>
+          <AddressSelector 
+            v-model="selectedAddressIds"
+            @change="handleAddressChange"
+          />
+        </view>
+        <view class="form-group">
+          <view class="form-label">详细地址</view>
+          <input
+            class="form-input"
+            v-model="form.addressDetail"
+            placeholder="街道、门牌号等详细地址（选填）"
+            placeholder-class="placeholder"
+          />
+        </view>
       </view>
     </view>
 
     <!-- 底部按钮 -->
-    <view class="footer">
-      <wd-button
-        type="primary"
-        block
-        size="large"
-        :loading="loading"
-        @click="handleRegister"
-      >
-        注册
-      </wd-button>
+    <view class="footer-btns">
+      <button class="btn-primary" :loading="loading" @tap="handleRegister">
+        完成注册
+      </button>
     </view>
   </view>
 </template>
 
 <style lang="scss" scoped>
-.merchant-register-page {
-  display: flex;
-  flex-direction: column;
+.register-page {
   min-height: 100vh;
-  background-color: #f5f5f5;
+  background: #f5f5f5;
+  padding-bottom: 160rpx;
 }
 
-.header {
-  flex: 0 0 auto;
-  padding: 40rpx;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-
-  .title {
-    font-size: 36rpx;
-    font-weight: bold;
-  }
+.register-header {
+  background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+  padding: 48rpx 32rpx;
+  color: #fff;
+  text-align: center;
 }
 
-.content {
+.register-icon {
+  width: 128rpx;
+  height: 128rpx;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24rpx;
+}
+
+.register-title {
+  font-size: 40rpx;
+  font-weight: 600;
+  margin-bottom: 8rpx;
+}
+
+.register-subtitle {
+  font-size: 26rpx;
+  opacity: 0.8;
+}
+
+.page-content {
+  padding: 32rpx;
+}
+
+.form-section {
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 32rpx;
+  margin-bottom: 24rpx;
+}
+
+.section-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 32rpx;
+  padding-bottom: 24rpx;
+  border-bottom: 2rpx solid #f5f5f5;
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.wechat-info {
+  background: #f0fdf4;
+  border: 2rpx solid #bbf7d0;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+}
+
+.wechat-avatar {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 50%;
+  background: #10B981;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wechat-detail {
   flex: 1;
-  padding: 20rpx;
-  overflow-y: auto;
-
-  :deep(.wd-cell-group) {
-    margin-bottom: 20rpx;
-    background: white;
-    border-radius: 8rpx;
-  }
 }
 
-.address-section {
-  margin-bottom: 20rpx;
-
-  .section-title {
-    display: block;
-    padding: 20rpx;
-    font-size: 28rpx;
-    font-weight: bold;
-    color: #333;
-  }
+.wechat-name {
+  font-size: 30rpx;
+  color: #333;
+  font-weight: 500;
 }
 
-.detail-section {
-  margin-bottom: 20rpx;
-}
-
-.password-toggle {
+.wechat-status {
   font-size: 24rpx;
-  color: #667eea;
-  cursor: pointer;
-  padding: 0 10rpx;
+  color: #10B981;
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  margin-top: 4rpx;
 }
 
-.footer {
-  flex: 0 0 auto;
-  padding: 20rpx;
-  background: white;
-  border-top: 1rpx solid #eee;
+.form-group {
+  margin-bottom: 32rpx;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.form-label {
+  font-size: 28rpx;
+  color: #333;
+  margin-bottom: 16rpx;
+  font-weight: 500;
+}
+
+.required {
+  color: #EF4444;
+}
+
+.form-input {
+  width: 100%;
+  height: 88rpx;
+  background: #f9fafb;
+  border: 2rpx solid #e5e5e5;
+  border-radius: 16rpx;
+  padding: 0 24rpx;
+  font-size: 30rpx;
+  color: #333;
+  box-sizing: border-box;
+}
+
+.placeholder {
+  color: #999;
+}
+
+.form-tip {
+  font-size: 24rpx;
+  color: #999;
+  margin-top: 12rpx;
+}
+
+.footer-btns {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 24rpx 32rpx;
+  padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
+  background: #fff;
+  box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.05);
+}
+
+.btn-primary {
+  width: 100%;
+  height: 96rpx;
+  background: #3B82F6;
+  color: #fff;
+  font-size: 32rpx;
+  font-weight: 500;
+  border-radius: 48rpx;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &::after {
+    border: none;
+  }
 }
 </style>

@@ -28,6 +28,8 @@ export interface CustomerVO {
   customerType?: CustomerType
   /** 地址ID */
   addressId?: number
+  /** 地址路径 (省/市/区) */
+  addressPath?: string
   /** 详细地址 */
   addressDetail?: string
   /** 商户ID */
@@ -41,9 +43,9 @@ export interface CustomerVO {
   /** 是否已注册 */
   isRegistered?: boolean
   /** 创建时间 */
-  createTime?: string
+  createInstant?: string
   /** 更新时间 */
-  updateTime?: string
+  modifyInstant?: string
 }
 
 /**
@@ -78,4 +80,16 @@ export interface CustomerUpdateDTO {
   addressId?: number
   /** 详细地址 */
   addressDetail?: string
+}
+
+/**
+ * 客户统计信息VO
+ */
+export interface CustomerStatsVO {
+  /** 总消费金额 */
+  totalAmount: number
+  /** 订单数量 */
+  orderCount: number
+  /** 平均消费金额 */
+  avgAmount: number
 }

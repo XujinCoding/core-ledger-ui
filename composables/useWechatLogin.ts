@@ -90,18 +90,18 @@ export const useWechatLogin = () => {
 
     // 第一步：检查是否有 token（认证成功的标志）
     if (response.token) {
-      // ✅ 认证成功，直接进入首页
+      // 认证成功，直接进入首页
       uni.setStorageSync('ACCESS_TOKEN', response.token)
       uni.setStorageSync('USER_INFO', JSON.stringify(response.userInfo))
       uni.setStorageSync('IDENTITY_TYPE', response.userInfo.identityType)
 	  // 需要注册，根据 registerType 跳转到对应的注册页面
       if (response.userInfo.identityType === 1) {
         uni.reLaunch({
-          url: '/pages/home/merchant/index'
+          url: '/pages/merchant/index'
         })
       } else if (response.userInfo.identityType === 2) {
         uni.reLaunch({
-          url: '/pages/home/customer/index'
+          url: '/pages/customer/index'
         })
       }
       return

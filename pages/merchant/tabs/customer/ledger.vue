@@ -1,0 +1,513 @@
+<script setup lang="ts">
+/**
+ * 客户账单页面
+ * @author Core Ledger Team
+ * @since 1.0.0
+ */
+
+import { ref, onMounted } from 'vue'
+import { getCustomer, getCustomerStats } from '@/api/modules/customer'
+import { queryLedgersByCustomer } from '@/api/modules/ledger'
+import type { CustomerVO, CustomerStatsVO } from '@/types/customer'
+import type { LedgerListVO } from '@/types/ledger'
+
+// ==================== 页面参数 ====================
+
+const customerId = ref<number>(0)
+
+// ==================== 数据状态 ====================
+
+const loading = ref(false)
+const refreshing = ref(false)
+const customer = ref<CustomerVO | null>(null)
+const stats = ref<CustomerStatsVO | null>(null)
+
+// 筛选
+const statusFilter = ref('')
+const statusOptions = [
+  { value: '', label: '全部' },
+  { value: 'IN_PROGRESS', label: '进行中' },
+  { value: 'ON_CREDIT', label: '赊账中' },
+  { value: 'SETTLED', label: '已结清' },
+  { value: 'CLOSED', label: '已关闭' }
+]
+
+// 账单列表
+const ledgers = ref<LedgerListVO[]>([])
+const page = ref(0)
+const hasMore = ref(true)
+
+// ==================== 方法 ====================
+
+/**
+ * 加载客户信息
+ */
+const loadCustomer = async () => {
+  try {
+    const [customerRes, statsRes] = await Promise.all([
+      getCustomer(customerId.value),
+      getCustomerStats(customerId.value)
+    ])
+    customer.value = customerRes
+    stats.value = statsRes
+  } catch (error) {
+    console.error('加载客户信息失败:', error)
+  }
+}
+
+/**
+ * 加载账单列表
+ */
+const loadLedgers = async (reset = false) => {
+  if (loading.value) return
+  if (!reset && !hasMore.value) return
+
+  try {
+    loading.value = true
+    if (reset) {
+      page.value = 0
+      ledgers.value = []
+    }
+
+    const res = await queryLedgersByCustomer(
+      {
+        customerId: customerId.value,
+        status: statusFilter.value || undefined
+      },
+      { page: page.value, size: 15 }
+    )
+
+    if (reset) {
+      ledgers.value = res.content || []
+    } else {
+      ledgers.value.push(...(res.content || []))
+    }
+
+    hasMore.value = !res.last
+    page.value++
+  } catch (error) {
+    console.error('加载账单列表失败:', error)
+  } finally {
+    loading.value = false
+    refreshing.value = false
+  }
+}
+
+/**
+ * 筛选状态变更
+ */
+const onStatusChange = (status: string) => {
+  statusFilter.value = status
+  loadLedgers(true)
+}
+
+/**
+ * 下拉刷新
+ */
+const onRefresh = async () => {
+  refreshing.value = true
+  await Promise.all([loadCustomer(), loadLedgers(true)])
+}
+
+/**
+ * 加载更多
+ */
+const onLoadMore = () => {
+  if (!loading.value && hasMore.value) {
+    loadLedgers()
+  }
+}
+
+/**
+ * 查看账单详情
+ */
+const viewLedgerDetail = (id: number) => {
+  uni.navigateTo({ url: `/pages/merchant/tabs/ledger/detail?id=${id}` })
+}
+
+/**
+ * 创建新账单
+ */
+const createLedger = () => {
+  uni.navigateTo({ url: `/pages/merchant/tabs/ledger/add?customerId=${customerId.value}` })
+}
+
+/**
+ * 获取状态文本
+ */
+const getStatusText = (status: string) => {
+  const map: Record<string, string> = {
+    'IN_PROGRESS': '进行中',
+    'ON_CREDIT': '赊账中',
+    'SETTLED': '已结清',
+    'CLOSED': '已关闭'
+  }
+  return map[status] || status
+}
+
+/**
+ * 获取状态样式类
+ */
+const getStatusClass = (status: string) => {
+  const map: Record<string, string> = {
+    'IN_PROGRESS': 'status-pending',
+    'ON_CREDIT': 'status-debt',
+    'SETTLED': 'status-paid',
+    'CLOSED': 'status-closed'
+  }
+  return map[status] || 'status-pending'
+}
+
+// ==================== 生命周期 ====================
+
+onMounted(() => {
+  const pages = getCurrentPages()
+  const currentPage = pages[pages.length - 1] as any
+  const query = currentPage.options || {}
+  
+  if (query.id) {
+    customerId.value = Number(query.id)
+    loadCustomer()
+    loadLedgers(true)
+  } else {
+    uni.showToast({ title: '客户ID不能为空', icon: 'none' })
+    setTimeout(() => uni.navigateBack(), 1500)
+  }
+})
+</script>
+
+<template>
+  <view class="customer-ledger-page">
+    <!-- 客户信息头部 -->
+    <view class="header" v-if="customer">
+      <view class="customer-info">
+        <view class="customer-avatar">{{ customer.name?.charAt(0) }}</view>
+        <view class="customer-detail">
+          <view class="customer-name">{{ customer.name }}</view>
+          <view class="customer-phone">{{ customer.phone || '暂无电话' }}</view>
+        </view>
+      </view>
+      <view class="debt-info" v-if="stats">
+        <view class="debt-label">当前欠款</view>
+        <view class="debt-value">¥{{ (stats.debtAmount || 0).toFixed(2) }}</view>
+      </view>
+    </view>
+
+    <!-- 筛选栏 -->
+    <view class="filter-bar">
+      <view
+        v-for="option in statusOptions"
+        :key="option.value"
+        class="filter-item"
+        :class="{ active: statusFilter === option.value }"
+        @tap="onStatusChange(option.value)"
+      >
+        {{ option.label }}
+      </view>
+    </view>
+
+    <!-- 账单列表 -->
+    <scroll-view
+      class="ledger-scroll"
+      scroll-y
+      refresher-enabled
+      :refresher-triggered="refreshing"
+      @refresherrefresh="onRefresh"
+      @scrolltolower="onLoadMore"
+    >
+      <!-- 空状态 -->
+      <view v-if="ledgers.length === 0 && !loading" class="empty-state">
+        <wd-icon name="list" size="100rpx" color="#ddd" />
+        <text>暂无账单记录</text>
+      </view>
+
+      <!-- 账单列表 -->
+      <view v-else class="ledger-list">
+        <view
+          v-for="ledger in ledgers"
+          :key="ledger.id"
+          class="ledger-card"
+          @tap="viewLedgerDetail(ledger.id)"
+        >
+          <view class="ledger-header">
+            <view class="ledger-time">{{ ledger.createdAt }}</view>
+            <view class="ledger-status" :class="getStatusClass(ledger.status)">
+              {{ getStatusText(ledger.status) }}
+            </view>
+          </view>
+          
+          <view class="ledger-body">
+            <view class="ledger-remark">{{ ledger.remark || '未命名账单' }}</view>
+            <view class="ledger-items" v-if="ledger.itemCount">
+              共{{ ledger.itemCount }}件商品
+            </view>
+          </view>
+
+          <view class="ledger-footer">
+            <view class="amount-row">
+              <text class="amount-label">账单金额</text>
+              <text class="amount-value">¥{{ (ledger.totalAmount || 0).toFixed(2) }}</text>
+            </view>
+            <view class="amount-row">
+              <text class="amount-label">已支付</text>
+              <text class="amount-paid">¥{{ (ledger.paidAmount || 0).toFixed(2) }}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 加载更多 -->
+      <view v-if="loading && ledgers.length > 0" class="loading-more">
+        <wd-loading size="40rpx" />
+        <text>加载中...</text>
+      </view>
+
+      <!-- 没有更多 -->
+      <view v-if="!hasMore && ledgers.length > 0" class="no-more">
+        没有更多了
+      </view>
+
+      <view style="height: 160rpx;"></view>
+    </scroll-view>
+
+    <!-- 新建账单按钮 -->
+    <view class="fab-btn" @tap="createLedger">
+      <wd-icon name="add" size="48rpx" color="#fff" />
+    </view>
+  </view>
+</template>
+
+<style lang="scss" scoped>
+.customer-ledger-page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f5f5f5;
+}
+
+.header {
+  background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+  padding: 32rpx;
+  color: #fff;
+}
+
+.customer-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 24rpx;
+}
+
+.customer-avatar {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36rpx;
+  font-weight: 600;
+  margin-right: 24rpx;
+}
+
+.customer-detail {
+  flex: 1;
+}
+
+.customer-name {
+  font-size: 34rpx;
+  font-weight: 600;
+  margin-bottom: 4rpx;
+}
+
+.customer-phone {
+  font-size: 26rpx;
+  opacity: 0.8;
+}
+
+.debt-info {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 16rpx;
+  padding: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.debt-label {
+  font-size: 28rpx;
+  opacity: 0.9;
+}
+
+.debt-value {
+  font-size: 40rpx;
+  font-weight: 600;
+}
+
+.filter-bar {
+  display: flex;
+  padding: 20rpx 24rpx;
+  background: #fff;
+  gap: 16rpx;
+  overflow-x: auto;
+}
+
+.filter-item {
+  flex-shrink: 0;
+  padding: 16rpx 32rpx;
+  border-radius: 32rpx;
+  font-size: 26rpx;
+  color: #666;
+  background: #f5f5f5;
+
+  &.active {
+    background: #3B82F6;
+    color: #fff;
+  }
+}
+
+.ledger-scroll {
+  flex: 1;
+  padding: 24rpx;
+}
+
+.empty-state {
+  padding: 120rpx 0;
+  text-align: center;
+  color: #999;
+  font-size: 28rpx;
+
+  text {
+    display: block;
+    margin-top: 24rpx;
+  }
+}
+
+.ledger-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.ledger-card {
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 28rpx;
+}
+
+.ledger-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20rpx;
+}
+
+.ledger-time {
+  font-size: 26rpx;
+  color: #999;
+}
+
+.ledger-status {
+  font-size: 24rpx;
+  padding: 8rpx 20rpx;
+  border-radius: 20rpx;
+
+  &.status-pending {
+    background: #FEF3C7;
+    color: #F59E0B;
+  }
+
+  &.status-debt {
+    background: #FEE2E2;
+    color: #EF4444;
+  }
+
+  &.status-paid {
+    background: #D1FAE5;
+    color: #10B981;
+  }
+
+  &.status-closed {
+    background: #F3F4F6;
+    color: #6B7280;
+  }
+}
+
+.ledger-body {
+  margin-bottom: 20rpx;
+  padding-bottom: 20rpx;
+  border-bottom: 2rpx solid #f5f5f5;
+}
+
+.ledger-remark {
+  font-size: 30rpx;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 8rpx;
+}
+
+.ledger-items {
+  font-size: 26rpx;
+  color: #999;
+}
+
+.ledger-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.amount-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.amount-label {
+  font-size: 26rpx;
+  color: #666;
+}
+
+.amount-value {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.amount-paid {
+  font-size: 28rpx;
+  color: #10B981;
+}
+
+.loading-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16rpx;
+  padding: 32rpx;
+  color: #999;
+  font-size: 26rpx;
+}
+
+.no-more {
+  text-align: center;
+  padding: 32rpx;
+  color: #999;
+  font-size: 26rpx;
+}
+
+.fab-btn {
+  position: fixed;
+  right: 32rpx;
+  bottom: 100rpx;
+  width: 112rpx;
+  height: 112rpx;
+  border-radius: 50%;
+  background: #3B82F6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 24rpx rgba(59, 130, 246, 0.4);
+  z-index: 99;
+}
+</style>

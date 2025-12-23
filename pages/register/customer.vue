@@ -5,29 +5,31 @@
  * @since 1.0.0
  */
 
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive } from 'vue'
 import { customerWechatRegister } from '@/api/modules/auth'
 import { useUserStore } from '@/stores/modules/user'
 import AddressSelector from '@/components/AddressSelector.vue'
 import { getWechatCode } from '@/composables/useWechatLogin'
 
-// 使用 uni 的 showToast 替代 WOT-UI 的 useToast
-const showToast = (message: string, type: 'success' | 'error' | 'warning' = 'error') => {
+const userStore = useUserStore()
+
+// 使用 uni 的 showToast
+const showToast = (message: string, success = false) => {
   uni.showToast({
     title: message,
-    icon: type === 'success' ? 'success' : 'none',
+    icon: success ? 'success' : 'none',
     duration: 2000
   })
 }
-const userStore = useUserStore()
 
 // ==================== 表单数据 ====================
 
 interface CustomerForm {
   phone: string
   customerName: string
-  gender?: string
-  age?: number
+  nickname: string
+  gender: number  // 0-未知 1-男 2-女
+  age: string
   addressId: number | null
   addressDetail: string
   inviteCode: string
@@ -36,8 +38,9 @@ interface CustomerForm {
 const form = reactive<CustomerForm>({
   phone: '',
   customerName: '',
-  gender: '',
-  age: undefined,
+  nickname: '',
+  gender: 0,
+  age: '',
   addressId: null,
   addressDetail: '',
   inviteCode: ''
@@ -47,44 +50,30 @@ const form = reactive<CustomerForm>({
 
 const selectedAddressIds = ref<number[]>([])
 
+const handleAddressChange = (addressIds: number[]) => {
+  selectedAddressIds.value = addressIds
+  if (addressIds.length > 0) {
+    form.addressId = addressIds[addressIds.length - 1]
+  }
+}
+
 // ==================== 性别选择 ====================
 
-const genderOptions = [
-  { label: '男', value: '1' },
-  { label: '女', value: '2' }
-]
-
-const showGenderPicker = ref(false)
+const selectGender = (gender: number) => {
+  form.gender = gender
+}
 
 // ==================== 其他状态 ====================
 
 const loading = ref(false)
 
-// ==================== 初始化 ====================
-
-onMounted(async () => {
-  // 地址选择器组件自动加载数据
-})
-
-// ==================== 地址选择处理 ====================
-
-/**
- * 处理地址选择变化
- */
-const handleAddressChange = (addressIds: number[]) => {
-  selectedAddressIds.value = addressIds
-  if (addressIds.length > 0) {
-    // 将最后一个ID作为地址ID
-    form.addressId = addressIds[addressIds.length - 1]
-  }
-}
-
 // ==================== 验证 ====================
 
-/**
- * 验证表单
- */
 const validateForm = (): boolean => {
+  if (!form.customerName) {
+    showToast('请输入姓名')
+    return false
+  }
   if (!form.phone) {
     showToast('请输入手机号')
     return false
@@ -93,31 +82,15 @@ const validateForm = (): boolean => {
     showToast('手机号格式不正确')
     return false
   }
-  if (!form.customerName) {
-    showToast('请输入客户姓名')
-    return false
-  }
   if (!form.addressId) {
-    showToast('请选择地址')
+    showToast('请选择所在地区')
     return false
   }
-  if (!form.addressDetail) {
-    showToast('请输入详细地址')
-    return false
-  }
-  if (!form.inviteCode) {
-    showToast('请输入商户邀请码')
-    return false
-  }
-
   return true
 }
 
 // ==================== 提交 ====================
 
-/**
- * 处理注册
- */
 const handleRegister = async () => {
   if (!validateForm()) {
     return
@@ -125,36 +98,24 @@ const handleRegister = async () => {
 
   try {
     loading.value = true
-
-    // 获取微信 code
     const code = await getWechatCode()
-
-    // 调用注册接口
     const response = await customerWechatRegister({
       code,
       phone: form.phone,
       customerName: form.customerName,
-      gender: form.gender ? parseInt(form.gender) : undefined,
-      age: form.age,
+      gender: form.gender || undefined,
+      age: form.age ? parseInt(form.age) : undefined,
       addressId: form.addressId!,
       addressDetail: form.addressDetail,
-      inviteCode: form.inviteCode
+      inviteCode: form.inviteCode || undefined
     })
 
-    console.log('[Customer Register] 注册响应:', response)
-
     if (response?.token) {
-      // 保存用户信息
       userStore.setToken(response.token)
       userStore.setUserInfo(response.userInfo)
       userStore.setIdentityType(response.userInfo.identityType)
-
-      showToast('注册成功', 'success')
-
-      // 跳转到首页
-      uni.reLaunch({
-        url: '/pages/home/index'
-      })
+      showToast('注册成功', true)
+      uni.reLaunch({ url: '/pages/home/customer/index' })
     } else {
       showToast('注册失败，请重试')
     }
@@ -165,162 +126,487 @@ const handleRegister = async () => {
     loading.value = false
   }
 }
+
+// ==================== 扫码绑定 ====================
+
+const handleScanCode = () => {
+  uni.scanCode({
+    onlyFromCamera: false,
+    success: (res) => {
+      form.inviteCode = res.result
+    },
+    fail: () => {
+      showToast('扫码失败')
+    }
+  })
+}
 </script>
 
 <template>
-  <view class="customer-register-page">
-    <!-- 顶部标题 -->
-    <view class="header">
-      <text class="title">客户注册</text>
+  <view class="register-page">
+    <!-- 头部 -->
+    <view class="register-header">
+      <view class="register-icon">
+        <wd-icon name="user" size="56rpx" color="#fff" />
+      </view>
+      <view class="register-title">注册成为客户</view>
+      <view class="register-subtitle">轻松查看您的消费记录</view>
     </view>
 
     <!-- 表单内容 -->
-    <view class="content">
-      <wd-cell-group border>
-        <!-- 手机号 -->
-        <wd-input
-          v-model="form.phone"
-          label="手机号"
-          placeholder="请输入手机号"
-          type="number"
-          clearable
-          required
-        />
-
-        <!-- 客户姓名 -->
-        <wd-input
-          v-model="form.customerName"
-          label="客户姓名"
-          placeholder="请输入客户姓名"
-          clearable
-          required
-        />
-
-        <!-- 性别 -->
-        <wd-cell
-          title="性别"
-          :value="genderOptions.find(g => g.value === form.gender)?.label || '请选择'"
-          is-link
-          @click="showGenderPicker = true"
-        />
-
-        <!-- 年龄 -->
-        <wd-input
-          v-model.number="form.age"
-          label="年龄"
-          placeholder="请输入年龄"
-          type="number"
-          clearable
-        />
-
-        <!-- 邀请码 -->
-        <wd-input
-          v-model="form.inviteCode"
-          label="商户邀请码"
-          placeholder="请输入商户邀请码"
-          clearable
-          required
-        />
-      </wd-cell-group>
-
-      <!-- 地址选择 -->
-      <view class="address-section">
-        <text class="section-title">地址选择</text>
-        <AddressSelector 
-          v-model="selectedAddressIds"
-          @change="handleAddressChange"
-        />
+    <view class="page-content">
+      <!-- 微信账号信息 -->
+      <view class="form-section">
+        <view class="section-title">
+          <wd-icon name="user" size="32rpx" color="#10B981" />
+          <text>微信账号</text>
+        </view>
+        <view class="wechat-info">
+          <view class="wechat-avatar">
+            <wd-icon name="user" size="40rpx" color="#fff" />
+          </view>
+          <view class="wechat-detail">
+            <view class="wechat-name">微信用户</view>
+            <view class="wechat-status">
+              <wd-icon name="check-outline" size="24rpx" color="#10B981" />
+              <text>已授权</text>
+            </view>
+          </view>
+        </view>
       </view>
 
-      <!-- 性别选择器 -->
-      <wd-picker
-        v-model="form.gender"
-        :columns="genderOptions"
-        v-model:visible="showGenderPicker"
-      />
-
-      <!-- 详细地址 -->
-      <view class="detail-section">
-        <wd-cell-group border>
-          <wd-textarea
-            v-model="form.addressDetail"
-            label="详细地址"
-            placeholder="请输入详细地址"
-            :maxlength="200"
-            show-word-limit
-            required
+      <!-- 基本信息 -->
+      <view class="form-section">
+        <view class="section-title">
+          <wd-icon name="user" size="32rpx" color="#10B981" />
+          <text>基本信息</text>
+        </view>
+        <view class="form-group">
+          <view class="form-label">姓名 <text class="required">*</text></view>
+          <input
+            class="form-input"
+            v-model="form.customerName"
+            placeholder="请输入您的真实姓名"
+            placeholder-class="placeholder"
           />
-        </wd-cell-group>
+        </view>
+        <view class="form-group">
+          <view class="form-label">手机号 <text class="required">*</text></view>
+          <input
+            class="form-input"
+            v-model="form.phone"
+            type="number"
+            placeholder="请输入手机号"
+            placeholder-class="placeholder"
+            maxlength="11"
+          />
+        </view>
+        <view class="form-group">
+          <view class="form-label">别名/昵称</view>
+          <input
+            class="form-input"
+            v-model="form.nickname"
+            placeholder="商户称呼您的方式（选填）"
+            placeholder-class="placeholder"
+          />
+          <view class="form-tip">例如：老李、隔壁王叔</view>
+        </view>
+        <view class="form-group">
+          <view class="form-label">性别</view>
+          <view class="gender-selector">
+            <view
+              class="gender-item male"
+              :class="{ active: form.gender === 1 }"
+              @tap="selectGender(1)"
+            >
+              <wd-icon name="man" size="40rpx" />
+              <text>男</text>
+            </view>
+            <view
+              class="gender-item female"
+              :class="{ active: form.gender === 2 }"
+              @tap="selectGender(2)"
+            >
+              <wd-icon name="woman" size="40rpx" />
+              <text>女</text>
+            </view>
+            <view
+              class="gender-item unknown"
+              :class="{ active: form.gender === 0 }"
+              @tap="selectGender(0)"
+            >
+              <wd-icon name="help-outline" size="40rpx" />
+              <text>未知</text>
+            </view>
+          </view>
+        </view>
+        <view class="form-group">
+          <view class="form-label">年龄</view>
+          <input
+            class="form-input"
+            v-model="form.age"
+            type="number"
+            placeholder="请输入年龄（选填）"
+            placeholder-class="placeholder"
+          />
+        </view>
+      </view>
+
+      <!-- 地址信息 -->
+      <view class="form-section">
+        <view class="section-title">
+          <wd-icon name="location" size="32rpx" color="#10B981" />
+          <text>地址信息</text>
+        </view>
+        <view class="form-group">
+          <view class="form-label">所在地区 <text class="required">*</text></view>
+          <AddressSelector 
+            v-model="selectedAddressIds"
+            @change="handleAddressChange"
+          />
+        </view>
+        <view class="form-group">
+          <view class="form-label">详细地址</view>
+          <input
+            class="form-input"
+            v-model="form.addressDetail"
+            placeholder="街道、门牌号等详细地址（选填）"
+            placeholder-class="placeholder"
+          />
+        </view>
+      </view>
+
+      <!-- 商户邀请码 -->
+      <view class="form-section">
+        <view class="section-title">
+          <wd-icon name="scan" size="32rpx" color="#10B981" />
+          <text>绑定商户（选填）</text>
+        </view>
+        <view class="invite-box">
+          <view class="invite-icon">
+            <wd-icon name="link" size="36rpx" color="#fff" />
+          </view>
+          <view class="invite-info">
+            <view class="invite-title">扫码或输入邀请码绑定商户</view>
+            <view class="invite-desc">绑定后可直接在该商户下单</view>
+          </view>
+        </view>
+        <view class="scan-btn-wrapper">
+          <button class="scan-btn" @tap="handleScanCode">
+            <wd-icon name="scan" size="32rpx" />
+            <text>扫码绑定</text>
+          </button>
+        </view>
+        <view class="divider">
+          <view class="divider-line"></view>
+          <text class="divider-text">或手动输入</text>
+          <view class="divider-line"></view>
+        </view>
+        <view class="form-group">
+          <input
+            class="form-input"
+            v-model="form.inviteCode"
+            placeholder="请输入商户邀请码"
+            placeholder-class="placeholder"
+          />
+        </view>
       </view>
     </view>
 
     <!-- 底部按钮 -->
-    <view class="footer">
-      <wd-button
-        type="primary"
-        block
-        size="large"
-        :loading="loading"
-        @click="handleRegister"
-      >
-        注册
-      </wd-button>
+    <view class="footer-btns">
+      <button class="btn-primary" :loading="loading" @tap="handleRegister">
+        完成注册
+      </button>
     </view>
   </view>
 </template>
 
 <style lang="scss" scoped>
-.customer-register-page {
-  display: flex;
-  flex-direction: column;
+.register-page {
   min-height: 100vh;
-  background-color: #f5f5f5;
+  background: #f5f5f5;
+  padding-bottom: 160rpx;
 }
 
-.header {
-  flex: 0 0 auto;
-  padding: 40rpx;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-
-  .title {
-    font-size: 36rpx;
-    font-weight: bold;
-  }
+.register-header {
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  padding: 48rpx 32rpx;
+  color: #fff;
+  text-align: center;
 }
 
-.content {
+.register-icon {
+  width: 128rpx;
+  height: 128rpx;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24rpx;
+}
+
+.register-title {
+  font-size: 40rpx;
+  font-weight: 600;
+  margin-bottom: 8rpx;
+}
+
+.register-subtitle {
+  font-size: 26rpx;
+  opacity: 0.8;
+}
+
+.page-content {
+  padding: 32rpx;
+}
+
+.form-section {
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 32rpx;
+  margin-bottom: 24rpx;
+}
+
+.section-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 32rpx;
+  padding-bottom: 24rpx;
+  border-bottom: 2rpx solid #f5f5f5;
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.wechat-info {
+  background: #f0fdf4;
+  border: 2rpx solid #bbf7d0;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+}
+
+.wechat-avatar {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 50%;
+  background: #10B981;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wechat-detail {
   flex: 1;
-  padding: 20rpx;
-  overflow-y: auto;
+}
 
-  :deep(.wd-cell-group) {
-    margin-bottom: 20rpx;
-    background: white;
-    border-radius: 8rpx;
+.wechat-name {
+  font-size: 30rpx;
+  color: #333;
+  font-weight: 500;
+}
+
+.wechat-status {
+  font-size: 24rpx;
+  color: #10B981;
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  margin-top: 4rpx;
+}
+
+.form-group {
+  margin-bottom: 32rpx;
+
+  &:last-child {
+    margin-bottom: 0;
   }
 }
 
-.address-section {
-  margin-bottom: 20rpx;
+.form-label {
+  font-size: 28rpx;
+  color: #333;
+  margin-bottom: 16rpx;
+  font-weight: 500;
+}
 
-  .section-title {
+.required {
+  color: #EF4444;
+}
+
+.form-input {
+  width: 100%;
+  height: 88rpx;
+  background: #f9fafb;
+  border: 2rpx solid #e5e5e5;
+  border-radius: 16rpx;
+  padding: 0 24rpx;
+  font-size: 30rpx;
+  color: #333;
+  box-sizing: border-box;
+}
+
+.placeholder {
+  color: #999;
+}
+
+.form-tip {
+  font-size: 24rpx;
+  color: #999;
+  margin-top: 12rpx;
+}
+
+.gender-selector {
+  display: flex;
+  gap: 24rpx;
+}
+
+.gender-item {
+  flex: 1;
+  padding: 24rpx;
+  border: 4rpx solid #e5e5e5;
+  border-radius: 16rpx;
+  text-align: center;
+  transition: all 0.2s;
+
+  &.active {
+    border-color: #10B981;
+    background: #f0fdf4;
+  }
+
+  text {
     display: block;
-    padding: 20rpx;
-    font-size: 28rpx;
-    font-weight: bold;
-    color: #333;
+    font-size: 26rpx;
+    color: #666;
+    margin-top: 8rpx;
+  }
+
+  &.active text {
+    color: #10B981;
+    font-weight: 500;
+  }
+
+  &.male {
+    color: #3B82F6;
+  }
+
+  &.female {
+    color: #EC4899;
+  }
+
+  &.unknown {
+    color: #9CA3AF;
   }
 }
 
-.detail-section {
-  margin-bottom: 20rpx;
+.invite-box {
+  background: #fef3c7;
+  border: 2rpx solid #fcd34d;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+  margin-bottom: 24rpx;
 }
 
-.footer {
-  flex: 0 0 auto;
-  padding: 20rpx;
-  background: white;
-  border-top: 1rpx solid #eee;
+.invite-icon {
+  width: 80rpx;
+  height: 80rpx;
+  background: #f59e0b;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.invite-info {
+  flex: 1;
+}
+
+.invite-title {
+  font-size: 28rpx;
+  color: #92400e;
+  font-weight: 500;
+}
+
+.invite-desc {
+  font-size: 24rpx;
+  color: #a16207;
+  margin-top: 4rpx;
+}
+
+.scan-btn-wrapper {
+  margin-bottom: 24rpx;
+}
+
+.scan-btn {
+  width: 100%;
+  height: 88rpx;
+  background: #fff;
+  border: 2rpx solid #10B981;
+  border-radius: 16rpx;
+  color: #10B981;
+  font-size: 28rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+
+  &::after {
+    border: none;
+  }
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  margin: 32rpx 0 24rpx;
+}
+
+.divider-line {
+  flex: 1;
+  height: 2rpx;
+  background: #e5e5e5;
+}
+
+.divider-text {
+  padding: 0 24rpx;
+  font-size: 24rpx;
+  color: #999;
+}
+
+.footer-btns {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 24rpx 32rpx;
+  padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
+  background: #fff;
+  box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.05);
+}
+
+.btn-primary {
+  width: 100%;
+  height: 96rpx;
+  background: #10B981;
+  color: #fff;
+  font-size: 32rpx;
+  font-weight: 500;
+  border-radius: 48rpx;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &::after {
+    border: none;
+  }
 }
 </style>

@@ -24,7 +24,7 @@ onMounted(() => {
   load()
 })
 
-const merchantName = computed(() => user.value?.name || '商户')
+const merchantName = computed(() => user.value?.name)
 const merchantCode = computed(() => (user.value?.code ? `编号：${user.value.code}` : ''))
 const phone = computed(() => user.value?.phone || '-')
 </script>

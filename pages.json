@@ -44,15 +44,66 @@
 			}
 		},
 		{
-			"path": "pages/home/customer/index",
+			"path": "pages/customer/index",
 			"style": {
-				"navigationBarTitleText": ""
+				"navigationBarTitleText": "",
+				"navigationStyle": "custom"
 			}
 		},
 		{
-			"path": "pages/home/merchant/index",
+			"path": "pages/merchant/index",
 			"style": {
-				"navigationBarTitleText": ""
+				"navigationBarTitleText": "",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/merchant/tabs/customer/detail",
+			"style": {
+				"navigationBarTitleText": "客户详情"
+			}
+		},
+		{
+			"path": "pages/merchant/tabs/customer/add",
+			"style": {
+				"navigationBarTitleText": "添加客户"
+			}
+		},
+		{
+			"path": "pages/merchant/tabs/customer/ledger",
+			"style": {
+				"navigationBarTitleText": "客户账单"
+			}
+		},
+		{
+			"path": "pages/merchant/tabs/ledger/detail",
+			"style": {
+				"navigationBarTitleText": "账单详情"
+			}
+		},
+		{
+			"path": "pages/merchant/tabs/ledger/add",
+			"style": {
+				"navigationBarTitleText": "创建账单",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/merchant/tabs/product/add",
+			"style": {
+				"navigationBarTitleText": "添加商品"
+			}
+		},
+		{
+			"path": "pages/merchant/tabs/product/pricing",
+			"style": {
+				"navigationBarTitleText": "商品定价"
+			}
+		},
+		{
+			"path": "pages/merchant/tabs/product/category",
+			"style": {
+				"navigationBarTitleText": "分类管理"
 			}
 		}
 	],
