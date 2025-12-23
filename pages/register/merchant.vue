@@ -7,10 +7,14 @@
 
 import { ref, reactive } from 'vue'
 import { merchantWechatRegister } from '@/api/modules/auth'
+import { useNavbarSafeArea } from '@/composables/useNavbarSafeArea'
 import AddressSelector from '@/components/AddressSelector.vue'
 import { useWechatLogin, getWechatCode } from '@/composables/useWechatLogin'
 
 const { handleLoginResponse } = useWechatLogin()
+
+// 导航栏安全区域
+const { safeArea } = useNavbarSafeArea()
 
 // 使用 uni 的 showToast
 const showToast = (message: string) => {
@@ -139,7 +143,7 @@ const handleRegister = async () => {
 </script>
 
 <template>
-  <view class="register-page">
+  <view class="register-page" :style="{ paddingTop: safeArea?.navbarHeight + 'px' }">
     <!-- 头部 -->
     <view class="register-header">
       <view class="register-icon">
@@ -273,33 +277,36 @@ const handleRegister = async () => {
 
 <style lang="scss" scoped>
 .register-page {
-  min-height: 100vh;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
   background: #f5f5f5;
-  padding-bottom: 160rpx;
+  overflow: hidden;
 }
 
 .register-header {
+  flex-shrink: 0;
   background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
-  padding: 48rpx 32rpx;
+  padding: 24rpx 32rpx;
   color: #fff;
   text-align: center;
 }
 
 .register-icon {
-  width: 128rpx;
-  height: 128rpx;
+  width: 80rpx;
+  height: 80rpx;
   background: rgba(255, 255, 255, 0.2);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 24rpx;
+  margin: 0 auto 16rpx;
 }
 
 .register-title {
-  font-size: 40rpx;
+  font-size: 36rpx;
   font-weight: 600;
-  margin-bottom: 8rpx;
+  margin-bottom: 4rpx;
 }
 
 .register-subtitle {
@@ -308,26 +315,29 @@ const handleRegister = async () => {
 }
 
 .page-content {
-  padding: 32rpx;
+  flex: 1;
+  overflow-y: auto;
+  padding: 24rpx;
+  padding-bottom: 140rpx;
 }
 
 .form-section {
   background: #fff;
-  border-radius: 24rpx;
-  padding: 32rpx;
-  margin-bottom: 24rpx;
+  border-radius: 20rpx;
+  padding: 24rpx;
+  margin-bottom: 16rpx;
 }
 
 .section-title {
-  font-size: 30rpx;
+  font-size: 28rpx;
   font-weight: 600;
   color: #333;
-  margin-bottom: 32rpx;
-  padding-bottom: 24rpx;
+  margin-bottom: 20rpx;
+  padding-bottom: 16rpx;
   border-bottom: 2rpx solid #f5f5f5;
   display: flex;
   align-items: center;
-  gap: 16rpx;
+  gap: 12rpx;
 }
 
 .wechat-info {

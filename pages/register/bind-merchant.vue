@@ -7,6 +7,7 @@
 
 import { ref } from 'vue'
 import { bindMerchant } from '@/api/modules/auth'
+import { useNavbarSafeArea } from '@/composables/useNavbarSafeArea'
 import { useUserStore } from '@/stores/modules/user'
 
 // 使用 uni 的 showToast 替代 WOT-UI 的 useToast
@@ -18,6 +19,9 @@ const showToast = (message: string, type: 'success' | 'error' | 'warning' = 'err
   })
 }
 const userStore = useUserStore()
+
+// 导航栏安全区域
+const { safeArea } = useNavbarSafeArea()
 
 // ==================== 状态 ====================
 
@@ -111,7 +115,7 @@ const handleSkip = () => {
 </script>
 
 <template>
-  <view class="bind-merchant-page">
+  <view class="bind-merchant-page" :style="{ paddingTop: safeArea?.navbarHeight + 'px' }">
     <!-- 顶部标题 -->
     <view class="header">
       <text class="title">绑定商户</text>
@@ -189,8 +193,9 @@ const handleSkip = () => {
 .bind-merchant-page {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh;
   background-color: #f5f5f5;
+  overflow: hidden;
 }
 
 .header {

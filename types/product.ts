@@ -183,6 +183,8 @@ export interface CategoryVO {
   level: number
   /** 排序序号 */
   sortOrder: number
+  /** 状态 */
+  status?: number
   /** 分类图标URL */
   iconUrl?: string
   /** 备注 */

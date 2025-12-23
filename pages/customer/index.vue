@@ -1,10 +1,14 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { getCurrentUser } from '@/api/modules/auth'
+import { useNavbarSafeArea } from '@/composables/useNavbarSafeArea'
 import type { UserInfoVO } from '@/types/auth'
 
 const refreshing = ref(false)
 const user = ref<UserInfoVO | null>(null)
+
+// 导航栏安全区域
+const { safeArea } = useNavbarSafeArea()
 
 const load = async () => {
   try {
@@ -37,7 +41,7 @@ const phone = computed(() => user.value?.phone || '-')
     :refresher-triggered="refreshing"
     @refresherrefresh="onRefresh"
   >
-    <view class="section">
+    <view class="section" :style="{ paddingTop: safeArea?.navbarHeight + 'px' }">
       <wd-cell-group border>
         <wd-cell :title="merchantName" :label="merchantCode" />
         <wd-cell title="联系方式" :value="phone" />

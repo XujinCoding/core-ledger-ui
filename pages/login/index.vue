@@ -7,9 +7,13 @@
 
 	import { ref } from 'vue'
 	import { useWechatLogin } from '@/composables/useWechatLogin'
+	import { useNavbarSafeArea } from '@/composables/useNavbarSafeArea'
 	import { IdentityType } from '@/enums'
 
 	const { loading, handleWechatLogin, handleLoginResponse } = useWechatLogin()
+
+	// 导航栏安全区域
+	const { safeArea } = useNavbarSafeArea()
 
 	// 身份选择：默认选择商户
 	const selectedIdentity = ref<IdentityType>(IdentityType.MERCHANT_OWNER)
@@ -32,7 +36,7 @@
 </script>
 
 <template>
-  <view class="login-page">
+  <view class="login-page" :style="{ paddingTop: safeArea?.navbarHeight + 'px' }">
     <!-- Logo区域 -->
     <view class="login-header">
       <view class="login-logo">
@@ -97,38 +101,41 @@
 
 <style lang="scss" scoped>
 .login-page {
-  min-height: 100vh;
+  height: 100vh;
+  box-sizing: border-box;
   background: #fff;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .login-header {
-  padding: 120rpx 48rpx 100rpx;
+  flex-shrink: 0;
+  padding: 40rpx 48rpx 48rpx;
   text-align: center;
 }
 
 .login-logo {
-  width: 176rpx;
-  height: 176rpx;
+  width: 120rpx;
+  height: 120rpx;
   background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
-  border-radius: 48rpx;
+  border-radius: 32rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 48rpx;
-  box-shadow: 0 16rpx 48rpx rgba(59, 130, 246, 0.3);
+  margin: 0 auto 24rpx;
+  box-shadow: 0 12rpx 36rpx rgba(59, 130, 246, 0.3);
 }
 
 .login-title {
-  font-size: 52rpx;
+  font-size: 40rpx;
   font-weight: 600;
   color: #333;
-  margin-bottom: 16rpx;
+  margin-bottom: 8rpx;
 }
 
 .login-subtitle {
-  font-size: 30rpx;
+  font-size: 26rpx;
   color: #999;
 }
 
@@ -140,13 +147,13 @@
 }
 
 .identity-section {
-  margin-bottom: 64rpx;
+  margin-bottom: 32rpx;
 }
 
 .identity-title {
-  font-size: 28rpx;
+  font-size: 26rpx;
   color: #666;
-  margin-bottom: 32rpx;
+  margin-bottom: 20rpx;
   text-align: center;
 }
 
@@ -157,9 +164,9 @@
 
 .identity-item {
   flex: 1;
-  padding: 40rpx 32rpx;
+  padding: 24rpx 20rpx;
   border: 4rpx solid #e5e5e5;
-  border-radius: 24rpx;
+  border-radius: 20rpx;
   text-align: center;
   transition: all 0.2s;
 
@@ -175,14 +182,14 @@
 }
 
 .identity-icon {
-  width: 104rpx;
-  height: 104rpx;
+  width: 72rpx;
+  height: 72rpx;
   border-radius: 50%;
   background: #f5f5f5;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 24rpx;
+  margin: 0 auto 12rpx;
   color: #999;
 
   .identity-item.merchant & {
@@ -205,10 +212,10 @@
 }
 
 .identity-name {
-  font-size: 32rpx;
+  font-size: 28rpx;
   font-weight: 500;
   color: #333;
-  margin-bottom: 8rpx;
+  margin-bottom: 4rpx;
 
   .identity-item.active.merchant & {
     color: #3B82F6;
@@ -220,13 +227,13 @@
 }
 
 .identity-desc {
-  font-size: 24rpx;
+  font-size: 22rpx;
   color: #999;
 }
 
 .login-action {
   margin-top: auto;
-  padding-bottom: 80rpx;
+  padding-bottom: env(safe-area-inset-bottom, 32rpx);
 }
 
 .wechat-btn {

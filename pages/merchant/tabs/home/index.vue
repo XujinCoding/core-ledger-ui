@@ -7,12 +7,16 @@
 
 import { ref, onMounted } from 'vue'
 import { queryInProgressLedgers } from '@/api/modules/ledger'
+import { useNavbarSafeArea } from '@/composables/useNavbarSafeArea'
 import type { LedgerListVO } from '@/types/ledger'
 
 // ==================== 数据状态 ====================
 
 const refreshing = ref(false)
 const loading = ref(false)
+
+// 导航栏安全区域
+const { headerStyle, headerContentStyle } = useNavbarSafeArea()
 
 // 店铺信息 - TODO: 从接口获取
 const storeInfo = ref({
@@ -122,8 +126,8 @@ onMounted(() => {
     @refresherrefresh="onRefresh"
   >
     <!-- 头部店铺信息 -->
-    <view class="home-header">
-      <view class="store-info">
+    <view class="home-header" :style="headerStyle">
+      <view class="store-info" :style="headerContentStyle">
         <view class="store-avatar">
           <wd-icon name="shop" size="48rpx" color="#fff" />
         </view>
@@ -222,7 +226,7 @@ onMounted(() => {
       <view class="section">
         <view class="section-header">
           <text class="section-title">进行中的账单</text>
-          <text class="section-more" @tap="() => {}">查看全部 ></text>
+          <text class="section-more" @tap="() => {}">查看全部</text>
         </view>
 
         <view v-if="inProgressLedgers.length === 0" class="empty-state">
@@ -276,7 +280,7 @@ onMounted(() => {
 .home-header {
   background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
   padding: 32rpx;
-  padding-top: 48rpx;
+  // padding-top 由 headerStyle 动态控制
 }
 
 .store-info {

@@ -6,6 +6,7 @@
  */
 
 import { ref, computed, onMounted } from 'vue'
+import { useNavbarSafeArea } from '@/composables/useNavbarSafeArea'
 import { searchCustomers } from '@/api/modules/customer'
 import { listProducts } from '@/api/modules/product'
 import { createLedger } from '@/api/modules/ledger'
@@ -15,6 +16,9 @@ import type { ProductVO } from '@/types/product'
 // ==================== 数据状态 ====================
 
 const step = ref(1) // 1-选择客户 2-选择商品 3-确认
+
+// 导航栏安全区域
+const { safeArea } = useNavbarSafeArea()
 
 // 客户相关
 const customerKeyword = ref('')
@@ -393,7 +397,7 @@ onMounted(() => {
     </view>
 
     <!-- 返回按钮 -->
-    <view class="back-btn" @tap="goBack">
+    <view class="back-btn" :style="{ top: (safeArea?.navbarHeight || 0) + 'px' }" @tap="goBack">
       <wd-icon name="arrow-left" size="40rpx" />
     </view>
   </view>
@@ -411,7 +415,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40rpx 60rpx;
+  padding: 100rpx 60rpx 40rpx;
   background: #fff;
 }
 
@@ -797,7 +801,7 @@ onMounted(() => {
 .back-btn {
   position: fixed;
   left: 32rpx;
-  top: 32rpx;
+  // top 由动态样式控制
   width: 80rpx;
   height: 80rpx;
   background: rgba(255, 255, 255, 0.9);

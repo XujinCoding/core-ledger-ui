@@ -8,6 +8,7 @@
 import { ref, onMounted } from 'vue'
 import { getCategoryTree } from '@/api/modules/category'
 import { createProduct, updateProduct, getProduct } from '@/api/modules/product'
+import { batchUpdateAttrs } from '@/api/modules/productAttr'
 import type { CategoryTreeVO, ProductVO } from '@/types/product'
 
 // ==================== 页面参数 ====================
@@ -23,13 +24,25 @@ const submitting = ref(false)
 // 分类选择
 const categories = ref<CategoryTreeVO[]>([])
 const showCategoryPicker = ref(false)
+const expandedCategories = ref<number[]>([])
+
+// 展开/收起分类
+const toggleExpand = (id: number) => {
+  const index = expandedCategories.value.indexOf(id)
+  if (index > -1) {
+    expandedCategories.value.splice(index, 1)
+  } else {
+    expandedCategories.value.push(id)
+  }
+}
 
 // 表单数据
 const form = ref({
   name: '',
   categoryId: null as number | null,
   categoryName: '',
-  unit: '件',
+  price: null as number | null,
+  unit: '',
   description: '',
   imageUrl: ''
 })
@@ -70,6 +83,7 @@ const loadProduct = async () => {
       name: res.name || '',
       categoryId: res.categoryId,
       categoryName: res.categoryName || '',
+      price: res.price || 0,
       unit: res.unit || '件',
       description: res.description || '',
       imageUrl: res.imageUrl || ''
@@ -155,25 +169,51 @@ const submit = async () => {
     uni.showToast({ title: '请选择分类', icon: 'none' })
     return
   }
+  if (!form.value.unit.trim()) {
+    uni.showToast({ title: '请输入单位', icon: 'none' })
+    return
+  }
+  if (form.value.price !== null && (form.value.price < 0 || form.value.price > 999999)) {
+    uni.showToast({ title: '标准价格需在0-999999之间', icon: 'none' })
+    return
+  }
 
   try {
     submitting.value = true
     const data = {
       name: form.value.name,
       categoryId: form.value.categoryId,
+      price: form.value.price || 0,
       unit: form.value.unit,
       description: form.value.description,
-      imageUrl: form.value.imageUrl,
-      attrs: attrs.value.filter(a => a.values.length > 0)
+      imageUrl: form.value.imageUrl
     }
 
+    let savedProductId: number
     if (isEdit.value && productId.value) {
       await updateProduct(productId.value, data)
-      uni.showToast({ title: '修改成功', icon: 'success' })
+      savedProductId = productId.value
     } else {
-      await createProduct(data)
-      uni.showToast({ title: '添加成功', icon: 'success' })
+      const res = await createProduct(data)
+      savedProductId = res.id
     }
+
+    // 保存商品属性
+    const validAttrs = attrs.value.filter(a => a.values.length > 0)
+    if (validAttrs.length > 0) {
+      await batchUpdateAttrs(savedProductId, {
+        attrs: validAttrs.map((attr, index) => ({
+          name: attr.name,
+          values: attr.values.map((v, vIndex) => ({
+            name: v,
+            sortOrder: vIndex
+          })),
+          sortOrder: index
+        }))
+      })
+    }
+
+    uni.showToast({ title: isEdit.value ? '修改成功' : '添加成功', icon: 'success' })
     setTimeout(() => uni.navigateBack(), 1500)
   } catch (error) {
     console.error('保存商品失败:', error)
@@ -227,11 +267,26 @@ onMounted(() => {
         </view>
 
         <view class="form-item">
-          <text class="form-label">单位</text>
+          <text class="form-label required">标准价格</text>
+          <view class="price-input-wrap">
+            <text class="price-symbol">¥</text>
+            <input
+              class="price-input"
+              type="digit"
+              v-model="form.price"
+              placeholder="0"
+              :maxlength="6"
+            />
+          </view>
+          <text class="form-tip">价格范围：0 - 999999</text>
+        </view>
+
+        <view class="form-item">
+          <text class="form-label required">单位</text>
           <input
             class="form-input"
             v-model="form.unit"
-            placeholder="件"
+            placeholder="请输入单位"
           />
         </view>
 
@@ -250,7 +305,8 @@ onMounted(() => {
       <view class="form-section">
         <view class="section-title">商品图片</view>
         <view class="image-upload" @tap="chooseImage">
-          <image v-if="form.imageUrl" :src="form.imageUrl" mode="aspectFill" class="preview-img" />
+          <image v-if="form.imageUrl && form.imageUrl.startsWith('http')" :src="form.imageUrl" mode="aspectFill" class="preview-img" />
+          <image v-else-if="form.imageUrl && form.imageUrl.startsWith('/')" :src="form.imageUrl" mode="aspectFill" class="preview-img" />
           <view v-else class="upload-placeholder">
             <wd-icon name="add" size="56rpx" color="#999" />
             <text>添加图片</text>
@@ -324,14 +380,40 @@ onMounted(() => {
           <wd-icon name="close" size="40rpx" @click="showCategoryPicker = false" />
         </view>
         <scroll-view class="picker-content" scroll-y>
-          <view
-            v-for="cat in categories"
-            :key="cat.id"
-            class="category-option"
-            @tap="selectCategory(cat)"
-          >
-            <text>{{ cat.name }}</text>
-            <wd-icon v-if="form.categoryId === cat.id" name="check" size="32rpx" color="#3B82F6" />
+          <!-- 树形分类列表 -->
+          <view v-for="cat in categories" :key="cat.id" class="category-tree-item">
+            <!-- 父分类 -->
+            <view class="category-option parent" :class="{ selected: form.categoryId === cat.id }">
+              <view class="option-left">
+                <view
+                  v-if="cat.children && cat.children.length > 0"
+                  class="expand-btn"
+                  @tap.stop="toggleExpand(cat.id)"
+                >
+                  <wd-icon
+                    :name="expandedCategories.includes(cat.id) ? 'arrow-down' : 'arrow-right'"
+                    size="28rpx"
+                    color="#999"
+                  />
+                </view>
+                <view v-else class="icon-placeholder"></view>
+                <text @tap="selectCategory(cat)">{{ cat.name }}</text>
+              </view>
+              <wd-icon v-if="form.categoryId === cat.id" name="check" size="32rpx" color="#3B82F6" />
+            </view>
+            <!-- 子分类 -->
+            <view v-if="expandedCategories.includes(cat.id) && cat.children" class="children-list">
+              <view
+                v-for="child in cat.children"
+                :key="child.id"
+                class="category-option child"
+                :class="{ selected: form.categoryId === child.id }"
+                @tap="selectCategory(child)"
+              >
+                <text>{{ child.name }}</text>
+                <wd-icon v-if="form.categoryId === child.id" name="check" size="32rpx" color="#3B82F6" />
+              </view>
+            </view>
           </view>
         </scroll-view>
       </view>
@@ -406,6 +488,38 @@ onMounted(() => {
   padding: 0 24rpx;
   font-size: 28rpx;
   box-sizing: border-box;
+}
+
+.price-input-wrap {
+  display: flex;
+  align-items: center;
+  height: 88rpx;
+  background: #f5f5f5;
+  border-radius: 16rpx;
+  padding: 0 24rpx;
+}
+
+.price-symbol {
+  font-size: 32rpx;
+  font-weight: 500;
+  color: #333;
+  margin-right: 8rpx;
+}
+
+.price-input {
+  flex: 1;
+  height: 100%;
+  font-size: 32rpx;
+  font-weight: 500;
+  color: #333;
+  background: transparent;
+}
+
+.form-tip {
+  display: block;
+  font-size: 24rpx;
+  color: #999;
+  margin-top: 12rpx;
 }
 
 .form-textarea {
@@ -609,13 +723,54 @@ onMounted(() => {
   flex: 1;
 }
 
+.category-tree-item {
+  border-bottom: 2rpx solid #f5f5f5;
+}
+
 .category-option {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 32rpx;
-  border-bottom: 2rpx solid #f5f5f5;
+  padding: 28rpx 32rpx;
   font-size: 30rpx;
   color: #333;
+
+  &.parent {
+    background: #fff;
+  }
+
+  &.child {
+    padding-left: 80rpx;
+    background: #f9fafb;
+    border-top: 2rpx solid #f0f0f0;
+  }
+
+  &.selected {
+    color: #3B82F6;
+    font-weight: 500;
+  }
+}
+
+.option-left {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.icon-placeholder {
+  width: 28rpx;
+}
+
+.expand-btn {
+  width: 48rpx;
+  height: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: -10rpx;
+}
+
+.children-list {
+  background: #f9fafb;
 }
 </style>

@@ -7,6 +7,7 @@
 
 import { ref, computed, onMounted } from 'vue'
 import { getCategoryTree } from '@/api/modules/category'
+import { useNavbarSafeArea } from '@/composables/useNavbarSafeArea'
 import { listProducts } from '@/api/modules/product'
 import type { CategoryTreeVO } from '@/types/product'
 import type { ProductVO } from '@/types/product'
@@ -16,9 +17,43 @@ import type { ProductVO } from '@/types/product'
 const loading = ref(false)
 const keyword = ref('')
 
+// 导航栏安全区域
+const { safeArea } = useNavbarSafeArea()
+
 // 分类数据
 const categories = ref<CategoryTreeVO[]>([])
-const selectedCategoryId = ref<number | null>(null)
+const selectedRootIndex = ref(-1)  // -1 表示"全部商品"
+const selectedSubCategoryId = ref<number | null>(null)
+
+// 当前选中的根分类
+const selectedRoot = computed(() => {
+  if (selectedRootIndex.value === -1) return null
+  return categories.value[selectedRootIndex.value] || null
+})
+
+// 当前根分类的所有子分类
+const currentSubCategories = computed(() => {
+  if (!selectedRoot.value) return []
+  return getAllChildren(selectedRoot.value)
+})
+
+// 递归获取所有子分类
+const getAllChildren = (category: CategoryTreeVO): CategoryTreeVO[] => {
+  const result: CategoryTreeVO[] = []
+  if (category.children && category.children.length > 0) {
+    for (const child of category.children) {
+      result.push(child)
+      result.push(...getAllChildren(child))
+    }
+  }
+  return result
+}
+
+// 当前用于查询的分类ID
+const selectedCategoryId = computed(() => {
+  if (selectedSubCategoryId.value) return selectedSubCategoryId.value
+  return selectedRoot.value?.id || null
+})
 
 // 商品列表
 const products = ref<ProductVO[]>([])
@@ -95,10 +130,19 @@ const loadProducts = async (reset = false) => {
 }
 
 /**
- * 选择分类
+ * 选择根分类
  */
-const selectCategory = (id: number | null) => {
-  selectedCategoryId.value = id
+const selectRootCategory = (index: number) => {
+  selectedRootIndex.value = index
+  selectedSubCategoryId.value = null
+  loadProducts(true)
+}
+
+/**
+ * 选择子分类
+ */
+const selectSubCategory = (id: number | null) => {
+  selectedSubCategoryId.value = id
   loadProducts(true)
 }
 
@@ -156,8 +200,10 @@ onMounted(() => {
 
 <template>
   <view class="product-page">
-    <!-- 搜索栏 -->
-    <view class="search-section">
+    <!-- 固定头部区域 -->
+    <view class="fixed-header" :style="{ paddingTop: safeArea?.navbarHeight + 'px' }">
+      <!-- 搜索栏 -->
+      <view class="search-section">
       <view class="search-input-wrap">
         <wd-icon name="search" size="36rpx" color="#999" />
         <input
@@ -175,6 +221,7 @@ onMounted(() => {
           color="#ccc"
           @tap="keyword = ''; onSearch()"
         />
+        </view>
       </view>
     </view>
 
@@ -184,17 +231,17 @@ onMounted(() => {
       <scroll-view class="category-sidebar" scroll-y>
         <view
           class="category-item"
-          :class="{ active: selectedCategoryId === null }"
-          @tap="selectCategory(null)"
+          :class="{ active: selectedRootIndex === -1 }"
+          @tap="selectRootCategory(-1)"
         >
           全部商品
         </view>
         <view
-          v-for="cat in categories"
+          v-for="(cat, index) in categories"
           :key="cat.id"
           class="category-item"
-          :class="{ active: selectedCategoryId === cat.id }"
-          @tap="selectCategory(cat.id)"
+          :class="{ active: selectedRootIndex === index }"
+          @tap="selectRootCategory(index)"
         >
           {{ cat.name }}
         </view>
@@ -206,10 +253,35 @@ onMounted(() => {
         scroll-y
         @scrolltolower="onLoadMore"
       >
+        <!-- 子分类标签 -->
+        <view class="sub-category-section" v-if="selectedRoot">
+          <view class="sub-category-header">
+            <text class="sub-title">{{ selectedRoot.name }}</text>
+            <text class="category-manage" @tap="goCategoryManage">分类管理</text>
+          </view>
+          <view class="sub-category-tags">
+            <view
+              class="sub-tag"
+              :class="{ active: selectedSubCategoryId === null }"
+              @tap="selectSubCategory(null)"
+            >
+              全部
+            </view>
+            <view
+              v-for="sub in currentSubCategories"
+              :key="sub.id"
+              class="sub-tag"
+              :class="{ active: selectedSubCategoryId === sub.id }"
+              @tap="selectSubCategory(sub.id)"
+            >
+              {{ sub.name }}
+            </view>
+          </view>
+        </view>
+
         <!-- 分类标题 -->
         <view class="category-header">
-          <text class="category-title">{{ currentCategoryName }} ({{ products.length }})</text>
-          <text class="category-manage" @tap="goCategoryManage">分类管理</text>
+          <text class="category-title">商品列表 ({{ products.length }})</text>
         </view>
 
         <!-- 商品网格 -->
@@ -276,6 +348,12 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   background: #f5f5f5;
+  overflow: hidden;
+}
+
+.fixed-header {
+  flex-shrink: 0;
+  background: #fff;
 }
 
 .search-section {
@@ -337,6 +415,43 @@ onMounted(() => {
   padding: 24rpx;
 }
 
+.sub-category-section {
+  margin-bottom: 24rpx;
+}
+
+.sub-category-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16rpx;
+}
+
+.sub-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.sub-category-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.sub-tag {
+  padding: 12rpx 24rpx;
+  background: #f5f5f5;
+  border-radius: 8rpx;
+  font-size: 26rpx;
+  color: #666;
+
+  &.active {
+    background: #FEF3C7;
+    color: #F59E0B;
+    font-weight: 500;
+  }
+}
+
 .category-header {
   display: flex;
   align-items: center;
@@ -356,10 +471,17 @@ onMounted(() => {
 }
 
 .empty-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   padding: 100rpx 0;
   text-align: center;
   color: #999;
   font-size: 28rpx;
+  background: #fff;
+  min-height: 400rpx;
 
   text {
     display: block;

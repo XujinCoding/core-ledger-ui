@@ -7,6 +7,7 @@
 
 import { ref, onMounted } from 'vue'
 import { searchCustomers } from '@/api/modules/customer'
+import { useNavbarSafeArea } from '@/composables/useNavbarSafeArea'
 import type { CustomerVO } from '@/types/customer'
 import CustomerCard from '@/components/customer/CustomerCard.vue'
 
@@ -14,6 +15,9 @@ import CustomerCard from '@/components/customer/CustomerCard.vue'
 
 const refreshing = ref(false)
 const loading = ref(false)
+
+// 导航栏安全区域
+const { safeArea } = useNavbarSafeArea()
 const keyword = ref('')
 
 // 客户统计 - TODO: 从接口获取 customer.getCustomerStats()
@@ -112,8 +116,10 @@ onMounted(() => {
 
 <template>
   <view class="customer-page">
-    <!-- 搜索栏 -->
-    <view class="search-bar">
+    <!-- 固定头部区域 -->
+    <view class="fixed-header" :style="{ paddingTop: safeArea?.navbarHeight + 'px' }">
+      <!-- 搜索栏 -->
+      <view class="search-bar">
       <view class="search-input-wrap">
         <wd-icon name="search" size="36rpx" color="#999" />
         <input
@@ -132,10 +138,10 @@ onMounted(() => {
           @tap="keyword = ''; onSearch()"
         />
       </view>
-    </view>
+      </view>
 
-    <!-- 统计卡片 -->
-    <view class="stats-card">
+      <!-- 统计卡片 -->
+      <view class="stats-card">
       <view class="stat-item">
         <view class="stat-value">{{ stats.totalCount }}</view>
         <view class="stat-label">客户总数</view>
@@ -149,10 +155,11 @@ onMounted(() => {
       <view class="stat-item">
         <view class="stat-value">{{ stats.debtCount }}</view>
         <view class="stat-label">有欠款客户</view>
+        </view>
       </view>
     </view>
 
-    <!-- 客户列表 -->
+    <!-- 客户列表区域 -->
     <scroll-view
       class="customer-scroll"
       scroll-y
@@ -199,11 +206,16 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   background: #f5f5f5;
+  overflow: hidden;
+}
+
+.fixed-header {
+  flex-shrink: 0;
+  background: #fff;
 }
 
 .search-bar {
   padding: 24rpx;
-  background: #fff;
 }
 
 .search-input-wrap {
@@ -228,7 +240,7 @@ onMounted(() => {
 .stats-card {
   display: flex;
   background: #fff;
-  margin: 0 24rpx 24rpx;
+  margin: 24rpx;
   border-radius: 20rpx;
   padding: 32rpx 0;
   box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.05);
@@ -263,6 +275,7 @@ onMounted(() => {
 .customer-scroll {
   flex: 1;
   padding: 0 24rpx;
+  overflow: hidden;
 }
 
 .empty-state {

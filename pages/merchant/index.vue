@@ -75,20 +75,20 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .merchant-container {
-  min-height: 100vh;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
   background: #f5f5f5;
-  padding-bottom: 120rpx;
+  overflow: hidden;
 }
 
 .content {
-  min-height: calc(100vh - 120rpx);
+  flex: 1;
+  overflow: hidden;
 }
 
 .tabbar {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  flex-shrink: 0;
   background: #fff;
   border-top: 2rpx solid #f0f0f0;
   padding-bottom: env(safe-area-inset-bottom);

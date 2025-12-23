@@ -7,12 +7,16 @@
 
 import { ref, onMounted, computed } from 'vue'
 import { queryLedgers } from '@/api/modules/ledger'
+import { useNavbarSafeArea } from '@/composables/useNavbarSafeArea'
 import type { LedgerListVO } from '@/types/ledger'
 
 // ==================== 页面参数 ====================
 
 // 从路由参数获取客户ID（可选）
 const customerId = ref<number | null>(null)
+
+// 导航栏安全区域
+const { safeArea } = useNavbarSafeArea()
 
 // ==================== 数据状态 ====================
 
@@ -197,8 +201,10 @@ onMounted(() => {
 
 <template>
   <view class="ledger-page">
-    <!-- 搜索栏 -->
-    <view class="search-bar">
+    <!-- 固定头部区域 -->
+    <view class="fixed-header" :style="{ paddingTop: safeArea?.navbarHeight + 'px' }">
+      <!-- 搜索栏 -->
+      <view class="search-bar">
       <view class="search-input-wrap">
         <wd-icon name="search" size="36rpx" color="#999" />
         <input
@@ -219,11 +225,11 @@ onMounted(() => {
       </view>
       <view class="filter-btn" @tap="showFilter = true">
         <wd-icon name="filter" size="36rpx" />
+        </view>
       </view>
-    </view>
 
-    <!-- 统计卡片 -->
-    <view class="stats-card">
+      <!-- 统计卡片 -->
+      <view class="stats-card">
       <view class="stat-item">
         <view class="stat-value">¥{{ stats.totalAmount.toLocaleString() }}</view>
         <view class="stat-label">总金额</view>
@@ -235,10 +241,11 @@ onMounted(() => {
       <view class="stat-item">
         <view class="stat-value debt">¥{{ stats.debtAmount.toLocaleString() }}</view>
         <view class="stat-label">待收金额</view>
+        </view>
       </view>
     </view>
 
-    <!-- 账单列表 -->
+    <!-- 账单列表区域 -->
     <scroll-view
       class="ledger-scroll"
       scroll-y
@@ -357,10 +364,16 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .ledger-page {
-  height: 100vh;
+  height: 100%;
   display: flex;
   flex-direction: column;
   background: #f5f5f5;
+  overflow: hidden;
+}
+
+.fixed-header {
+  flex-shrink: 0;
+  background: #fff;
 }
 
 .search-bar {
@@ -405,7 +418,7 @@ onMounted(() => {
 .stats-card {
   display: flex;
   background: #fff;
-  margin: 20rpx 24rpx;
+  margin: 24rpx;
   border-radius: 20rpx;
   padding: 32rpx 0;
   box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.05);
@@ -448,6 +461,7 @@ onMounted(() => {
   flex: 1;
   padding: 0 24rpx 24rpx;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 .empty-state {

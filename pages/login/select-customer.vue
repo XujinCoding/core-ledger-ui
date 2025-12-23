@@ -7,6 +7,7 @@
 
 import { ref, onMounted } from 'vue'
 import { switchIdentity } from '@/api/modules/auth'
+import { useNavbarSafeArea } from '@/composables/useNavbarSafeArea'
 import { useUserStore } from '@/stores/modules/user'
 import type { CustomerIdentity } from '@/types/auth'
 
@@ -19,6 +20,9 @@ const showToast = (message: string, type: 'success' | 'error' | 'warning' = 'err
   })
 }
 const userStore = useUserStore()
+
+// 导航栏安全区域
+const { safeArea } = useNavbarSafeArea()
 
 const customers = ref<CustomerIdentity[]>([])
 const loading = ref(false)
@@ -93,7 +97,7 @@ const handleSelectCustomer = async (customer: CustomerIdentity) => {
 </script>
 
 <template>
-  <view class="select-customer-page">
+  <view class="select-customer-page" :style="{ paddingTop: safeArea?.navbarHeight + 'px' }">
     <!-- 顶部说明 -->
     <view class="header">
       <text class="title">选择客户</text>
@@ -134,8 +138,9 @@ const handleSelectCustomer = async (customer: CustomerIdentity) => {
 .select-customer-page {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh;
   background-color: #f5f5f5;
+  overflow: hidden;
 }
 
 .header {

@@ -7,12 +7,16 @@
 
 import { ref, onMounted } from 'vue'
 import { getCurrentUser } from '@/api/modules/auth'
+import { useNavbarSafeArea } from '@/composables/useNavbarSafeArea'
 import type { UserInfoVO } from '@/types/auth'
 
 // ==================== 数据状态 ====================
 
 const refreshing = ref(false)
 const user = ref<UserInfoVO | null>(null)
+
+// 导航栏安全区域
+const { headerStyle, headerContentStyle } = useNavbarSafeArea()
 
 // TODO: 从接口获取 getMerchantStats()
 const stats = ref({
@@ -113,8 +117,8 @@ onMounted(() => {
     @refresherrefresh="onRefresh"
   >
     <!-- 头部信息 -->
-    <view class="header">
-      <view class="user-info">
+    <view class="header" :style="headerStyle">
+      <view class="user-info" :style="headerContentStyle">
         <view class="user-avatar">
           <wd-icon name="shop" size="56rpx" />
         </view>
@@ -258,7 +262,8 @@ onMounted(() => {
 
 .header {
   background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
-  padding: 48rpx 32rpx 80rpx;
+  padding: 32rpx 32rpx 80rpx;
+  // padding-top 由 headerStyle 动态控制
   color: #fff;
 }
 

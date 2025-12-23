@@ -5,7 +5,7 @@
  * @since 1.0.0
  */
 
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { getCategoryTree, createCategory, updateCategory, deleteCategory } from '@/api/modules/category'
 import type { CategoryTreeVO, CategoryCreateDTO } from '@/types/product'
 
@@ -13,6 +13,22 @@ import type { CategoryTreeVO, CategoryCreateDTO } from '@/types/product'
 
 const loading = ref(false)
 const categories = ref<CategoryTreeVO[]>([])
+
+// 展开的分类ID列表
+const expandedIds = ref<number[]>([])
+
+// 切换展开/收起
+const toggleExpand = (id: number) => {
+  const index = expandedIds.value.indexOf(id)
+  if (index > -1) {
+    expandedIds.value.splice(index, 1)
+  } else {
+    expandedIds.value.push(id)
+  }
+}
+
+// 检查是否展开
+const isExpanded = (id: number) => expandedIds.value.includes(id)
 
 // 弹窗控制
 const showAddPopup = ref(false)
@@ -87,7 +103,7 @@ const submitForm = async () => {
     uni.showLoading({ title: '保存中...' })
     const data: CategoryCreateDTO = {
       name: form.value.name,
-      parentId: form.value.parentId || undefined,
+      parentId: form.value.parentId ?? 0,
       sort: form.value.sort
     }
 
@@ -147,85 +163,100 @@ onMounted(() => {
 
 <template>
   <view class="category-page">
-    <scroll-view class="content-scroll" scroll-y>
-      <!-- 提示信息 -->
-      <view class="tip-box">
-        <wd-icon name="info-circle" size="32rpx" color="#F59E0B" />
-        <text>分类下有商品时无法删除，请先移动或删除商品</text>
+    <!-- 加载中 -->
+    <view v-if="loading" class="loading-state">
+      <wd-loading size="48rpx" />
+    </view>
+
+    <!-- 空状态 -->
+    <view v-else-if="categories.length === 0" class="empty-state">
+      <wd-icon name="inbox" size="100rpx" color="#ddd" />
+      <text>暂无分类</text>
+      <button class="add-btn-empty" @tap="openAddPopup()">添加分类</button>
+    </view>
+
+    <!-- 树形列表 -->
+    <scroll-view v-else class="category-tree" scroll-y>
+      <!-- 添加根分类按钮 -->
+      <view class="add-root-btn" @tap="openAddPopup()">
+        <wd-icon name="add" size="32rpx" color="#3B82F6" />
+        <text>添加根分类</text>
       </view>
 
-      <!-- 加载中 -->
-      <view v-if="loading" class="loading-state">
-        <wd-loading size="48rpx" />
-      </view>
-
-      <!-- 空状态 -->
-      <view v-else-if="categories.length === 0" class="empty-state">
-        <wd-icon name="inbox" size="100rpx" color="#ddd" />
-        <text>暂无分类</text>
-        <button class="add-btn-empty" @tap="openAddPopup()">添加分类</button>
-      </view>
-
-      <!-- 分类列表 -->
-      <view v-else class="category-list">
-        <view v-for="cat in categories" :key="cat.id" class="category-group">
-          <!-- 父级分类 -->
-          <view class="category-item parent">
-            <view class="item-content">
-              <view class="category-icon">
-                <wd-icon name="folder" size="36rpx" />
-              </view>
-              <view class="category-info">
-                <text class="category-name">{{ cat.name }}</text>
-                <text class="category-count">{{ cat.children?.length || 0 }}个子分类</text>
-              </view>
+      <!-- 一级分类 -->
+      <view v-for="cat1 in categories" :key="cat1.id" class="tree-node level-1">
+        <view class="node-row">
+          <view class="node-left" @tap.stop="toggleExpand(cat1.id)">
+            <wd-icon
+              v-if="cat1.children && cat1.children.length > 0"
+              :name="isExpanded(cat1.id) ? 'arrow-down' : 'arrow-right'"
+              size="28rpx"
+              color="#999"
+            />
+            <view v-else class="expand-placeholder"></view>
+          </view>
+          <text class="node-name">{{ cat1.name }}</text>
+          <view class="node-actions">
+            <view class="action-btn" @tap.stop="openAddPopup(cat1)">
+              <wd-icon name="add" size="28rpx" color="#3B82F6" />
             </view>
-            <view class="item-actions">
-              <view class="action-btn" @tap.stop="openAddPopup(cat)">
-                <wd-icon name="add" size="32rpx" color="#3B82F6" />
-              </view>
-              <view class="action-btn" @tap.stop="openEditPopup(cat)">
-                <wd-icon name="edit" size="32rpx" color="#666" />
-              </view>
-              <view class="action-btn" @tap.stop="handleDelete(cat)">
-                <wd-icon name="delete" size="32rpx" color="#EF4444" />
-              </view>
+            <view class="action-btn" @tap.stop="openEditPopup(cat1)">
+              <wd-icon name="edit" size="28rpx" color="#666" />
+            </view>
+            <view class="action-btn" @tap.stop="handleDelete(cat1)">
+              <wd-icon name="delete" size="28rpx" color="#EF4444" />
             </view>
           </view>
+        </view>
 
-          <!-- 子分类 -->
-          <view v-if="cat.children && cat.children.length > 0" class="children-list">
-            <view
-              v-for="child in cat.children"
-              :key="child.id"
-              class="category-item child"
-            >
-              <view class="item-content">
-                <view class="category-icon small">
-                  <wd-icon name="tag" size="28rpx" />
-                </view>
-                <text class="category-name">{{ child.name }}</text>
+        <!-- 二级分类 -->
+        <view v-if="isExpanded(cat1.id) && cat1.children" class="children-wrap">
+          <view v-for="cat2 in cat1.children" :key="cat2.id" class="tree-node level-2">
+            <view class="node-row">
+              <view class="node-left" @tap.stop="toggleExpand(cat2.id)">
+                <wd-icon
+                  v-if="cat2.children && cat2.children.length > 0"
+                  :name="isExpanded(cat2.id) ? 'arrow-down' : 'arrow-right'"
+                  size="28rpx"
+                  color="#999"
+                />
+                <view v-else class="expand-placeholder"></view>
               </view>
-              <view class="item-actions">
-                <view class="action-btn" @tap.stop="openEditPopup(child)">
+              <text class="node-name">{{ cat2.name }}</text>
+              <view class="node-actions">
+                <view class="action-btn" @tap.stop="openAddPopup(cat2)">
+                  <wd-icon name="add" size="28rpx" color="#3B82F6" />
+                </view>
+                <view class="action-btn" @tap.stop="openEditPopup(cat2)">
                   <wd-icon name="edit" size="28rpx" color="#666" />
                 </view>
-                <view class="action-btn" @tap.stop="handleDelete(child)">
+                <view class="action-btn" @tap.stop="handleDelete(cat2)">
                   <wd-icon name="delete" size="28rpx" color="#EF4444" />
+                </view>
+              </view>
+            </view>
+
+            <!-- 三级分类 -->
+            <view v-if="isExpanded(cat2.id) && cat2.children" class="children-wrap">
+              <view v-for="cat3 in cat2.children" :key="cat3.id" class="tree-node level-3">
+                <view class="node-row">
+                  <view class="expand-placeholder"></view>
+                  <text class="node-name">{{ cat3.name }}</text>
+                  <view class="node-actions">
+                    <view class="action-btn" @tap.stop="openEditPopup(cat3)">
+                      <wd-icon name="edit" size="28rpx" color="#666" />
+                    </view>
+                    <view class="action-btn" @tap.stop="handleDelete(cat3)">
+                      <wd-icon name="delete" size="28rpx" color="#EF4444" />
+                    </view>
+                  </view>
                 </view>
               </view>
             </view>
           </view>
         </view>
       </view>
-
-      <view style="height: 120rpx;"></view>
     </scroll-view>
-
-    <!-- 浮动添加按钮 -->
-    <view class="fab-btn" @tap="openAddPopup()">
-      <wd-icon name="add" size="48rpx" color="#fff" />
-    </view>
 
     <!-- 添加/编辑弹窗 -->
     <wd-popup v-model="showAddPopup" position="bottom" custom-style="border-radius: 24rpx 24rpx 0 0;">
@@ -277,31 +308,19 @@ onMounted(() => {
   background: #f5f5f5;
 }
 
-.content-scroll {
-  height: 100%;
-  padding: 24rpx;
-}
-
-.tip-box {
+.loading-state {
+  height: 100vh;
   display: flex;
   align-items: center;
-  gap: 12rpx;
-  padding: 24rpx;
-  background: #FEF3C7;
-  border-radius: 16rpx;
-  margin-bottom: 24rpx;
-  font-size: 26rpx;
-  color: #92400E;
-}
-
-.loading-state {
-  padding: 100rpx 0;
-  text-align: center;
+  justify-content: center;
 }
 
 .empty-state {
-  padding: 120rpx 0;
-  text-align: center;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   color: #999;
   font-size: 28rpx;
 
@@ -325,103 +344,89 @@ onMounted(() => {
   }
 }
 
-.category-list {
-  display: flex;
-  flex-direction: column;
-  gap: 24rpx;
+/* 树形列表 */
+.category-tree {
+  height: 100vh;
+  padding: 24rpx;
+  box-sizing: border-box;
 }
 
-.category-group {
+.add-root-btn {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 24rpx 32rpx;
   background: #fff;
-  border-radius: 24rpx;
-  overflow: hidden;
-}
-
-.category-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 28rpx 32rpx;
-
-  &.parent {
-    background: #fff;
-  }
-
-  &.child {
-    background: #f9fafb;
-    border-top: 2rpx solid #f0f0f0;
-    padding-left: 64rpx;
-  }
-}
-
-.item-content {
-  display: flex;
-  align-items: center;
-  flex: 1;
-}
-
-.category-icon {
-  width: 72rpx;
-  height: 72rpx;
   border-radius: 16rpx;
-  background: #EBF5FF;
+  margin-bottom: 24rpx;
+  font-size: 28rpx;
   color: #3B82F6;
+}
+
+.tree-node {
+  background: #fff;
+  border-radius: 16rpx;
+  margin-bottom: 16rpx;
+  overflow: hidden;
+
+  &.level-2, &.level-3 {
+    margin-bottom: 0;
+    border-radius: 0;
+  }
+}
+
+.node-row {
+  display: flex;
+  align-items: center;
+  padding: 24rpx 24rpx 24rpx 16rpx;
+  border-bottom: 2rpx solid #f5f5f5;
+
+  .level-2 & {
+    padding-left: 48rpx;
+    background: #f9fafb;
+  }
+
+  .level-3 & {
+    padding-left: 80rpx;
+    background: #f5f5f5;
+  }
+}
+
+.node-left {
+  width: 48rpx;
+  height: 48rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 24rpx;
-
-  &.small {
-    width: 56rpx;
-    height: 56rpx;
-    border-radius: 12rpx;
-    margin-right: 16rpx;
-  }
+  flex-shrink: 0;
 }
 
-.category-info {
+.expand-placeholder {
+  width: 28rpx;
+}
+
+.node-name {
   flex: 1;
-}
-
-.category-name {
-  font-size: 30rpx;
-  font-weight: 500;
+  font-size: 28rpx;
   color: #333;
+  margin-left: 8rpx;
 }
 
-.category-count {
-  font-size: 24rpx;
-  color: #999;
-  margin-top: 4rpx;
-  display: block;
-}
-
-.item-actions {
+.node-actions {
   display: flex;
-  gap: 16rpx;
+  gap: 8rpx;
 }
 
 .action-btn {
-  width: 64rpx;
-  height: 64rpx;
+  width: 56rpx;
+  height: 56rpx;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.fab-btn {
-  position: fixed;
-  right: 32rpx;
-  bottom: 100rpx;
-  width: 112rpx;
-  height: 112rpx;
-  border-radius: 50%;
-  background: #3B82F6;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 8rpx 24rpx rgba(59, 130, 246, 0.4);
-  z-index: 99;
+.children-wrap {
+  border-top: 2rpx solid #f0f0f0;
 }
 
 /* 弹窗样式 */
