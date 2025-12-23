@@ -5,24 +5,23 @@
  * @since 1.0.0
  */
 
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { switchIdentity } from '@/api/modules/auth'
 import { useNavbarSafeArea } from '@/composables/useNavbarSafeArea'
 import { useUserStore } from '@/stores/modules/user'
+import { IdentityType } from '@/enums'
 import type { MerchantIdentity } from '@/types/auth'
 
-// 使用 uni 的 showToast 替代 WOT-UI 的 useToast
-const showToast = (message: string, type: 'success' | 'error' | 'warning' = 'error') => {
-  uni.showToast({
-    title: message,
-    icon: type === 'success' ? 'success' : 'none',
-    duration: 2000
-  })
-}
 const userStore = useUserStore()
 
 // 导航栏安全区域
 const { safeArea } = useNavbarSafeArea()
+
+// 计算导航栏总高度
+const navbarTotalHeight = computed(() => {
+  if (!safeArea.value) return 88
+  return safeArea.value.navbarHeight + 44
+})
 
 const merchants = ref<MerchantIdentity[]>([])
 const loading = ref(false)
@@ -32,31 +31,29 @@ const selectedId = ref<number | null>(null)
  * 初始化页面，获取商户列表
  */
 onMounted(() => {
-  // 从路由参数获取商户列表
   const pages = getCurrentPages()
-  const currentPage = pages[pages.length - 1]
+  const currentPage = pages[pages.length - 1] as any
   
-  // 尝试从路由参数获取
-  if (currentPage.$route?.params?.merchants) {
-    merchants.value = currentPage.$route.params.merchants
-  }
-  
-  // 如果没有获取到，尝试从事件获取
-  if (merchants.value.length === 0 && currentPage.$route?.query?.merchants) {
-    try {
-      merchants.value = JSON.parse(currentPage.$route.query.merchants as string)
-    } catch (error) {
-      console.error('[Select Merchant] 解析商户列表失败:', error)
-    }
+  // 从 eventChannel 获取数据
+  const eventChannel = currentPage.getOpenerEventChannel?.()
+  if (eventChannel) {
+    eventChannel.on('merchantsData', (data: { merchants: MerchantIdentity[], userInfo: any }) => {
+      console.log('[Select Merchant] 收到商户数据:', data)
+      if (data.merchants && data.merchants.length > 0) {
+        merchants.value = data.merchants
+      }
+    })
   }
 
-  console.log('[Select Merchant] 商户列表:', merchants.value)
+  console.log('[Select Merchant] 页面初始化完成')
 })
 
 /**
  * 处理商户选择
  */
 const handleSelectMerchant = async (merchant: MerchantIdentity) => {
+  if (loading.value) return
+  
   try {
     loading.value = true
     selectedId.value = merchant.id
@@ -65,7 +62,7 @@ const handleSelectMerchant = async (merchant: MerchantIdentity) => {
 
     // 调用切换身份接口
     const response = await switchIdentity({
-      identityType: 'MERCHANT_OWNER',
+      identityType: IdentityType.MERCHANT_OWNER,
       merchantId: merchant.id
     })
 
@@ -77,122 +74,310 @@ const handleSelectMerchant = async (merchant: MerchantIdentity) => {
       userStore.setUserInfo(response.userInfo)
       userStore.setIdentityType(response.userInfo.identityType)
 
-      showToast('切换成功', 'success')
+      uni.showToast({ title: '登录成功', icon: 'success' })
 
-      // 跳转到首页
-      uni.reLaunch({
-        url: '/pages/home/index'
-      })
+      // 跳转到商户首页
+      setTimeout(() => {
+        uni.reLaunch({ url: '/pages/merchant/index' })
+      }, 1000)
     } else {
-      showToast('切换失败，请重试', 'error')
+      uni.showToast({ title: '登录失败，请重试', icon: 'none' })
     }
   } catch (error) {
     console.error('[Select Merchant] 切换身份失败:', error)
-    showToast('切换失败，请重试', 'error')
+    uni.showToast({ title: '登录失败，请重试', icon: 'none' })
   } finally {
     loading.value = false
     selectedId.value = null
   }
 }
+
+/**
+ * 返回登录页
+ */
+const goBack = () => {
+  uni.navigateBack()
+}
 </script>
 
 <template>
-  <view class="select-merchant-page" :style="{ paddingTop: safeArea?.navbarHeight + 'px' }">
-    <!-- 顶部说明 -->
+  <view class="select-merchant-page">
+    <!-- 头部区域 -->
     <view class="header">
-      <text class="title">选择商户</text>
-      <text class="subtitle">请选择要登录的商户</text>
+      <view class="header-content">
+        <view class="header-icon">
+          <wd-icon name="shop" size="80rpx" color="#fff" />
+        </view>
+        <view class="header-text">
+          <text class="title">选择您的店铺</text>
+          <text class="subtitle">您有 {{ merchants.length }} 家店铺，请选择要登录的店铺</text>
+        </view>
+      </view>
     </view>
 
     <!-- 商户列表 -->
     <view class="content">
-      <wd-cell-group border>
-        <wd-cell
+      <view class="merchant-list">
+        <view
           v-for="merchant in merchants"
           :key="merchant.id"
-          :title="merchant.merchantName"
-          :label="merchant.merchantNo"
-          is-link
-          :clickable="!loading"
-          @click="handleSelectMerchant(merchant)"
+          class="merchant-card"
+          :class="{ selected: selectedId === merchant.id }"
+          @tap="handleSelectMerchant(merchant)"
         >
-          <template #right-icon>
-            <wd-loading
-              v-if="loading && selectedId === merchant.id"
-              type="ring"
-              size="24rpx"
-            />
-          </template>
-        </wd-cell>
-      </wd-cell-group>
+          <view class="merchant-icon">
+            <wd-icon name="shop" size="48rpx" />
+          </view>
+          <view class="merchant-info">
+            <view class="merchant-name">{{ merchant.name }}</view>
+            <view class="merchant-detail">
+              <view class="detail-row">
+                <text class="detail-label">编号</text>
+                <text class="detail-value">{{ merchant.code }}</text>
+              </view>
+              <view class="detail-row">
+                <text class="detail-label">电话</text>
+                <text class="detail-value">{{ merchant.phone || '-' }}</text>
+              </view>
+            </view>
+          </view>
+          <view class="merchant-action">
+            <wd-loading v-if="loading && selectedId === merchant.id" type="ring" size="40rpx" color="#3B82F6" />
+            <wd-icon v-else name="arrow-right" size="36rpx" color="#ccc" />
+          </view>
+        </view>
+      </view>
+
+      <!-- 空状态 -->
+      <view v-if="merchants.length === 0" class="empty-state">
+        <wd-icon name="shop" size="120rpx" color="#ddd" />
+        <text class="empty-text">暂无店铺数据</text>
+        <text class="empty-tip">请联系管理员添加店铺</text>
+      </view>
     </view>
 
-    <!-- 空状态 -->
-    <view v-if="merchants.length === 0" class="empty">
-      <text class="empty-text">暂无商户数据</text>
+    <!-- 底部提示 -->
+    <view class="footer">
+      <view class="footer-tip">
+        <wd-icon name="info-outline" size="28rpx" color="#999" />
+        <text>选择店铺后将进入对应的店铺管理</text>
+      </view>
     </view>
   </view>
 </template>
 
 <style lang="scss" scoped>
 .select-merchant-page {
+  min-height: 100vh;
+  background: #f5f5f5;
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  background-color: #f5f5f5;
-  overflow: hidden;
 }
 
+// 导航栏
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+  z-index: 100;
+}
+
+.navbar-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 88rpx;
+  padding: 0 32rpx;
+}
+
+.navbar-left,
+.navbar-right {
+  width: 80rpx;
+}
+
+.navbar-title {
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #fff;
+}
+
+// 头部区域
 .header {
-  flex: 0 0 auto;
-  padding: 40rpx;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-
-  .title {
-    display: block;
-    font-size: 36rpx;
-    font-weight: bold;
-    margin-bottom: 8rpx;
-  }
-
-  .subtitle {
-    display: block;
-    font-size: 26rpx;
-    opacity: 0.9;
-  }
+  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+  padding-bottom: 60rpx;
 }
 
-.content {
-  flex: 1;
-  padding: 20rpx;
-
-  :deep(.wd-cell-group) {
-    background: white;
-    border-radius: 8rpx;
-    overflow: hidden;
-  }
-
-  :deep(.wd-cell) {
-    padding: 20rpx;
-    border-bottom: 1rpx solid #eee;
-
-    &:last-child {
-      border-bottom: none;
-    }
-  }
+.header-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40rpx 32rpx;
 }
 
-.empty {
-  flex: 1;
+.header-icon {
+  width: 140rpx;
+  height: 140rpx;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40rpx;
+  margin-bottom: 24rpx;
+}
 
-  .empty-text {
-    font-size: 28rpx;
-    color: #999;
+.header-text {
+  text-align: center;
+  color: #fff;
+}
+
+.title {
+  display: block;
+  font-size: 40rpx;
+  font-weight: 600;
+  margin-bottom: 12rpx;
+}
+
+.subtitle {
+  display: block;
+  font-size: 26rpx;
+  opacity: 0.9;
+}
+
+// 内容区域
+.content {
+  flex: 1;
+  margin-top: -40rpx;
+  padding: 0 32rpx;
+  position: relative;
+  z-index: 1;
+}
+
+.merchant-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+}
+
+.merchant-card {
+  display: flex;
+  align-items: center;
+  padding: 32rpx;
+  background: #fff;
+  border-radius: 24rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.05);
+  gap: 24rpx;
+  transition: all 0.2s;
+
+  &:active {
+    transform: scale(0.98);
+    background: #f9f9f9;
   }
+
+  &.selected {
+    border: 4rpx solid #3B82F6;
+    background: #EBF5FF;
+  }
+}
+
+.merchant-icon {
+  width: 96rpx;
+  height: 96rpx;
+  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+  border-radius: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.merchant-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.merchant-name {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.merchant-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.detail-row {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.detail-label {
+  font-size: 24rpx;
+  color: #999;
+  width: 60rpx;
+}
+
+.detail-value {
+  font-size: 24rpx;
+  color: #666;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.merchant-action {
+  flex-shrink: 0;
+  width: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// 空状态
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 120rpx 32rpx;
+  background: #fff;
+  border-radius: 24rpx;
+}
+
+.empty-text {
+  font-size: 32rpx;
+  color: #666;
+  margin-top: 32rpx;
+}
+
+.empty-tip {
+  font-size: 26rpx;
+  color: #999;
+  margin-top: 12rpx;
+}
+
+// 底部提示
+.footer {
+  padding: 32rpx;
+  padding-bottom: calc(32rpx + env(safe-area-inset-bottom));
+}
+
+.footer-tip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  font-size: 24rpx;
+  color: #999;
 }
 </style>

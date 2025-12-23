@@ -129,9 +129,12 @@ export const useWechatLogin = () => {
       // 有商户列表，显示商户选择页面
       uni.navigateTo({
         url: '/pages/login/select-merchant',
-        events: {
-          merchants: response.merchants,
-          userInfo: response.userInfo
+        success: (res) => {
+          // 通过 eventChannel 向被打开页面传送数据
+          res.eventChannel.emit('merchantsData', {
+            merchants: response.merchants,
+            userInfo: response.userInfo
+          })
         }
       })
       return
@@ -141,9 +144,12 @@ export const useWechatLogin = () => {
       // 有客户列表，显示客户选择页面
       uni.navigateTo({
         url: '/pages/login/select-customer',
-        events: {
-          customers: response.customers,
-          userInfo: response.userInfo
+        success: (res) => {
+          // 通过 eventChannel 向被打开页面传送数据
+          res.eventChannel.emit('customersData', {
+            customers: response.customers,
+            userInfo: response.userInfo
+          })
         }
       })
       return
