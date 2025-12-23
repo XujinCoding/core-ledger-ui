@@ -77,3 +77,71 @@ export interface TodayStatsVO {
   /** 今日订单数 */
   orders: number
 }
+
+/**
+ * 商户概览统计VO
+ */
+export interface MerchantOverviewVO {
+  /** 客户数 */
+  customerCount: number
+  /** 商品数 */
+  productCount: number
+  /** 账单数 */
+  ledgerCount: number
+}
+
+/**
+ * 更新商户信息DTO
+ */
+export interface UpdateMerchantDTO {
+  /** 商户名称 */
+  name?: string
+  /** 手机号 */
+  phone?: string
+  /** 地址ID */
+  addressId?: number
+  /** 详细地址 */
+  addressDetail?: string
+}
+
+/**
+ * 商户实体
+ */
+export interface Merchant {
+  /** 商户ID */
+  id: number
+  /** 商户编号 */
+  code: string
+  /** 商户名称 */
+  name: string
+  /** 店主用户ID */
+  ownerUserId: number
+  /** 邀请码 */
+  inviteCode: string
+  /** 手机号 */
+  phone?: string
+  /** 地址ID */
+  addressId?: number
+  /** 详细地址 */
+  addressDetail?: string
+  /** 状态 */
+  status: string
+  /** 创建时间 */
+  createdAt?: string
+  /** 更新时间 */
+  updatedAt?: string
+}
+
+/**
+ * 创建商户DTO
+ */
+export interface CreateMerchantDTO {
+  /** 商户名称 */
+  merchantName: string
+  /** 手机号 */
+  phone?: string
+  /** 地址ID */
+  addressId?: number
+  /** 详细地址 */
+  addressDetail?: string
+}

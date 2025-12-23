@@ -151,9 +151,19 @@ export interface MerchantIdentity {
   /** 商户ID */
   id: number
   /** 商户名称 */
-  merchantName: string
+  name: string
   /** 商户编号 */
-  merchantNo: string
+  code: string
+  /** 手机号 */
+  phone?: string
+  /** 邀请码 */
+  inviteCode?: string
+  /** 地址ID */
+  addressId?: number
+  /** 详细地址 */
+  addressDetail?: string
+  /** 状态 */
+  status?: number
 }
 
 /**

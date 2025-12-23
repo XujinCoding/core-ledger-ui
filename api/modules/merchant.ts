@@ -5,7 +5,7 @@
  */
 
 import request from '@/utils/request'
-import type { CreateCustomerDTO, MerchantStatsVO, TodayStatsVO } from '@/types/merchant'
+import type { CreateCustomerDTO, MerchantStatsVO, TodayStatsVO, MerchantOverviewVO, UpdateMerchantDTO, CreateMerchantDTO, Merchant } from '@/types/merchant'
 
 /**
  * 创建客户
@@ -41,4 +41,38 @@ export const getMerchantStats = (merchantId: number) => {
  */
 export const getTodayStats = (merchantId: number) => {
   return request.get<TodayStatsVO>(`/merchant/${merchantId}/today-stats`)
+}
+
+/**
+ * 获取商户概览统计（客户数、商品数、账单数）
+ * @param merchantId 商户ID
+ * @returns 概览统计数据
+ */
+export const getMerchantOverview = (merchantId: number) => {
+  return request.get<MerchantOverviewVO>(`/merchant/${merchantId}/overview`)
+}
+
+/**
+ * 更新商户信息
+ * @param merchantId 商户ID
+ * @param data 更新数据
+ */
+export const updateMerchantInfo = (merchantId: number, data: UpdateMerchantDTO) => {
+  return request.put(`/merchant/${merchantId}`, data)
+}
+
+/**
+ * 创建店铺
+ * @param data 创建数据
+ */
+export const createMerchant = (data: CreateMerchantDTO) => {
+  return request.post('/merchant/create', data)
+}
+
+/**
+ * 获取商户信息
+ * @param merchantId 商户ID
+ */
+export const getMerchantInfo = (merchantId: number) => {
+  return request.get<Merchant>(`/merchant/${merchantId}`)
 }

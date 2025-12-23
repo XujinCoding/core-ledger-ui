@@ -6,31 +6,35 @@
  */
 
 import { ref, onMounted } from 'vue'
-import { getCurrentUser } from '@/api/modules/auth'
+import { getCurrentUser, getUserIdentities, switchIdentity } from '@/api/modules/auth'
+import { getMerchantOverview } from '@/api/modules/merchant'
 import { useNavbarSafeArea } from '@/composables/useNavbarSafeArea'
-import type { UserInfoVO } from '@/types/auth'
+import { useUserStore } from '@/stores/modules/user'
+import { IdentityType } from '@/enums'
+import type { UserInfoVO, MerchantIdentity } from '@/types/auth'
 
 // ==================== 数据状态 ====================
 
 const refreshing = ref(false)
+const switching = ref(false)
 const user = ref<UserInfoVO | null>(null)
 
 // 导航栏安全区域
 const { headerStyle, headerContentStyle } = useNavbarSafeArea()
 
-// TODO: 从接口获取 getMerchantStats()
+// 用户状态
+const userStore = useUserStore()
+
+// 统计数据
 const stats = ref({
-  customerCount: 128,
-  productCount: 36,
-  ledgerCount: 256
+  customerCount: 0,
+  productCount: 0,
+  ledgerCount: 0
 })
 
-// TODO: 从接口获取 getMerchantList()
-const merchants = ref([
-  { id: 1, name: '张记杂货铺', desc: '主店 · 128个客户', active: true },
-  { id: 2, name: '二号分店', desc: '分店 · 56个客户', active: false },
-  { id: 3, name: '三号分店', desc: '分店 · 32个客户', active: false }
-])
+// 店铺列表
+const merchants = ref<MerchantIdentity[]>([])
+const currentMerchantId = ref<number | null>(null)
 
 // ==================== 方法 ====================
 
@@ -38,6 +42,9 @@ const load = async () => {
   try {
     const info = await getCurrentUser()
     user.value = info
+    currentMerchantId.value = info.id
+    // 加载统计数据
+    await loadOverview(info.id)
   } catch (error) {
     console.error('加载用户信息失败:', error)
   } finally {
@@ -45,20 +52,71 @@ const load = async () => {
   }
 }
 
+/**
+ * 加载商户概览统计
+ */
+const loadOverview = async (merchantId: number) => {
+  try {
+    const res = await getMerchantOverview(merchantId)
+    stats.value = {
+      customerCount: res.customerCount || 0,
+      productCount: res.productCount || 0,
+      ledgerCount: res.ledgerCount || 0
+    }
+  } catch (error) {
+    console.error('加载统计数据失败:', error)
+  }
+}
+
+/**
+ * 加载店铺列表
+ */
+const loadMerchants = async () => {
+  try {
+    const res = await getUserIdentities()
+    merchants.value = res.merchants || []
+  } catch (error) {
+    console.error('加载店铺列表失败:', error)
+  }
+}
+
 const onRefresh = async () => {
   refreshing.value = true
-  await load()
+  await Promise.all([load(), loadMerchants()])
+  refreshing.value = false
 }
 
 /**
  * 切换店铺
  */
-const switchMerchant = (id: number) => {
-  // TODO: 实现切换店铺逻辑
-  merchants.value.forEach(m => {
-    m.active = m.id === id
-  })
-  uni.showToast({ title: '切换成功', icon: 'success' })
+const switchMerchant = async (id: number) => {
+  // 如果已经是当前店铺或正在切换中，不处理
+  if (switching.value) return
+  if (id === currentMerchantId.value) {
+    uni.showToast({ title: '已是当前店铺', icon: 'none' })
+    return
+  }
+  
+  switching.value = true
+  try {
+    const res = await switchIdentity({
+      identityType: IdentityType.MERCHANT_OWNER,
+      merchantId: id
+    })
+    // 更新本地状态
+    if (res.token) {
+      userStore.setToken(res.token)
+    }
+    userStore.setUserInfo(res.userInfo)
+    currentMerchantId.value = id
+    user.value = res.userInfo
+    uni.showToast({ title: '切换成功', icon: 'success' })
+  } catch (error) {
+    console.error('切换店铺失败:', error)
+    uni.showToast({ title: '切换失败', icon: 'error' })
+  } finally {
+    switching.value = false
+  }
 }
 
 /**
@@ -85,6 +143,13 @@ const handleMenuClick = (menu: string) => {
 }
 
 /**
+ * 跳转到创建店铺页面
+ */
+const goToCreateStore = () => {
+  uni.navigateTo({ url: '/pages/merchant/settings/store-info?mode=create' })
+}
+
+/**
  * 退出登录
  */
 const handleLogout = () => {
@@ -105,6 +170,7 @@ const handleLogout = () => {
 
 onMounted(() => {
   load()
+  loadMerchants()
 })
 </script>
 
@@ -118,11 +184,11 @@ onMounted(() => {
   >
     <!-- 头部信息 -->
     <view class="header" :style="headerStyle">
-      <view class="user-info" :style="headerContentStyle">
+      <view class="user-info">
         <view class="user-avatar">
           <wd-icon name="shop" size="56rpx" />
         </view>
-        <view class="user-detail">
+        <view class="user-detail" :style="headerContentStyle">
           <view class="user-name">{{ user?.name || '商户' }}</view>
           <view class="user-role">
             <text class="role-tag">商户</text>
@@ -155,13 +221,16 @@ onMounted(() => {
 
       <!-- 切换店铺 -->
       <view class="switch-section">
-        <view class="section-title">切换店铺 <text class="section-tip">（点击切换）</text></view>
+        <view class="section-title">
+          我的店铺 <text class="section-tip">（点击切换）</text>
+          <text class="add-store-btn" @tap="goToCreateStore">+ 新增</text>
+        </view>
         <view class="store-list">
           <view
             v-for="merchant in merchants"
             :key="merchant.id"
             class="store-item"
-            :class="{ active: merchant.active }"
+            :class="{ active: merchant.id === currentMerchantId }"
             @tap="switchMerchant(merchant.id)"
           >
             <view class="store-icon">
@@ -169,13 +238,13 @@ onMounted(() => {
             </view>
             <view class="store-info">
               <view class="store-name">{{ merchant.name }}</view>
-              <view class="store-desc">{{ merchant.desc }}</view>
+              <view class="store-desc">编号: {{ merchant.code }}</view>
             </view>
             <view class="store-check">
               <wd-icon
-                :name="merchant.active ? 'check-circle-fill' : 'check-circle'"
+                :name="merchant.id === currentMerchantId ? 'check-circle-fill' : 'check-circle'"
                 size="40rpx"
-                :color="merchant.active ? '#3B82F6' : '#e5e5e5'"
+                :color="merchant.id === currentMerchantId ? '#3B82F6' : '#e5e5e5'"
               />
             </view>
           </view>
@@ -188,11 +257,6 @@ onMounted(() => {
         <view class="menu-item" @tap="handleMenuClick('store-info')">
           <view class="menu-icon blue"><wd-icon name="shop" size="36rpx" /></view>
           <text class="menu-text">店铺信息</text>
-          <wd-icon name="arrow-right" size="32rpx" color="#ccc" />
-        </view>
-        <view class="menu-item" @tap="handleMenuClick('invite')">
-          <view class="menu-icon green"><wd-icon name="qrcode" size="36rpx" /></view>
-          <text class="menu-text">邀请客户</text>
           <wd-icon name="arrow-right" size="32rpx" color="#ccc" />
         </view>
         <view class="menu-item" @tap="handleMenuClick('category')">
@@ -214,31 +278,6 @@ onMounted(() => {
           <view class="menu-icon red"><wd-icon name="money-circle" size="36rpx" /></view>
           <text class="menu-text">欠款汇总</text>
           <view class="menu-badge">3</view>
-          <wd-icon name="arrow-right" size="32rpx" color="#ccc" />
-        </view>
-      </view>
-
-      <!-- 系统设置 -->
-      <view class="menu-section">
-        <view class="menu-title">系统设置</view>
-        <view class="menu-item" @tap="handleMenuClick('notification')">
-          <view class="menu-icon gray"><wd-icon name="bell" size="36rpx" /></view>
-          <text class="menu-text">消息通知</text>
-          <wd-icon name="arrow-right" size="32rpx" color="#ccc" />
-        </view>
-        <view class="menu-item" @tap="handleMenuClick('security')">
-          <view class="menu-icon gray"><wd-icon name="shield" size="36rpx" /></view>
-          <text class="menu-text">账号安全</text>
-          <wd-icon name="arrow-right" size="32rpx" color="#ccc" />
-        </view>
-        <view class="menu-item" @tap="handleMenuClick('help')">
-          <view class="menu-icon gray"><wd-icon name="help-circle" size="36rpx" /></view>
-          <text class="menu-text">帮助与反馈</text>
-          <wd-icon name="arrow-right" size="32rpx" color="#ccc" />
-        </view>
-        <view class="menu-item" @tap="handleMenuClick('about')">
-          <view class="menu-icon gray"><wd-icon name="info-circle" size="36rpx" /></view>
-          <text class="menu-text">关于我们</text>
           <wd-icon name="arrow-right" size="32rpx" color="#ccc" />
         </view>
       </view>
@@ -280,7 +319,8 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 32rpx;
+  margin-right: 24rpx;
+  flex-shrink: 0;
 }
 
 .user-detail {
@@ -316,6 +356,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .page-content {
@@ -361,11 +402,20 @@ onMounted(() => {
   font-size: 28rpx;
   color: #999;
   margin-bottom: 24rpx;
+  display: flex;
+  align-items: center;
 }
 
 .section-tip {
   font-size: 22rpx;
   color: #999;
+}
+
+.add-store-btn {
+  margin-left: auto;
+  color: #3B82F6;
+  font-size: 26rpx;
+  padding: 8rpx 16rpx;
 }
 
 .store-list {
