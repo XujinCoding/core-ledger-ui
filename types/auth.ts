@@ -134,6 +134,8 @@ export interface LoginVO {
   expireTime?: number
   /** 是否需要注册 */
   needRegister?: boolean
+  /** 是否需要选择身份（多商户/多客户场景，此时token为临时token） */
+  needSelect?: boolean
   /** 注册类型 */
   registerType?: IdentityType
   /** 商户列表（多个商户时） */

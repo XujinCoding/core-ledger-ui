@@ -88,13 +88,46 @@ export const useWechatLogin = () => {
   const handleLoginResponse = async (response: LoginVO | null) => {
     if (!response) return
 
-    // 第一步：检查是否有 token（认证成功的标志）
-    if (response.token) {
+    // 第一步：检查是否需要选择身份（多商户/多客户场景，临时token）
+    if (response.needSelect && response.token) {
+      // 保存临时token，用于调用切换身份接口
+      uni.setStorageSync('ACCESS_TOKEN', response.token)
+      
+      if (response.merchants && response.merchants.length > 0) {
+        // 有商户列表，显示商户选择页面
+        uni.navigateTo({
+          url: '/pages/login/select-merchant',
+          success: (res) => {
+            res.eventChannel.emit('merchantsData', {
+              merchants: response.merchants,
+              userInfo: response.userInfo
+            })
+          }
+        })
+        return
+      }
+
+      if (response.customers && response.customers.length > 0) {
+        // 有客户列表，显示客户选择页面
+        uni.navigateTo({
+          url: '/pages/login/select-customer',
+          success: (res) => {
+            res.eventChannel.emit('customersData', {
+              customers: response.customers,
+              userInfo: response.userInfo
+            })
+          }
+        })
+        return
+      }
+    }
+
+    // 第二步：检查是否有正式token（认证成功的标志）
+    if (response.token && !response.needSelect) {
       // 认证成功，直接进入首页
       uni.setStorageSync('ACCESS_TOKEN', response.token)
       uni.setStorageSync('USER_INFO', JSON.stringify(response.userInfo))
       uni.setStorageSync('IDENTITY_TYPE', response.userInfo.identityType)
-	  // 需要注册，根据 registerType 跳转到对应的注册页面
       if (response.userInfo.identityType === 1) {
         uni.reLaunch({
           url: '/pages/merchant/index'
@@ -107,10 +140,10 @@ export const useWechatLogin = () => {
       return
     }
 
-    // 第二步：没有 token，检查是否需要注册
+    // 第三步：没有 token，检查是否需要注册
     if (response.needRegister) {
       // 需要注册，根据 registerType 跳转到对应的注册页面
-      if ( response.registerType === 1) {
+      if (response.registerType === 1) {
         uni.navigateTo({
           url: '/pages/register/merchant'
         })
@@ -119,39 +152,6 @@ export const useWechatLogin = () => {
           url: '/pages/register/customer'
         })
       }
-      return
-    }
-
-    // 第三步：没有 token，也不需要注册，检查是否有列表数据
-    // 这说明用户有多个身份，需要选择
-
-    if (response.merchants && response.merchants.length > 0) {
-      // 有商户列表，显示商户选择页面
-      uni.navigateTo({
-        url: '/pages/login/select-merchant',
-        success: (res) => {
-          // 通过 eventChannel 向被打开页面传送数据
-          res.eventChannel.emit('merchantsData', {
-            merchants: response.merchants,
-            userInfo: response.userInfo
-          })
-        }
-      })
-      return
-    }
-
-    if (response.customers && response.customers.length > 0) {
-      // 有客户列表，显示客户选择页面
-      uni.navigateTo({
-        url: '/pages/login/select-customer',
-        success: (res) => {
-          // 通过 eventChannel 向被打开页面传送数据
-          res.eventChannel.emit('customersData', {
-            customers: response.customers,
-            userInfo: response.userInfo
-          })
-        }
-      })
       return
     }
 
