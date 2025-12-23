@@ -32,14 +32,14 @@ export interface AddressVO {
  * 地址链VO（用于回显）
  */
 export interface AddressChainVO {
-  /** 省级地址 */
-  province?: AddressVO
-  /** 市级地址 */
-  city?: AddressVO
-  /** 区县级地址 */
-  district?: AddressVO
-  /** 乡镇级地址 */
-  town?: AddressVO
-  /** 村级地址 */
-  village?: AddressVO
+  /** 地址ID数组 */
+  addressIds: number[]
+  /** 地址名称数组 */
+  addressNames: string[]
+  /** 地址级别数组 */
+  addressLevels: number[]
+  /** 完整路径 */
+  fullPath: string
+  /** 目标地址ID */
+  targetAddressId: number
 }

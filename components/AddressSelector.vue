@@ -1,135 +1,588 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { listAddressesByParent, getAddressChain } from '@/api/modules/address'
+import type { AddressVO, AddressChainVO } from '@/types/address'
+
+// 地址项类型
+interface AddressItem {
+	id: number
+	name: string
+	level: number
+}
 
 // 定义 Props
 interface Props {
-	modelValue?: number[] // 接收父组件传递的已选择地址ID列表
+	modelValue?: number | null  // 选中的地址ID（最后一级）
+	label?: string              // 标签文字
+	placeholder?: string        // 占位符
+	required?: boolean          // 是否必填
+	disabled?: boolean          // 是否禁用
+	minLevel?: number           // 最少选择层数（1-5）
+	maxLevel?: number           // 最多选择层数（1-5）
 }
 
 const props = withDefaults(defineProps<Props>(), {
-	modelValue: () => []
+	modelValue: null,
+	label: '地址',
+	placeholder: '请选择地址',
+	required: false,
+	disabled: false,
+	minLevel: 1,
+	maxLevel: 5
 })
 
 // 定义 Emits
 const emit = defineEmits<{
-	(e: 'update:modelValue', value: number[]): void
-	(e: 'change', value: number[]): void
+	(e: 'update:modelValue', value: number | null): void
+	(e: 'change', value: number | null, addressChain: AddressItem[]): void
 }>()
 
-const value = ref<number[]>([])
-const area = ref<any[]>([])
+// 弹出层显示状态
+const showPopup = ref(false)
+// 当前选中的层级索引
+const currentTabIndex = ref(0)
+// 各级地址数据
+const levelData = ref<AddressItem[][]>([])
+// 各级选中的地址
+const selectedItems = ref<AddressItem[]>([])
+// 加载状态
+const loading = ref(false)
+// 临时选中项（用于弹出层内操作）
+const tempSelectedItems = ref<AddressItem[]>([])
+// 缓存的完整路径（用于初始显示，避免加载各级数据）
+const cachedFullPath = ref('')
+// 缓存的地址链数据（延迟加载用）
+const cachedChainData = ref<AddressChainVO | null>(null)
 
-// 初始化加载顶级地址
-onMounted(async () => {
-	try {
-		const data = await listAddressesByParent(0)
-		area.value = [
-			data.map((item: any) => ({
-				value: item.id,
-				label: item.name
-			}))
-		]
+// 层级标签
+const levelLabels = ['省/市', '市/区', '区/县', '乡/镇', '村/社区']
 
-		// 如果父组件传递了初始值，进行反显
-		if (props.modelValue && props.modelValue.length > 0) {
-			await initAddressDisplay()
+// 显示文本
+const displayText = computed(() => {
+	// 优先使用已选择的地址链
+	if (selectedItems.value.length > 0) {
+		return selectedItems.value.map((item: AddressItem) => item.name).join('-')
+	}
+	// 其次使用缓存的完整路径
+	if (cachedFullPath.value) {
+		return cachedFullPath.value
+	}
+	return ''
+})
+
+// 当前可用的tab列表
+const availableTabs = computed(() => {
+	const tabs: { label: string; index: number }[] = []
+	for (let i = 0; i <= tempSelectedItems.value.length && i < props.maxLevel; i++) {
+		if (i < tempSelectedItems.value.length) {
+			tabs.push({ label: tempSelectedItems.value[i].name, index: i })
+		} else if (levelData.value[i] && levelData.value[i].length > 0) {
+			tabs.push({ label: levelLabels[i] || `第${i + 1}级`, index: i })
 		}
-	} catch (error) {
-		console.error('加载地址数据失败:', error)
+	}
+	return tabs
+})
+
+// 当前层级的地址列表
+const currentLevelList = computed(() => {
+	return levelData.value[currentTabIndex.value] || []
+})
+
+// 是否可以确认选择
+const canConfirm = computed(() => {
+	return tempSelectedItems.value.length >= props.minLevel
+})
+
+// 初始化加载
+onMounted(async () => {
+	if (props.modelValue) {
+		await initDisplayText(props.modelValue)
 	}
 })
 
-// 监听父组件传递的值变化
-watch(() => props.modelValue, async (newVal: number[]) => {
-	if (newVal && newVal.length > 0 && JSON.stringify(newVal) !== JSON.stringify(value.value)) {
-		await initAddressDisplay()
+// 监听 modelValue 变化
+watch(() => props.modelValue, async (newVal: number | null | undefined) => {
+	if (newVal && newVal !== selectedItems.value[selectedItems.value.length - 1]?.id) {
+		await initDisplayText(newVal)
+	} else if (!newVal) {
+		selectedItems.value = []
+		tempSelectedItems.value = []
+		cachedFullPath.value = ''
+		cachedChainData.value = null
 	}
-}, { deep: true })
+}, { immediate: false })
 
-// 初始化地址反显
-async function initAddressDisplay() {
+// 加载顶级地址
+async function loadTopLevel() {
 	try {
-		// 使用 getAddressChain 获取完整的地址链
-		const addressChain = await getAddressChain(props.modelValue[props.modelValue.length - 1])
-		
-		if (addressChain && addressChain.length > 0) {
-			// 重置 area 数组
-			area.value = [area.value[0]] // 保留第一级数据
-			
-			// 依次加载每一级的数据
-			for (let i = 0; i < addressChain.length - 1; i++) {
-				const childData = await listAddressesByParent(addressChain[i].id)
-				if (childData && childData.length > 0) {
-					area.value.push(
-						childData.map((item: any) => ({
-							value: item.id,
-							label: item.name
-						}))
-					)
-				}
-			}
-			
-			// 设置选中的值
-			value.value = addressChain.map(item => item.id)
-		}
+		loading.value = true
+		const data = await listAddressesByParent(0)
+		levelData.value = [data.map((item: AddressVO) => ({
+			id: item.id,
+			name: item.name,
+			level: item.level
+		}))]
 	} catch (error) {
-		console.error('地址反显失败:', error)
+		console.error('加载地址数据失败:', error)
+	} finally {
+		loading.value = false
 	}
 }
 
-// 列变化事件
-const columnChange = async ({ selectedItem, resolve, finish, columnIndex }) => {
+// 初始化显示文本（只获取 fullPath，不加载各级数据）
+async function initDisplayText(addressId: number) {
 	try {
-		const areaData = await listAddressesByParent(selectedItem.value)
+		const chainData = await getAddressChain(addressId) as AddressChainVO
 		
-		if (areaData && areaData.length > 0) {
-			resolve(
-				areaData.map((item: any) => ({
-					value: item.id,
-					label: item.name
-				}))
-			)
-		} else {
-			// 没有更多子级，结束选择
-			finish()
+		if (!chainData) {
+			return
 		}
+		
+		// 缓存数据，等点击时再加载
+		cachedChainData.value = chainData
+		cachedFullPath.value = chainData.fullPath || ''
 	} catch (error) {
-		console.error('加载子级地址失败:', error)
-		finish()
+		console.error('获取地址信息失败:', error)
+	}
+}
+
+// 根据缓存数据加载各级地址（点击时调用）
+async function loadChainData() {
+	const chainData = cachedChainData.value
+	if (!chainData || !chainData.addressIds || chainData.addressIds.length === 0) {
+		return
+	}
+	
+	try {
+		loading.value = true
+		
+		// 解析地址链
+		const chain: AddressItem[] = []
+		const { addressIds, addressNames, addressLevels } = chainData
+		
+		for (let i = 0; i < addressIds.length; i++) {
+			chain.push({
+				id: addressIds[i],
+				name: addressNames[i],
+				level: addressLevels[i]
+			})
+		}
+		
+		if (chain.length === 0) return
+		
+		// 加载顶级数据
+		if (levelData.value.length === 0) {
+			await loadTopLevel()
+		}
+		
+		// 加载每级的子级数据
+		for (let i = 0; i < chain.length - 1; i++) {
+			const childData = await listAddressesByParent(chain[i].id)
+			if (childData && childData.length > 0) {
+				levelData.value[i + 1] = childData.map((item: AddressVO) => ({
+					id: item.id,
+					name: item.name,
+					level: item.level
+				}))
+			}
+		}
+		
+		// 尝试加载最后一级的子级
+		const lastItem = chain[chain.length - 1]
+		const lastChildData = await listAddressesByParent(lastItem.id)
+		if (lastChildData && lastChildData.length > 0) {
+			levelData.value[chain.length] = lastChildData.map((item: AddressVO) => ({
+				id: item.id,
+				name: item.name,
+				level: item.level
+			}))
+		}
+		
+		selectedItems.value = [...chain]
+		tempSelectedItems.value = [...chain]
+		
+		// 清除缓存，已加载完成
+		cachedChainData.value = null
+	} catch (error) {
+		console.error('加载地址数据失败:', error)
+	} finally {
+		loading.value = false
+	}
+}
+
+// 打开选择器
+async function openPicker() {
+	if (props.disabled) return
+	
+	// 加载顶级数据（如果还没加载）
+	if (levelData.value.length === 0) {
+		await loadTopLevel()
+	}
+	
+	// 如果有缓存的地址链数据，现在加载
+	if (cachedChainData.value) {
+		await loadChainData()
+	}
+	
+	tempSelectedItems.value = [...selectedItems.value]
+	// 始终从第一个tab开始，让用户看到已选内容
+	currentTabIndex.value = 0
+	showPopup.value = true
+}
+
+// 切换tab
+function switchTab(index: number) {
+	currentTabIndex.value = index
+}
+
+// 选择地址项
+async function selectItem(item: AddressItem) {
+	const levelIndex = currentTabIndex.value
+	
+	// 更新选中项
+	tempSelectedItems.value = tempSelectedItems.value.slice(0, levelIndex)
+	tempSelectedItems.value.push(item)
+	
+	// 清除后续层级数据
+	levelData.value = levelData.value.slice(0, levelIndex + 1)
+	
+	// 如果还没到最大层级，加载下一级
+	if (levelIndex + 1 < props.maxLevel) {
+		try {
+			loading.value = true
+			const childData = await listAddressesByParent(item.id)
+			if (childData && childData.length > 0) {
+				levelData.value[levelIndex + 1] = childData.map((addr: AddressVO) => ({
+					id: addr.id,
+					name: addr.name,
+					level: addr.level
+				}))
+				currentTabIndex.value = levelIndex + 1
+			} else {
+				// 没有下级了，自动确认（如果满足最小层级要求）
+				if (tempSelectedItems.value.length >= props.minLevel) {
+					confirmSelection()
+				}
+			}
+		} catch (error) {
+			console.error('加载子级地址失败:', error)
+		} finally {
+			loading.value = false
+		}
+	} else {
+		// 达到最大层级，自动确认
+		confirmSelection()
 	}
 }
 
 // 确认选择
-function handleConfirm({ value: selectedValue }) {
-	const finalValue = selectedValue || value.value
+function confirmSelection() {
+	if (!canConfirm.value) {
+		uni.showToast({
+			title: `请至少选择${props.minLevel}级地址`,
+			icon: 'none'
+		})
+		return
+	}
 	
-	console.log('选中的地址ID列表:', finalValue)
+	selectedItems.value = [...tempSelectedItems.value]
+	const lastItem = selectedItems.value[selectedItems.value.length - 1]
 	
-	// 触发 v-model 更新
-	emit('update:modelValue', finalValue)
+	emit('update:modelValue', lastItem?.id || null)
+	emit('change', lastItem?.id || null, [...selectedItems.value])
 	
-	// 触发 change 事件
-	emit('change', finalValue)
+	showPopup.value = false
+}
+
+// 关闭弹出层
+function closePopup() {
+	showPopup.value = false
+}
+
+// 清空选择
+function clearSelection() {
+	selectedItems.value = []
+	tempSelectedItems.value = []
+	currentTabIndex.value = 0
+	emit('update:modelValue', null)
+	emit('change', null, [])
+}
+
+// 判断当前项是否选中
+function isSelected(item: AddressItem): boolean {
+	const selected = tempSelectedItems.value[currentTabIndex.value]
+	return selected?.id === item.id
 }
 </script>
 
 <template>
-	<view class="address-picker-wrapper">
-		<wd-col-picker 
-			label="地址" 
-			title="选择地址" 
-			v-model="value" 
-			:columns="area" 
-			:column-change="columnChange" 
-			required
-			@confirm="handleConfirm"
-		/>
+	<view class="address-selector">
+		<!-- 触发器 -->
+		<view 
+			class="selector-trigger" 
+			:class="{ disabled: disabled, 'has-label': label }"
+			@tap="openPicker"
+		>
+			<view class="trigger-label" v-if="label">
+				{{ label }}
+				<text v-if="required" class="required-mark">*</text>
+			</view>
+			<view class="trigger-input">
+				<text v-if="displayText" class="trigger-value">{{ displayText }}</text>
+				<text v-else class="trigger-placeholder">{{ placeholder }}</text>
+				<wd-icon name="arrow-right" size="32rpx" color="#c0c4cc" />
+			</view>
+		</view>
+
+		<!-- 弹出层 -->
+		<wd-popup 
+			v-model="showPopup" 
+			position="bottom" 
+			:safe-area-inset-bottom="true"
+			custom-style="border-radius: 24rpx 24rpx 0 0;"
+			@close="closePopup"
+		>
+			<view class="popup-content">
+				<!-- 头部 -->
+				<view class="popup-header">
+					<view class="header-cancel" @tap="closePopup">取消</view>
+					<view class="header-title">选择地址</view>
+					<view 
+						class="header-confirm" 
+						:class="{ disabled: !canConfirm }"
+						@tap="confirmSelection"
+					>
+						确定
+					</view>
+				</view>
+
+				<!-- Tab 切换 -->
+				<scroll-view class="tabs-wrapper" scroll-x>
+					<view class="tabs">
+						<view 
+							v-for="tab in availableTabs" 
+							:key="tab.index"
+							class="tab-item"
+							:class="{ active: currentTabIndex === tab.index }"
+							@tap="switchTab(tab.index)"
+						>
+							{{ tab.label }}
+						</view>
+					</view>
+				</scroll-view>
+
+				<!-- 地址列表 -->
+				<scroll-view class="address-list" scroll-y>
+					<view v-if="loading" class="loading-wrapper">
+						<wd-loading />
+					</view>
+					<view v-else-if="currentLevelList.length === 0" class="empty-wrapper">
+						<text>暂无数据</text>
+					</view>
+					<view v-else>
+						<view 
+							v-for="item in currentLevelList" 
+							:key="item.id"
+							class="address-item"
+							:class="{ selected: isSelected(item) }"
+							@tap="selectItem(item)"
+						>
+							<text class="item-name">{{ item.name }}</text>
+							<wd-icon 
+								v-if="isSelected(item)" 
+								name="check" 
+								size="36rpx" 
+								color="#10B981" 
+							/>
+						</view>
+					</view>
+				</scroll-view>
+			</view>
+		</wd-popup>
 	</view>
 </template>
 
-<style scoped>
-.address-picker-wrapper {
+<style lang="scss" scoped>
+.address-selector {
 	width: 100%;
+}
+
+.selector-trigger {
+	display: flex;
+	align-items: center;
+	gap: 24rpx;
+	
+	&.disabled {
+		opacity: 0.6;
+		pointer-events: none;
+	}
+	
+	// 没有标签时，输入框占满
+	&:not(.has-label) {
+		.trigger-input {
+			flex: 1;
+		}
+	}
+}
+
+.trigger-label {
+	font-size: 28rpx;
+	color: #333;
+	font-weight: 500;
+	flex-shrink: 0;
+}
+
+.required-mark {
+	color: #EF4444;
+	margin-left: 4rpx;
+}
+
+.trigger-input {
+	flex: 1;
+	height: 72rpx;
+	background: #f9fafb;
+	border: 2rpx solid #e5e5e5;
+	border-radius: 12rpx;
+	padding: 0 20rpx;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	box-sizing: border-box;
+	transition: border-color 0.2s;
+	
+	&:active {
+		border-color: #10B981;
+	}
+}
+
+.trigger-value {
+	font-size: 28rpx;
+	color: #333;
+	flex: 1;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.trigger-placeholder {
+	font-size: 28rpx;
+	color: #999;
+	flex: 1;
+}
+
+.popup-content {
+	background: #fff;
+	max-height: 70vh;
+	display: flex;
+	flex-direction: column;
+}
+
+.popup-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 28rpx 32rpx;
+	border-bottom: 2rpx solid #f0f0f0;
+}
+
+.header-cancel {
+	font-size: 28rpx;
+	color: #666;
+	padding: 8rpx 16rpx;
+}
+
+.header-title {
+	font-size: 32rpx;
+	font-weight: 600;
+	color: #333;
+}
+
+.header-confirm {
+	font-size: 28rpx;
+	color: #10B981;
+	font-weight: 500;
+	padding: 8rpx 16rpx;
+	
+	&.disabled {
+		color: #ccc;
+	}
+}
+
+.tabs-wrapper {
+	flex-shrink: 0;
+	white-space: nowrap;
+	border-bottom: 2rpx solid #f0f0f0;
+}
+
+.tabs {
+	display: inline-flex;
+	padding: 0 24rpx;
+}
+
+.tab-item {
+	padding: 24rpx 32rpx;
+	font-size: 28rpx;
+	color: #666;
+	position: relative;
+	flex-shrink: 0;
+	
+	&.active {
+		color: #10B981;
+		font-weight: 500;
+		
+		&::after {
+			content: '';
+			position: absolute;
+			bottom: 0;
+			left: 50%;
+			transform: translateX(-50%);
+			width: 48rpx;
+			height: 4rpx;
+			background: #10B981;
+			border-radius: 2rpx;
+		}
+	}
+}
+
+.address-list {
+	flex: 1;
+	min-height: 400rpx;
+	max-height: 50vh;
+}
+
+.loading-wrapper,
+.empty-wrapper {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 80rpx 0;
+	color: #999;
+	font-size: 28rpx;
+}
+
+.address-item {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 28rpx 32rpx;
+	border-bottom: 2rpx solid #f5f5f5;
+	
+	&:active {
+		background: #f9f9f9;
+	}
+	
+	&.selected {
+		background: #f0fdf4;
+	}
+}
+
+.item-name {
+	font-size: 28rpx;
+	color: #333;
+}
+
+.address-item.selected .item-name {
+	color: #10B981;
+	font-weight: 500;
 }
 </style>

@@ -47,20 +47,6 @@ const form = reactive<MerchantForm>({
   addressDetail: ''
 })
 
-// ==================== 地址选择 ====================
-
-const selectedAddressIds = ref<number[]>([])
-
-/**
- * 处理地址选择变化
- */
-const handleAddressChange = (addressIds: number[]) => {
-  selectedAddressIds.value = addressIds
-  if (addressIds.length > 0) {
-    form.addressId = addressIds[addressIds.length - 1]
-  }
-}
-
 // ==================== 其他状态 ====================
 
 const loading = ref(false)
@@ -248,10 +234,12 @@ const handleRegister = async () => {
           <text>地址信息</text>
         </view>
         <view class="form-group">
-          <view class="form-label">所在地区 <text class="required">*</text></view>
           <AddressSelector 
-            v-model="selectedAddressIds"
-            @change="handleAddressChange"
+            v-model="form.addressId"
+            label="所在地区"
+            placeholder="请选择所在地区"
+            :min-level="2"
+            required
           />
         </view>
         <view class="form-group">

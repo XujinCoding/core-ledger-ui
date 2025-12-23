@@ -37,8 +37,6 @@ const form = ref({
   addressDetail: ''
 })
 
-// 地址选择器绑定
-const selectedAddressIds = ref<number[]>([])
 
 // 页面标题
 const pageTitle = computed(() => isCreateMode.value ? '创建店铺' : '店铺信息')
@@ -79,15 +77,6 @@ const loadStoreInfo = async () => {
     uni.showToast({ title: '加载失败', icon: 'error' })
   } finally {
     loading.value = false
-  }
-}
-
-/**
- * 地址选择变化
- */
-const handleAddressChange = (ids: number[]) => {
-  if (ids.length > 0) {
-    form.value.addressId = ids[ids.length - 1]
   }
 }
 
@@ -145,7 +134,6 @@ const goBack = () => {
  */
 const switchToCreateMode = () => {
   isCreateMode.value = true
-  selectedAddressIds.value = []
   form.value = {
     name: '',
     phone: merchant.value?.phone || '',
@@ -201,11 +189,14 @@ onMounted(() => {
 
       <!-- 地址选择 -->
       <view class="form-section">
-        <view class="section-header">所在地区</view>
-        <AddressSelector
-          v-model="selectedAddressIds"
-          @change="handleAddressChange"
-        />
+        <view class="address-group">
+          <AddressSelector
+            v-model="form.addressId"
+            label="所在地区"
+            placeholder="请选择所在地区"
+            :min-level="2"
+          />
+        </view>
       </view>
 
       <view class="form-section">
@@ -289,10 +280,8 @@ onMounted(() => {
   margin-bottom: 32rpx;
 }
 
-.section-header {
-  padding: 24rpx 32rpx 16rpx;
-  font-size: 28rpx;
-  color: #666;
+.address-group {
+  padding: 24rpx 32rpx;
 }
 
 .submit-section {
