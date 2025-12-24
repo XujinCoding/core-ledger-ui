@@ -15,7 +15,7 @@ const userStore = useUserStore()
 
 const form = ref<CreateCustomerDTO>({
   merchantId: 0,
-  customerName: '',
+  name: '',
   phone: '',
   alias: '',
   gender: 1,
@@ -52,7 +52,7 @@ const loadCustomer = async () => {
     const customer = await getCustomer(customerId.value)
     form.value = {
       merchantId: customer.merchantId || userStore.userInfo?.id || 0,
-      customerName: customer.name || '',
+      name: customer.name || '',
       phone: customer.phone || '',
       alias: customer.alias || '',
       gender: customer.gender || 0,
@@ -122,9 +122,9 @@ onMounted(() => {
     <wd-form ref="formRef" :model="form" :rules="rules" label-width="100px">
       <wd-cell-group border>
         <wd-input
-          v-model="form.customerName"
+          v-model="form.name"
           label="客户姓名"
-          prop="customerName"
+          prop="name"
           placeholder="请输入客户姓名"
           clearable
           required

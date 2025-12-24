@@ -13,7 +13,7 @@ export interface CreateCustomerDTO {
   /** 商户ID */
   merchantId: number
   /** 客户姓名 */
-  customerName: string
+  name: string
   /** 客户别名 */
   alias?: string
   /** 手机号 */
