@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { onPullDownRefresh } from '@dcloudio/uni-app'
 import { getCustomer, getCustomerStats } from '@/api/modules/customer'
 import { queryLedgersByCustomer } from '@/api/modules/ledger'
@@ -13,6 +13,7 @@ const customerId = ref<number>(0)
 
 // ==================== 数据状态 ====================
 const loading = ref(true)
+const refreshing = ref(false)
 const customer = ref<CustomerVO>({} as CustomerVO)
 const stats = ref<CustomerStatsVO>({
   totalAmount: 0,
@@ -96,8 +97,18 @@ const loadRecentLedgers = async (reset = false) => {
  * 下拉刷新
  */
 const onRefresh = async () => {
+  refreshing.value = true
   await loadCustomerDetail()
+  refreshing.value = false
   uni.stopPullDownRefresh()
+}
+
+/**
+ * 客户变更事件处理（编辑后刷新）
+ */
+const handleCustomerChanged = () => {
+  console.log('[CustomerDetail] 客户数据已变更，刷新详情')
+  loadCustomerDetail()
 }
 
 /**
@@ -168,6 +179,14 @@ onMounted(() => {
       uni.navigateBack()
     }, 1500)
   }
+  
+  // 监听客户变更事件
+  uni.$on('customer-changed', handleCustomerChanged)
+})
+
+onUnmounted(() => {
+  // 移除事件监听
+  uni.$off('customer-changed', handleCustomerChanged)
 })
 
 // 开启下拉刷新
@@ -216,6 +235,7 @@ onPullDownRefresh(() => {
       class="content-scroll"
       scroll-y
       refresher-enabled
+      :refresher-triggered="refreshing"
       @refresherrefresh="onRefresh"
       @scrolltolower="onLoadMore"
     >
