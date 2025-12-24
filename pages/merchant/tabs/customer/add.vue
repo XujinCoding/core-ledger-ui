@@ -152,6 +152,14 @@ onMounted(() => {
           clearable
         />
 
+        <wd-input
+          v-model="form.age"
+          label="年龄"
+          type="number"
+          placeholder="请输入年龄"
+          clearable
+        />
+
         <!-- 性别选择 - 按钮式一排显示 -->
         <view class="gender-field">
           <view class="gender-label">性别</view>
@@ -174,14 +182,6 @@ onMounted(() => {
             </view>
           </view>
         </view>
-
-        <wd-input
-          v-model="form.age"
-          label="年龄"
-          type="number"
-          placeholder="请输入年龄"
-          clearable
-        />
 
         <!-- 地址选择器 -->
         <view class="address-field">
@@ -248,14 +248,15 @@ onMounted(() => {
 .gender-field {
   display: flex;
   align-items: center;
-  padding: 28rpx 30rpx;
+  padding: 15rpx 30rpx;
   background: #fff;
+  border-top: 1rpx solid #f0f0f0;
   border-bottom: 1rpx solid #f0f0f0;
 }
 
 .gender-label {
-  font-size: 28rpx;
-  color: #333;
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.85);
   width: 100px;
   flex-shrink: 0;
 }
@@ -300,7 +301,7 @@ onMounted(() => {
 
 // 地址选择器样式
 .address-field {
-  padding: 28rpx 30rpx;
+  padding: 0 30rpx;
   background: #fff;
   border-bottom: 1rpx solid #f0f0f0;
 }

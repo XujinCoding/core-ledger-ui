@@ -277,11 +277,12 @@ onMounted(() => {
   background: #fff;
   border-radius: 24rpx;
   overflow: hidden;
+  margin-top: 16rpx;
   margin-bottom: 32rpx;
 }
 
 .address-group {
-  padding: 24rpx 32rpx;
+  padding: 10px 15px;
 }
 
 .submit-section {

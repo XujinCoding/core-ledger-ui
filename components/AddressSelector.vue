@@ -410,7 +410,8 @@ function isSelected(item: AddressItem): boolean {
 .selector-trigger {
 	display: flex;
 	align-items: center;
-	gap: 24rpx;
+	min-height: 48px;
+	padding: 5px 0;
 	
 	&.disabled {
 		opacity: 0.6;
@@ -426,10 +427,12 @@ function isSelected(item: AddressItem): boolean {
 }
 
 .trigger-label {
-	font-size: 28rpx;
-	color: #333;
-	font-weight: 500;
+	font-size: 14px;
+	color: rgba(0, 0, 0, 0.85);
+	width: var(--wot-input-cell-label-width, 33%);
+	margin-right: var(--wot-cell-padding, 15px);
 	flex-shrink: 0;
+	box-sizing: border-box;
 }
 
 .required-mark {
@@ -439,35 +442,32 @@ function isSelected(item: AddressItem): boolean {
 
 .trigger-input {
 	flex: 1;
-	height: 72rpx;
-	background: #f9fafb;
-	border: 2rpx solid #e5e5e5;
-	border-radius: 12rpx;
-	padding: 0 20rpx;
+	min-width: 0;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	box-sizing: border-box;
-	transition: border-color 0.2s;
-	
-	&:active {
-		border-color: #10B981;
-	}
+	gap: 8rpx;
+	overflow: hidden;
 }
 
 .trigger-value {
-	font-size: 28rpx;
-	color: #333;
+	font-size: 14px;
+	color: rgba(0, 0, 0, 0.85);
 	flex: 1;
+	min-width: 0;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
 
 .trigger-placeholder {
-	font-size: 28rpx;
-	color: #999;
+	font-size: 14px;
+	color: rgba(0, 0, 0, 0.25);
 	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .popup-content {
