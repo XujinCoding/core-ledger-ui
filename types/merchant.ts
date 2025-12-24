@@ -28,6 +28,8 @@ export interface CreateCustomerDTO {
   gender?: Gender
   /** 年龄 */
   age?: number
+  /** 备注 */
+  remark?: string
 }
 
 /**

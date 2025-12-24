@@ -21,7 +21,8 @@ const form = ref<CreateCustomerDTO>({
   gender: 1,
   age: undefined,
   addressId: undefined,
-  addressDetail: ''
+  addressDetail: '',
+  remark: ''
 })
 
 const loading = ref(false)
@@ -58,7 +59,8 @@ const loadCustomer = async () => {
       gender: customer.gender || 0,
       age: customer.age,
       addressId: customer.addressId,
-      addressDetail: customer.addressDetail || ''
+      addressDetail: customer.addressDetail || '',
+      remark: customer.remark || ''
     }
   } catch (error) {
     console.error('加载客户数据失败:', error)
@@ -82,6 +84,8 @@ const handleSubmit = async () => {
       uni.showToast({ title: '添加成功', icon: 'success' })
     }
     setTimeout(() => {
+      // 触发刷新事件，通知列表页面刷新数据
+      uni.$emit('customer-changed')
       uni.navigateBack()
     }, 1500)
   } catch (error) {

@@ -19,6 +19,21 @@ const loading = ref(false)
 // 导航栏安全区域
 const { safeArea } = useNavbarSafeArea()
 const keyword = ref('')
+// 搜索类型: name=姓名, phone=手机号
+const searchType = ref<'name' | 'phone'>('name')
+const showSearchTypePopup = ref(false)
+const searchTypeOptions = [
+  { name: '姓名', value: 'name' },
+  { name: '手机号', value: 'phone' }
+]
+
+/**
+ * 处理搜索类型选择
+ */
+const handleSearchTypeSelect = (item: { name: string; value: string }) => {
+  searchType.value = item.value as 'name' | 'phone'
+  showSearchTypePopup.value = false
+}
 
 // 客户统计
 const customerCount = ref(0)
@@ -55,8 +70,16 @@ const loadCustomers = async (reset = false) => {
       customers.value = []
     }
 
+    const searchParams: { name?: string; phone?: string } = {}
+    if (keyword.value) {
+      if (searchType.value === 'name') {
+        searchParams.name = keyword.value
+      } else {
+        searchParams.phone = keyword.value
+      }
+    }
     const res = await searchCustomers(
-      { keyword: keyword.value || undefined },
+      searchParams,
       { page: page.value, size: 20 }
     )
 
@@ -125,16 +148,28 @@ const handleMerchantChanged = () => {
   loadCustomerCount()
 }
 
+/**
+ * 客户变更事件处理（新增/修改/删除后刷新）
+ */
+const handleCustomerChanged = () => {
+  console.log('[Customer] 客户数据已变更，刷新列表')
+  loadCustomers(true)
+  loadCustomerCount()
+}
+
 onMounted(() => {
   loadCustomers(true)
   loadCustomerCount()
   // 监听商户切换事件
   uni.$on('merchant-changed', handleMerchantChanged)
+  // 监听客户变更事件
+  uni.$on('customer-changed', handleCustomerChanged)
 })
 
 onUnmounted(() => {
   // 移除事件监听，避免内存泄漏
   uni.$off('merchant-changed', handleMerchantChanged)
+  uni.$off('customer-changed', handleCustomerChanged)
 })
 </script>
 
@@ -144,25 +179,41 @@ onUnmounted(() => {
     <view class="fixed-header" :style="{ paddingTop: safeArea?.navbarHeight + 'px' }">
       <!-- 搜索栏 -->
       <view class="search-bar">
-      <view class="search-input-wrap">
-        <wd-icon name="search" size="36rpx" color="#999" />
-        <input
-          class="search-input"
-          v-model="keyword"
-          placeholder="搜索客户姓名/手机号"
-          placeholder-class="placeholder"
-          confirm-type="search"
-          @confirm="onSearch"
-        />
-        <wd-icon
-          v-if="keyword"
-          name="close-fill"
-          size="32rpx"
-          color="#ccc"
-          @tap="keyword = ''; onSearch()"
-        />
+        <view class="search-input-wrap">
+          <!-- 搜索类型下拉选择 -->
+          <view class="search-type-select" @tap="showSearchTypePopup = true">
+            <text class="search-type-text">{{ searchType === 'name' ? '姓名' : '手机号' }}</text>
+            <wd-icon name="arrow-down" size="24rpx" color="#666" />
+          </view>
+          <view class="search-divider"></view>
+          <!-- 搜索输入框 -->
+          <input
+            class="search-input"
+            v-model="keyword"
+            :placeholder="searchType === 'name' ? '请输入客户姓名' : '请输入手机号'"
+            placeholder-class="placeholder"
+            confirm-type="search"
+            :type="searchType === 'phone' ? 'number' : 'text'"
+            @confirm="onSearch"
+          />
+          <wd-icon
+            v-if="keyword"
+            name="close-fill"
+            size="32rpx"
+            color="#ccc"
+            @tap="keyword = ''; onSearch()"
+          />
+          <wd-icon v-else name="search" size="36rpx" color="#999" />
+        </view>
       </view>
-      </view>
+      
+      <!-- 搜索类型选择弹窗 -->
+      <wd-action-sheet
+        v-model="showSearchTypePopup"
+        :actions="searchTypeOptions"
+        @select="handleSearchTypeSelect"
+        cancel-text="取消"
+      />
 
       <!-- 统计卡片 -->
       <view class="stats-card stats-card-single">
@@ -238,7 +289,28 @@ onUnmounted(() => {
   background: #f5f5f5;
   border-radius: 40rpx;
   padding: 16rpx 24rpx;
-  gap: 16rpx;
+  gap: 12rpx;
+}
+
+.search-type-select {
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
+  padding-right: 12rpx;
+  flex-shrink: 0;
+}
+
+.search-type-text {
+  font-size: 28rpx;
+  color: #333;
+  font-weight: 500;
+}
+
+.search-divider {
+  width: 2rpx;
+  height: 32rpx;
+  background: #ddd;
+  flex-shrink: 0;
 }
 
 .search-input {

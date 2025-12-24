@@ -32,6 +32,8 @@ export interface CustomerVO {
   addressPath?: string
   /** 详细地址 */
   addressDetail?: string
+  /** 备注 */
+  remark?: string
   /** 商户ID */
   merchantId?: number
   /** 商户名称 */
@@ -80,6 +82,8 @@ export interface CustomerUpdateDTO {
   addressId?: number
   /** 详细地址 */
   addressDetail?: string
+  /** 备注 */
+  remark?: string
 }
 
 /**

@@ -68,7 +68,7 @@ export const searchCustomers = (
     }
   })
   
-  return request.get<CustomerPageVO>('/customers', { params })
+  return request.get<CustomerPageVO>('/customers', params)
 }
 
 /**
