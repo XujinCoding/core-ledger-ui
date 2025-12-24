@@ -91,13 +91,9 @@ export const deleteCustomer = (id: number) => {
 }
 
 /**
- * 导出客户数据
- * @param query 查询条件
- * @returns 导出结果
+ * 获取客户总数
+ * @returns 客户总数
  */
-export const exportCustomers = (query?: CustomerSearchDTO) => {
-  return request.get('/customers/export', { 
-    params: query,
-    responseType: 'blob'
-  })
+export const getCustomerCount = () => {
+  return request.get<number>('/customers/count')
 }

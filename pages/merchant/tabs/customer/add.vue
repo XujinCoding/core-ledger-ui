@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { addCustomer, getCustomer, updateCustomer } from '@/api/modules/customer'
 import type { CustomerAddDTO } from '@/types/customer'
+import AddressSelector from '@/components/AddressSelector.vue'
 
 // 编辑模式
 const isEdit = ref(false)
@@ -54,10 +55,6 @@ const loadCustomer = async () => {
       addressDetail: customer.addressDetail || '',
       remark: customer.remark || ''
     }
-    // 设置地址文本显示
-    if (customer.addressName) {
-      addressText.value = customer.addressName
-    }
   } catch (error) {
     console.error('加载客户数据失败:', error)
     uni.showToast({ title: '加载失败', icon: 'none' })
@@ -88,25 +85,11 @@ const handleSubmit = async () => {
   }
 }
 
-// 选择地址
-const showAddressPicker = ref(false)
-const addressText = ref('')
-const selectedAddress = ref<number[]>([])
-
 /**
- * 地址列变化回调
+ * 地址选择变化回调
  */
-const handleAddressColumnChange = () => {
-  // TODO: 实现地址级联加载
-  return Promise.resolve([])
-}
-
-const onAddressConfirm = (e: { selectedItems: any[] }) => {
-  showAddressPicker.value = false
-  if (e.selectedItems && e.selectedItems.length > 0) {
-    form.value.addressId = e.selectedItems[e.selectedItems.length - 1]?.value
-    addressText.value = e.selectedItems.map((item: any) => item.label).join(' ')
-  }
+const handleAddressChange = (addressId: number | null) => {
+  form.value.addressId = addressId || undefined
 }
 
 // 生命周期 - 获取路由参数
@@ -158,10 +141,28 @@ onMounted(() => {
           clearable
         />
 
-        <wd-radio-group v-model="form.gender" label="性别" required>
-          <wd-radio :value="1">男</wd-radio>
-          <wd-radio :value="2">女</wd-radio>
-        </wd-radio-group>
+        <!-- 性别选择 - 按钮式一排显示 -->
+        <view class="gender-field">
+          <view class="gender-label">性别</view>
+          <view class="gender-options">
+            <view 
+              class="gender-option" 
+              :class="{ active: form.gender === 1 }"
+              @tap="form.gender = 1"
+            >
+              <wd-icon name="user" size="32rpx" />
+              <text>男</text>
+            </view>
+            <view 
+              class="gender-option" 
+              :class="{ active: form.gender === 2 }"
+              @tap="form.gender = 2"
+            >
+              <wd-icon name="user" size="32rpx" />
+              <text>女</text>
+            </view>
+          </view>
+        </view>
 
         <wd-input
           v-model="form.age"
@@ -171,12 +172,16 @@ onMounted(() => {
           clearable
         />
 
-        <wd-cell
-          title="所在地区"
-          :value="addressText || '请选择'"
-          @click="showAddressPicker = true"
-          is-link
-        />
+        <!-- 地址选择器 -->
+        <view class="address-field">
+          <AddressSelector
+            v-model="form.addressId"
+            label="所在地区"
+            placeholder="请选择地址"
+            :min-level="2"
+            @change="handleAddressChange"
+          />
+        </view>
 
         <wd-input
           v-model="form.addressDetail"
@@ -207,15 +212,6 @@ onMounted(() => {
       </wd-button>
     </view>
 
-    <!-- 地址选择器 -->
-    <wd-col-picker
-      v-model="selectedAddress"
-      :visible="showAddressPicker"
-      :columns="[]"
-      :column-change="handleAddressColumnChange"
-      @confirm="onAddressConfirm"
-      @close="showAddressPicker = false"
-    />
   </view>
 </template>
 
@@ -235,10 +231,67 @@ onMounted(() => {
   .wd-cell {
     padding: 28rpx 30rpx;
   }
+}
+
+// 性别选择样式
+.gender-field {
+  display: flex;
+  align-items: center;
+  padding: 28rpx 30rpx;
+  background: #fff;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.gender-label {
+  font-size: 28rpx;
+  color: #333;
+  width: 100px;
+  flex-shrink: 0;
+}
+
+.gender-options {
+  flex: 1;
+  display: flex;
+  gap: 24rpx;
+}
+
+.gender-option {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  padding: 16rpx 24rpx;
+  background: #f5f5f5;
+  border-radius: 12rpx;
+  border: 2rpx solid transparent;
+  transition: all 0.2s;
   
-  .wd-radio-group {
-    padding: 20rpx 30rpx;
+  text {
+    font-size: 28rpx;
+    color: #666;
   }
+  
+  &.active {
+    background: rgba(59, 130, 246, 0.1);
+    border-color: #3B82F6;
+    
+    text {
+      color: #3B82F6;
+      font-weight: 500;
+    }
+    
+    :deep(.wd-icon) {
+      color: #3B82F6 !important;
+    }
+  }
+}
+
+// 地址选择器样式
+.address-field {
+  padding: 28rpx 30rpx;
+  background: #fff;
+  border-bottom: 1rpx solid #f0f0f0;
 }
 
 .form-actions {

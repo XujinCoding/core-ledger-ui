@@ -6,7 +6,7 @@
  */
 
 import { ref, onMounted, onUnmounted } from 'vue'
-import { searchCustomers } from '@/api/modules/customer'
+import { searchCustomers, getCustomerCount } from '@/api/modules/customer'
 import { useNavbarSafeArea } from '@/composables/useNavbarSafeArea'
 import type { CustomerVO } from '@/types/customer'
 import CustomerCard from '@/components/customer/CustomerCard.vue'
@@ -20,12 +20,8 @@ const loading = ref(false)
 const { safeArea } = useNavbarSafeArea()
 const keyword = ref('')
 
-// 客户统计 - TODO: 从接口获取 customer.getCustomerStats()
-const stats = ref({
-  totalCount: 128,
-  totalDebt: 12800,
-  debtCount: 23
-})
+// 客户统计
+const customerCount = ref(0)
 
 // 客户列表
 const customers = ref<CustomerVO[]>([])
@@ -33,6 +29,17 @@ const page = ref(0)
 const hasMore = ref(true)
 
 // ==================== 方法 ====================
+
+/**
+ * 加载客户总数
+ */
+const loadCustomerCount = async () => {
+  try {
+    customerCount.value = await getCustomerCount()
+  } catch (error) {
+    console.error('加载客户总数失败:', error)
+  }
+}
 
 /**
  * 加载客户列表
@@ -73,7 +80,7 @@ const loadCustomers = async (reset = false) => {
  */
 const onRefresh = async () => {
   refreshing.value = true
-  await loadCustomers(true)
+  await Promise.all([loadCustomers(true), loadCustomerCount()])
   refreshing.value = false
 }
 
@@ -115,10 +122,12 @@ const addCustomer = () => {
 const handleMerchantChanged = () => {
   console.log('[Customer] 商户已切换，刷新客户列表')
   loadCustomers(true)
+  loadCustomerCount()
 }
 
 onMounted(() => {
   loadCustomers(true)
+  loadCustomerCount()
   // 监听商户切换事件
   uni.$on('merchant-changed', handleMerchantChanged)
 })
@@ -156,20 +165,10 @@ onUnmounted(() => {
       </view>
 
       <!-- 统计卡片 -->
-      <view class="stats-card">
-      <view class="stat-item">
-        <view class="stat-value">{{ stats.totalCount }}</view>
-        <view class="stat-label">客户总数</view>
-      </view>
-      <view class="stat-divider"></view>
-      <view class="stat-item">
-        <view class="stat-value debt">¥{{ stats.totalDebt.toLocaleString() }}</view>
-        <view class="stat-label">总欠款</view>
-      </view>
-      <view class="stat-divider"></view>
-      <view class="stat-item">
-        <view class="stat-value">{{ stats.debtCount }}</view>
-        <view class="stat-label">有欠款客户</view>
+      <view class="stats-card stats-card-single">
+        <view class="stat-item">
+          <view class="stat-value">{{ customerCount }}</view>
+          <view class="stat-label">客户总数</view>
         </view>
       </view>
     </view>
@@ -259,6 +258,11 @@ onUnmounted(() => {
   border-radius: 20rpx;
   padding: 32rpx 0;
   box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.05);
+
+  &.stats-card-single {
+    justify-content: center;
+    padding: 24rpx 0;
+  }
 }
 
 .stat-item {

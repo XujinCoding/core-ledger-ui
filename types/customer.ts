@@ -93,3 +93,41 @@ export interface CustomerStatsVO {
   /** 平均消费金额 */
   avgAmount: number
 }
+
+/**
+ * 创建客户请求
+ */
+export interface CustomerAddDTO {
+  /** 客户姓名 */
+  name: string
+  /** 手机号 */
+  phone: string
+  /** 别名/昵称 */
+  alias?: string
+  /** 性别：0=未知, 1=男, 2=女 */
+  gender?: Gender
+  /** 年龄 */
+  age?: number
+  /** 地址ID */
+  addressId?: number
+  /** 详细地址 */
+  addressDetail?: string
+  /** 备注 */
+  remark?: string
+}
+
+/**
+ * 客户分页VO
+ */
+export interface CustomerPageVO {
+  /** 内容列表 */
+  content: CustomerVO[]
+  /** 总元素数 */
+  totalElements: number
+  /** 总页数 */
+  totalPages: number
+  /** 当前页码 */
+  number: number
+  /** 每页大小 */
+  size: number
+}
