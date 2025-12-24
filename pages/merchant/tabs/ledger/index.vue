@@ -273,7 +273,6 @@ onUnmounted(() => {
       <view v-if="showEmpty" class="empty-state">
         <wd-icon name="list" size="100rpx" color="#ddd" />
         <text>暂无账单记录</text>
-        <button class="add-btn-empty" @tap="createLedger">创建账单</button>
       </view>
 
       <!-- 账单列表 -->
@@ -632,15 +631,15 @@ onUnmounted(() => {
 .fab-btn {
   position: fixed;
   right: 32rpx;
-  bottom: 180rpx;
+  bottom: 200rpx;
   width: 112rpx;
   height: 112rpx;
   border-radius: 50%;
-  background: #3b82f6;
+  background: #10B981;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8rpx 24rpx rgba(59, 130, 246, 0.4);
+  box-shadow: 0 8rpx 24rpx rgba(16, 185, 129, 0.4);
   z-index: 99;
 }
 

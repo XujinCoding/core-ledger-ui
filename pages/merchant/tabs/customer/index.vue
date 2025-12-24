@@ -236,7 +236,6 @@ onUnmounted(() => {
       <view v-if="customers.length === 0 && !loading" class="empty-state">
         <wd-icon name="inbox" size="100rpx" color="#ddd" />
         <text>暂无客户数据</text>
-        <button class="add-btn-empty" @tap="addCustomer">添加客户</button>
       </view>
 
       <view v-else class="customer-list">
