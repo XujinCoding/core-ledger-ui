@@ -7,15 +7,11 @@
 
 import { ref, reactive } from 'vue'
 import { customerWechatRegister } from '@/api/modules/auth'
-import { useNavbarSafeArea } from '@/composables/useNavbarSafeArea'
 import { useUserStore } from '@/stores/modules/user'
 import AddressSelector from '@/components/AddressSelector.vue'
 import { getWechatCode } from '@/composables/useWechatLogin'
 
 const userStore = useUserStore()
-
-// 导航栏安全区域
-const { safeArea } = useNavbarSafeArea()
 
 // 使用 uni 的 showToast
 const showToast = (message: string, success = false) => {
@@ -136,7 +132,7 @@ const handleScanCode = () => {
 </script>
 
 <template>
-  <view class="register-page" :style="{ paddingTop: safeArea?.navbarHeight + 'px' }">
+  <view class="register-page">
     <!-- 头部 -->
     <view class="register-header">
       <view class="register-icon">
@@ -212,7 +208,7 @@ const handleScanCode = () => {
               :class="{ active: form.gender === 1 }"
               @tap="selectGender(1)"
             >
-              <wd-icon name="man" size="40rpx" />
+              <text class="gender-icon">♂</text>
               <text>男</text>
             </view>
             <view
@@ -220,16 +216,8 @@ const handleScanCode = () => {
               :class="{ active: form.gender === 2 }"
               @tap="selectGender(2)"
             >
-              <wd-icon name="woman" size="40rpx" />
+              <text class="gender-icon">♀</text>
               <text>女</text>
-            </view>
-            <view
-              class="gender-item unknown"
-              :class="{ active: form.gender === 0 }"
-              @tap="selectGender(0)"
-            >
-              <wd-icon name="help-outline" size="40rpx" />
-              <text>未知</text>
             </view>
           </view>
         </view>
@@ -360,7 +348,6 @@ const handleScanCode = () => {
   flex: 1;
   overflow-y: auto;
   padding: 24rpx;
-  padding-bottom: 140rpx;
 }
 
 .form-section {
@@ -480,6 +467,11 @@ const handleScanCode = () => {
     background: #f0fdf4;
   }
 
+  .gender-icon {
+    font-size: 44rpx;
+    margin-top: 0;
+  }
+
   text {
     display: block;
     font-size: 26rpx;
@@ -498,10 +490,6 @@ const handleScanCode = () => {
 
   &.female {
     color: #EC4899;
-  }
-
-  &.unknown {
-    color: #9CA3AF;
   }
 }
 
@@ -583,14 +571,10 @@ const handleScanCode = () => {
 }
 
 .footer-btns {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  flex-shrink: 0;
   padding: 24rpx 32rpx;
   padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
   background: #fff;
-  box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.05);
 }
 
 .btn-primary {

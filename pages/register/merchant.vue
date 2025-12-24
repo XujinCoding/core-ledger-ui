@@ -7,14 +7,10 @@
 
 import { ref, reactive } from 'vue'
 import { merchantWechatRegister } from '@/api/modules/auth'
-import { useNavbarSafeArea } from '@/composables/useNavbarSafeArea'
 import AddressSelector from '@/components/AddressSelector.vue'
 import { useWechatLogin, getWechatCode } from '@/composables/useWechatLogin'
 
 const { handleLoginResponse } = useWechatLogin()
-
-// 导航栏安全区域
-const { safeArea } = useNavbarSafeArea()
 
 // 使用 uni 的 showToast
 const showToast = (message: string) => {
@@ -129,7 +125,7 @@ const handleRegister = async () => {
 </script>
 
 <template>
-  <view class="register-page" :style="{ paddingTop: safeArea?.navbarHeight + 'px' }">
+  <view class="register-page">
     <!-- 头部 -->
     <view class="register-header">
       <view class="register-icon">
@@ -306,7 +302,6 @@ const handleRegister = async () => {
   flex: 1;
   overflow-y: auto;
   padding: 24rpx;
-  padding-bottom: 140rpx;
 }
 
 .form-section {
@@ -409,14 +404,10 @@ const handleRegister = async () => {
 }
 
 .footer-btns {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  flex-shrink: 0;
   padding: 24rpx 32rpx;
   padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
   background: #fff;
-  box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.05);
 }
 
 .btn-primary {
