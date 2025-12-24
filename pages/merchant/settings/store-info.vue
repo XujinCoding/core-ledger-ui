@@ -6,17 +6,17 @@
  */
 
 import { ref, computed, onMounted } from 'vue'
-import { getMerchantInfo, updateMerchantInfo, createMerchant } from '@/api/modules/merchant'
+import { getMerchant, updateMerchantInfo, createMerchant } from '@/api/modules/merchant'
 import { useNavbarSafeArea } from '@/composables/useNavbarSafeArea'
 import { useUserStore } from '@/stores/modules/user'
 import AddressSelector from '@/components/AddressSelector.vue'
-import type { Merchant } from '@/types/merchant'
+import type { MerchantVO } from '@/types/merchant'
 
 // ==================== 数据状态 ====================
 
 const loading = ref(false)
 const submitting = ref(false)
-const merchant = ref<Merchant | null>(null)
+const merchant = ref<MerchantVO | null>(null)
 const isCreateMode = ref(false)
 const userStore = useUserStore()
 
@@ -64,7 +64,7 @@ const loadStoreInfo = async () => {
 
   loading.value = true
   try {
-    const info = await getMerchantInfo(merchantId)
+    const info = await getMerchant(merchantId)
     merchant.value = info
     form.value = {
       name: info.name || '',

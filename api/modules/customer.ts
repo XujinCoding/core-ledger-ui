@@ -9,19 +9,9 @@ import type {
   CustomerVO, 
   CustomerSearchDTO, 
   CustomerUpdateDTO, 
-  CustomerAddDTO, 
   CustomerPageVO,
   CustomerStatsVO
 } from '@/types/customer'
-
-/**
- * 添加客户
- * @param data 客户信息
- * @returns 添加后的客户信息
- */
-export const addCustomer = (data: CustomerAddDTO) => {
-  return request.post<CustomerVO>('/customers', data)
-}
 
 /**
  * 修改客户

@@ -1,22 +1,27 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { addCustomer, getCustomer, updateCustomer } from '@/api/modules/customer'
-import type { CustomerAddDTO } from '@/types/customer'
+import { getCustomer, updateCustomer } from '@/api/modules/customer'
+import { createCustomer } from '@/api/modules/merchant'
+import type { CreateCustomerDTO } from '@/types/merchant'
+import type { CustomerUpdateDTO } from '@/types/customer'
+import { useUserStore } from '@/stores/modules/user'
 import AddressSelector from '@/components/AddressSelector.vue'
 
 // 编辑模式
 const isEdit = ref(false)
 const customerId = ref<number | null>(null)
 
-const form = ref<CustomerAddDTO>({
-  name: '',
+const userStore = useUserStore()
+
+const form = ref<CreateCustomerDTO>({
+  merchantId: 0,
+  customerName: '',
   phone: '',
   alias: '',
   gender: 1,
   age: undefined,
   addressId: undefined,
-  addressDetail: '',
-  remark: ''
+  addressDetail: ''
 })
 
 const loading = ref(false)
@@ -46,14 +51,14 @@ const loadCustomer = async () => {
     pageLoading.value = true
     const customer = await getCustomer(customerId.value)
     form.value = {
-      name: customer.name || '',
+      merchantId: customer.merchantId || userStore.userInfo?.id || 0,
+      customerName: customer.name || '',
       phone: customer.phone || '',
       alias: customer.alias || '',
       gender: customer.gender || 0,
       age: customer.age,
       addressId: customer.addressId,
-      addressDetail: customer.addressDetail || '',
-      remark: customer.remark || ''
+      addressDetail: customer.addressDetail || ''
     }
   } catch (error) {
     console.error('加载客户数据失败:', error)
@@ -68,10 +73,12 @@ const handleSubmit = async () => {
   try {
     loading.value = true
     if (isEdit.value && customerId.value) {
-      await updateCustomer(customerId.value, form.value)
+      await updateCustomer(customerId.value, form.value as any)
       uni.showToast({ title: '修改成功', icon: 'success' })
     } else {
-      await addCustomer(form.value)
+      // 设置当前商户ID
+      form.value.merchantId = userStore.userInfo?.id || 0
+      await createCustomer(form.value)
       uni.showToast({ title: '添加成功', icon: 'success' })
     }
     setTimeout(() => {
@@ -115,9 +122,9 @@ onMounted(() => {
     <wd-form ref="formRef" :model="form" :rules="rules" label-width="100px">
       <wd-cell-group border>
         <wd-input
-          v-model="form.name"
+          v-model="form.customerName"
           label="客户姓名"
-          prop="name"
+          prop="customerName"
           placeholder="请输入客户姓名"
           clearable
           required

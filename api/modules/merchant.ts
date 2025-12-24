@@ -5,7 +5,7 @@
  */
 
 import request from '@/utils/request'
-import type { CreateCustomerDTO, MerchantStatsVO, TodayStatsVO, MerchantOverviewVO, UpdateMerchantDTO, CreateMerchantDTO, Merchant } from '@/types/merchant'
+import type { CreateCustomerDTO, MerchantStatsVO, TodayStatsVO, MerchantOverviewVO, UpdateMerchantDTO, CreateMerchantDTO, MerchantVO } from '@/types/merchant'
 
 /**
  * 创建客户
@@ -69,10 +69,3 @@ export const createMerchant = (data: CreateMerchantDTO) => {
   return request.post('/merchant/create', data)
 }
 
-/**
- * 获取商户信息
- * @param merchantId 商户ID
- */
-export const getMerchantInfo = (merchantId: number) => {
-  return request.get<Merchant>(`/merchant/${merchantId}`)
-}

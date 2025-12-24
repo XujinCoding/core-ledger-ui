@@ -6,7 +6,7 @@
  */
 
 import { ref, onMounted, onUnmounted, computed } from 'vue'
-import { queryLedgers } from '@/api/modules/ledger'
+import { queryLedgersByCustomer } from '@/api/modules/ledger'
 import { useNavbarSafeArea } from '@/composables/useNavbarSafeArea'
 import type { LedgerListVO } from '@/types/ledger'
 
@@ -67,7 +67,7 @@ const loadLedgers = async (reset = false) => {
       ledgers.value = []
     }
 
-    const res = await queryLedgers(
+    const res = await queryLedgersByCustomer(
       {
         customerId: customerId.value || undefined,
         status: filter.value.status || undefined,

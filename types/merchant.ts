@@ -105,34 +105,6 @@ export interface UpdateMerchantDTO {
 }
 
 /**
- * 商户实体
- */
-export interface Merchant {
-  /** 商户ID */
-  id: number
-  /** 商户编号 */
-  code: string
-  /** 商户名称 */
-  name: string
-  /** 店主用户ID */
-  ownerUserId: number
-  /** 邀请码 */
-  inviteCode: string
-  /** 手机号 */
-  phone?: string
-  /** 地址ID */
-  addressId?: number
-  /** 详细地址 */
-  addressDetail?: string
-  /** 状态 */
-  status: string
-  /** 创建时间 */
-  createdAt?: string
-  /** 更新时间 */
-  updatedAt?: string
-}
-
-/**
  * 创建商户DTO
  */
 export interface CreateMerchantDTO {
