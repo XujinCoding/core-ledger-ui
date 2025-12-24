@@ -88,7 +88,7 @@ const handleSelectCustomer = async (customer: CustomerIdentity) => {
     }
   } catch (error) {
     console.error('[Select Customer] 切换身份失败:', error)
-    showToast('切换失败，请重试', 'error')
+    // 错误提示已在 request.ts 中处理
   } finally {
     loading.value = false
     selectedId.value = null

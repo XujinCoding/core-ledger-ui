@@ -116,7 +116,7 @@ const handleSubmit = async () => {
     }, 1500)
   } catch (error) {
     console.error(isCreateMode.value ? '创建店铺失败:' : '修改店铺信息失败:', error)
-    uni.showToast({ title: isCreateMode.value ? '创建失败' : '修改失败', icon: 'error' })
+    // 错误提示已在 request.ts 中处理
   } finally {
     submitting.value = false
   }

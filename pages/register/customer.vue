@@ -114,7 +114,7 @@ const handleRegister = async () => {
     }
   } catch (error) {
     console.error('[Customer Register] 注册失败:', error)
-    showToast('注册失败，请重试')
+    // 错误提示已在 request.ts 中处理
   } finally {
     loading.value = false
   }

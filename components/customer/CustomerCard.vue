@@ -57,7 +57,6 @@ const getCustomerTypeText = (type: number) => {
   padding: 24rpx 32rpx;
   background-color: #fff;
   border-radius: 16rpx;
-  margin-bottom: 24rpx;
   box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.05);
 }
 

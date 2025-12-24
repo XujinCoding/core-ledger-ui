@@ -97,7 +97,7 @@ const handleBind = async () => {
     }
   } catch (error) {
     console.error('[Bind Merchant] 绑定失败:', error)
-    showToast('绑定失败，请重试')
+    // 错误提示已在 request.ts 中处理
   } finally {
     loading.value = false
   }

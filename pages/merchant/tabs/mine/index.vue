@@ -120,7 +120,7 @@ const switchMerchant = async (id: number) => {
     uni.showToast({ title: '切换成功', icon: 'success' })
   } catch (error) {
     console.error('切换店铺失败:', error)
-    uni.showToast({ title: '切换失败', icon: 'error' })
+    // 错误提示已在 request.ts 中处理
   } finally {
     switching.value = false
   }

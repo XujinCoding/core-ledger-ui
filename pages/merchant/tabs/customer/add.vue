@@ -88,9 +88,9 @@ const handleSubmit = async () => {
       uni.$emit('customer-changed')
       uni.navigateBack()
     }, 1500)
-  } catch (error) {
+  } catch (error: any) {
     console.error(isEdit.value ? '修改客户失败:' : '添加客户失败:', error)
-    uni.showToast({ title: isEdit.value ? '修改失败' : '添加失败', icon: 'none' })
+    // 错误提示已在 request.ts 的 handleBusinessError 中处理，这里不再重复显示
   } finally {
     loading.value = false
   }
