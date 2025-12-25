@@ -182,6 +182,15 @@ const getStatusClass = (status: string) => {
   return map[status] || 'status-pending'
 }
 
+/**
+ * 格式化账单名称：yyyy-mm-dd + 客户姓名 + '账单'
+ */
+const formatLedgerName = (ledger: LedgerListVO) => {
+  const date = ledger.createdAt ? ledger.createdAt.substring(0, 10) : ''
+  const customerName = ledger.customerName || ''
+  return `${date} ${customerName}账单`
+}
+
 // ==================== 生命周期 ====================
 
 /**
@@ -289,7 +298,7 @@ onUnmounted(() => {
           <view class="ledger-info">
             <view class="ledger-header">
               <text class="ledger-title">
-                {{ ledger.remark || (ledger.customerName ? `${ledger.customerName}的账单` : '未命名账单') }}
+                {{ formatLedgerName(ledger) }}
               </text>
               <text class="ledger-amount">¥{{ ledger.totalAmount }}</text>
             </view>

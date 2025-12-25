@@ -233,27 +233,29 @@ onUnmounted(() => {
       @refresherrefresh="onRefresh"
       @scrolltolower="onLoadMore"
     >
-      <view v-if="customers.length === 0 && !loading" class="empty-state">
-        <wd-icon name="inbox" size="100rpx" color="#ddd" />
-        <text>暂无客户数据</text>
-      </view>
+      <view class="customer-scroll-inner">
+        <view v-if="customers.length === 0 && !loading" class="empty-state">
+          <wd-icon name="inbox" size="100rpx" color="#ddd" />
+          <text>暂无客户数据</text>
+        </view>
 
-      <view v-else class="customer-list">
-        <CustomerCard
-          v-for="customer in customers"
-          :key="customer.id"
-          :customer="customer"
-          @click="viewCustomerDetail(customer)"
-        />
-      </view>
+        <view v-else class="customer-list">
+          <CustomerCard
+            v-for="customer in customers"
+            :key="customer.id"
+            :customer="customer"
+            @click="viewCustomerDetail(customer)"
+          />
+        </view>
 
-      <view v-if="loading" class="loading-more">
-        <wd-loading size="40rpx" />
-        <text>加载中...</text>
-      </view>
+        <view v-if="loading" class="loading-more">
+          <wd-loading size="40rpx" />
+          <text>加载中...</text>
+        </view>
 
-      <view v-if="!hasMore && customers.length > 0" class="no-more">
-        没有更多了
+        <view v-if="!hasMore && customers.length > 0" class="no-more">
+          没有更多了
+        </view>
       </view>
     </scroll-view>
 
@@ -364,8 +366,11 @@ onUnmounted(() => {
 
 .customer-scroll {
   flex: 1;
-  padding: 0 24rpx;
   overflow: hidden;
+}
+
+.customer-scroll-inner {
+  padding: 0 24rpx;
 }
 
 .empty-state {

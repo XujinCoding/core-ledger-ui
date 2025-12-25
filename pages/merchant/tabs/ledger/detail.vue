@@ -72,26 +72,17 @@ const onRefresh = async () => {
 }
 
 /**
- * 编辑账单
+ * 编辑账单 - 跳转到编辑页面
  */
 const handleEdit = () => {
-  uni.navigateTo({ url: `/pages/merchant/tabs/ledger/add?id=${ledgerId.value}&edit=true` })
+  uni.navigateTo({ url: `/pages/merchant/tabs/ledger/edit?id=${ledgerId.value}` })
 }
 
 /**
- * 记账操作
+ * 记账操作 - 弹出支付记录弹窗
  */
-const handleRecord = async () => {
-  try {
-    uni.showLoading({ title: '处理中...' })
-    await recordLedger(ledgerId.value, {})
-    uni.showToast({ title: '记账成功', icon: 'success' })
-    await loadDetail()
-  } catch (error) {
-    console.error('记账失败:', error)
-  } finally {
-    uni.hideLoading()
-  }
+const handleRecord = () => {
+  openPaymentPopup()
 }
 
 /**
@@ -130,27 +121,10 @@ const confirmPayment = async () => {
 }
 
 /**
- * 结账
+ * 结账 - 弹出支付记录弹窗
  */
-const handleSettle = async () => {
-  uni.showModal({
-    title: '确认结账',
-    content: '确定要结清此账单吗？',
-    success: async (res) => {
-      if (res.confirm) {
-        try {
-          uni.showLoading({ title: '处理中...' })
-          await settleLedger(ledgerId.value, {})
-          uni.showToast({ title: '结账成功', icon: 'success' })
-          await loadDetail()
-        } catch (error) {
-          console.error('结账失败:', error)
-        } finally {
-          uni.hideLoading()
-        }
-      }
-    }
-  })
+const handleSettle = () => {
+  openPaymentPopup()
 }
 
 /**
@@ -192,15 +166,25 @@ onPullDownRefresh(() => {
     <template v-else-if="ledger">
       <!-- 头部信息 -->
       <view class="header">
+        <!-- 客户电话和地址展示在最上方 -->
+        <view class="customer-contact">
+          <view class="contact-item" v-if="ledger.customerPhone">
+            <wd-icon name="phone" size="28rpx" />
+            <text>{{ ledger.customerPhone }}</text>
+          </view>
+          <view class="contact-item" v-if="ledger.customerAddress">
+            <wd-icon name="location" size="28rpx" />
+            <text>{{ ledger.customerAddress }}</text>
+          </view>
+        </view>
+        
         <view class="header-top">
           <view class="customer-info">
             <view class="customer-avatar">{{ customerInitial }}</view>
             <view class="customer-detail">
               <view class="customer-name">{{ ledger.customerName }}</view>
-              <view class="customer-phone">{{ ledger.customerPhone || '' }}</view>
             </view>
           </view>
-          <view class="status-badge">{{ statusText }}</view>
         </view>
 
         <view class="amount-box">
@@ -221,8 +205,9 @@ onPullDownRefresh(() => {
 
       <!-- 页面内容 -->
       <scroll-view class="content-scroll" scroll-y>
-        <!-- 商品明细 -->
-        <view class="section">
+        <view class="content-scroll-inner">
+          <!-- 商品明细 -->
+          <view class="section">
           <view class="section-header">
             <text class="section-title">商品明细</text>
             <text class="section-count">共{{ ledger.items?.length || 0 }}件</text>
@@ -267,9 +252,6 @@ onPullDownRefresh(() => {
         <view class="section">
           <view class="section-header">
             <text class="section-title">支付记录</text>
-            <text class="section-action" @tap="openPaymentPopup">
-              <wd-icon name="add" size="28rpx" /> 添加
-            </text>
           </view>
 
           <view v-if="!ledger.paymentRecords?.length" class="empty-payments">
@@ -311,6 +293,7 @@ onPullDownRefresh(() => {
         </view>
 
         <view style="height: 180rpx;"></view>
+        </view>
       </scroll-view>
 
       <!-- 底部操作栏 -->
@@ -330,23 +313,24 @@ onPullDownRefresh(() => {
       </view>
     </template>
 
-    <!-- 收款弹窗 -->
-    <wd-popup v-model="showPaymentPopup" position="bottom" custom-style="border-radius: 24rpx 24rpx 0 0;">
-      <view class="payment-popup">
+    <!-- 收款弹窗 - 底部固定，挡住底部操作栏 -->
+    <view v-if="showPaymentPopup" class="payment-overlay">
+      <view class="payment-panel">
         <view class="popup-header">
-          <text class="popup-title">收款</text>
+          <text class="popup-title">添加支付记录</text>
           <wd-icon name="close" size="40rpx" color="#999" @click="showPaymentPopup = false" />
         </view>
         <view class="popup-content">
           <view class="form-group">
             <text class="form-label">收款金额</text>
             <view class="amount-input">
-              <text class="currency">¥</text>
+              <text class="currency">￥</text>
               <input
                 type="digit"
                 v-model="paymentAmount"
                 placeholder="0.00"
                 class="input"
+                @confirm="confirmPayment"
               />
             </view>
           </view>
@@ -357,16 +341,17 @@ onPullDownRefresh(() => {
               v-model="paymentRemark"
               placeholder="选填"
               class="form-input"
+              @confirm="confirmPayment"
             />
           </view>
         </view>
-        <view class="popup-footer">
-          <button class="btn btn-primary btn-block" :loading="paymentLoading" @tap="confirmPayment">
+        <view class="payment-footer">
+          <button class="confirm-btn" :loading="paymentLoading" @tap="confirmPayment">
             确认收款
           </button>
         </view>
       </view>
-    </wd-popup>
+    </view>
   </view>
 </template>
 
@@ -392,6 +377,23 @@ onPullDownRefresh(() => {
   background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
   padding: 32rpx;
   color: #fff;
+}
+
+.customer-contact {
+  margin-bottom: 24rpx;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  font-size: 26rpx;
+  opacity: 0.9;
+  margin-bottom: 8rpx;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
 }
 
 .header-top {
@@ -462,6 +464,9 @@ onPullDownRefresh(() => {
 
 .content-scroll {
   flex: 1;
+}
+
+.content-scroll-inner {
   padding: 24rpx;
 }
 
@@ -791,5 +796,43 @@ onPullDownRefresh(() => {
   padding: 0 24rpx;
   font-size: 28rpx;
   box-sizing: border-box;
+}
+
+/* 支付面板样式 */
+.payment-overlay {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100;
+}
+
+.payment-panel {
+  background: #fff;
+  border-radius: 24rpx 24rpx 0 0;
+  box-shadow: 0 -8rpx 40rpx rgba(0, 0, 0, 0.1);
+}
+
+.payment-footer {
+  padding: 24rpx 32rpx;
+  padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
+}
+
+.confirm-btn {
+  width: 100%;
+  height: 96rpx;
+  background: #3B82F6;
+  color: #fff;
+  border-radius: 48rpx;
+  font-size: 32rpx;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+
+  &::after {
+    border: none;
+  }
 }
 </style>

@@ -25,6 +25,13 @@ const customerKeyword = ref('')
 const customers = ref<CustomerVO[]>([])
 const selectedCustomer = ref<CustomerVO | null>(null)
 const loadingCustomers = ref(false)
+// 搜索类型: name=姓名, phone=手机号
+const searchType = ref<'name' | 'phone'>('name')
+const showSearchTypePopup = ref(false)
+const searchTypeOptions = [
+  { name: '姓名', value: 'name' },
+  { name: '手机号', value: 'phone' }
+]
 
 // 商品相关
 const productKeyword = ref('')
@@ -56,10 +63,20 @@ const totalCount = computed(() => {
 })
 
 const canSubmit = computed(() => {
-  return selectedCustomer.value && cartItems.value.length > 0
+  return selectedCustomer.value !== null
 })
 
 // ==================== 方法 ====================
+
+/**
+ * 处理搜索类型选择
+ * @param item - action-sheet 选中项，包含 name 和自定义 value 属性
+ * @param index - 选中项索引
+ */
+const handleSearchTypeSelect = ({ item, index }: { item: { name: string; value: string }; index: number }) => {
+  searchType.value = item.value as 'name' | 'phone'
+  showSearchTypePopup.value = false
+}
 
 /**
  * 搜索客户
@@ -67,8 +84,16 @@ const canSubmit = computed(() => {
 const searchCustomerList = async () => {
   try {
     loadingCustomers.value = true
+    const searchParams: { name?: string; phone?: string } = {}
+    if (customerKeyword.value) {
+      if (searchType.value === 'name') {
+        searchParams.name = customerKeyword.value
+      } else {
+        searchParams.phone = customerKeyword.value
+      }
+    }
     const res = await searchCustomers(
-      { keyword: customerKeyword.value || undefined },
+      searchParams,
       { page: 0, size: 20 }
     )
     customers.value = res.content || []
@@ -154,10 +179,6 @@ const getCartQuantity = (productId: number) => {
  * 去确认
  */
 const goConfirm = () => {
-  if (cartItems.value.length === 0) {
-    uni.showToast({ title: '请选择商品', icon: 'none' })
-    return
-  }
   step.value = 3
 }
 
@@ -169,15 +190,30 @@ const submit = async () => {
 
   try {
     submitting.value = true
+    // 获取商户ID（从客户信息或当前登录的商户中获取）
+    const merchantId = selectedCustomer.value!.merchantId
+    if (!merchantId) {
+      uni.showToast({ title: '商户信息缺失', icon: 'none' })
+      return
+    }
+    
     await createLedger({
       customerId: selectedCustomer.value!.id,
-      remark: remark.value || undefined,
-      items: cartItems.value.map(item => ({
-        productId: item.product.id,
-        skuId: item.product.defaultSkuId,
-        quantity: item.quantity,
-        price: item.price
-      }))
+      merchantId: merchantId,
+      memo: remark.value || undefined,
+      items: cartItems.value.length > 0 ? cartItems.value.map(item => {
+        // 优先使用第一个SKU，如果没有则不传SKU
+        const firstSku = item.product.skus?.[0]
+        return {
+          productId: item.product.id,
+          productName: item.product.name,
+          skuId: firstSku?.id,
+          skuName: firstSku?.name,
+          quantity: item.quantity,
+          price: item.price,
+          amount: item.price * item.quantity
+        }
+      }) : undefined
     })
     uni.showToast({ title: '创建成功', icon: 'success' })
     setTimeout(() => {
@@ -221,58 +257,86 @@ onMounted(() => {
 
 <template>
   <view class="ledger-add-page">
-    <!-- 步骤条 -->
-    <view class="step-bar">
-      <view class="step-item" :class="{ active: step >= 1, done: step > 1 }">
-        <view class="step-num">{{ step > 1 ? '✓' : '1' }}</view>
-        <text class="step-text">选择客户</text>
+    <!-- 顶部固定区域：返回按钮 + 步骤条 -->
+    <view class="fixed-header" :style="{ paddingTop: (safeArea?.navbarHeight || 44) + 'px' }">
+      <!-- 返回按钮 -->
+      <view class="header-nav">
+        <view class="back-btn-inline" @tap="goBack">
+          <wd-icon name="arrow-left" size="40rpx" />
+        </view>
+        <text class="header-title">创建账单</text>
+        <view class="header-placeholder"></view>
       </view>
-      <view class="step-line" :class="{ active: step > 1 }"></view>
-      <view class="step-item" :class="{ active: step >= 2, done: step > 2 }">
-        <view class="step-num">{{ step > 2 ? '✓' : '2' }}</view>
-        <text class="step-text">选择商品</text>
-      </view>
-      <view class="step-line" :class="{ active: step > 2 }"></view>
-      <view class="step-item" :class="{ active: step >= 3 }">
-        <view class="step-num">3</view>
-        <text class="step-text">确认提交</text>
-      </view>
+      
+      <!-- 步骤条 - 使用 wot-design-uni 官方组件 -->
+      <wd-steps :active="step - 1" align-center>
+        <wd-step title="选择客户" />
+        <wd-step title="选择商品" />
+        <wd-step title="确认提交" />
+      </wd-steps>
     </view>
 
     <!-- 步骤1：选择客户 -->
     <view v-if="step === 1" class="step-content">
       <view class="search-bar">
         <view class="search-input-wrap">
-          <wd-icon name="search" size="36rpx" color="#999" />
+          <!-- 搜索类型下拉选择 -->
+          <view class="search-type-select" @tap="showSearchTypePopup = true">
+            <text class="search-type-text">{{ searchType === 'name' ? '姓名' : '手机号' }}</text>
+            <wd-icon name="arrow-down" size="24rpx" color="#666" />
+          </view>
+          <view class="search-divider"></view>
+          <!-- 搜索输入框 -->
           <input
             class="search-input"
             v-model="customerKeyword"
-            placeholder="搜索客户姓名/手机号"
+            :placeholder="searchType === 'name' ? '请输入客户姓名' : '请输入手机号'"
+            placeholder-class="placeholder"
+            confirm-type="search"
+            :type="searchType === 'phone' ? 'number' : 'text'"
             @confirm="searchCustomerList"
           />
+          <wd-icon
+            v-if="customerKeyword"
+            name="close-fill"
+            size="32rpx"
+            color="#ccc"
+            @tap="customerKeyword = ''; searchCustomerList()"
+          />
+          <wd-icon v-else name="search" size="36rpx" color="#999" />
         </view>
       </view>
+      
+      <!-- 搜索类型选择弹窗 -->
+      <wd-action-sheet
+        v-model="showSearchTypePopup"
+        :actions="searchTypeOptions"
+        @select="handleSearchTypeSelect"
+        cancel-text="取消"
+      />
 
       <scroll-view class="customer-list" scroll-y>
-        <view v-if="loadingCustomers" class="loading-state">
-          <wd-loading size="40rpx" />
-        </view>
-        <view v-else-if="customers.length === 0" class="empty-state">
-          <text>暂无客户</text>
-        </view>
-        <view
-          v-else
-          v-for="customer in customers"
-          :key="customer.id"
-          class="customer-item"
-          @tap="selectCustomer(customer)"
-        >
-          <view class="customer-avatar">{{ customer.name?.charAt(0) }}</view>
-          <view class="customer-info">
-            <view class="customer-name">{{ customer.name }}</view>
-            <view class="customer-phone">{{ customer.phone || '暂无电话' }}</view>
+        <view class="customer-list-inner">
+          <view v-if="loadingCustomers" class="loading-state">
+            <wd-loading size="40rpx" />
           </view>
-          <wd-icon name="arrow-right" size="32rpx" color="#ccc" />
+          <view v-else-if="customers.length === 0" class="empty-state">
+            <text>暂无客户</text>
+          </view>
+          <view
+            v-else
+            v-for="customer in customers"
+            :key="customer.id"
+            class="customer-item"
+            @tap="selectCustomer(customer)"
+          >
+            <view class="customer-avatar">{{ customer.name?.charAt(0) }}</view>
+            <view class="customer-info">
+              <view class="customer-name">{{ customer.name }}</view>
+              <view class="customer-phone">{{ customer.phone || '暂无电话' }}</view>
+            </view>
+            <wd-icon name="arrow-right" size="32rpx" color="#ccc" />
+          </view>
         </view>
       </scroll-view>
     </view>
@@ -282,8 +346,14 @@ onMounted(() => {
       <!-- 已选客户 -->
       <view class="selected-customer" v-if="selectedCustomer">
         <view class="customer-avatar small">{{ selectedCustomer.name?.charAt(0) }}</view>
-        <view class="customer-name">{{ selectedCustomer.name }}</view>
-        <text class="change-btn" @tap="step = 1">更换</text>
+        <view class="customer-info">
+          <view class="customer-name">{{ selectedCustomer.name }}</view>
+          <view class="customer-phone">{{ selectedCustomer.phone || '' }}</view>
+        </view>
+        <view class="change-btn" @tap="step = 1">
+          <wd-icon name="edit-outline" size="28rpx" />
+          <text>更换</text>
+        </view>
       </view>
 
       <view class="search-bar">
@@ -299,35 +369,37 @@ onMounted(() => {
       </view>
 
       <scroll-view class="product-list" scroll-y>
-        <view v-if="loadingProducts" class="loading-state">
-          <wd-loading size="40rpx" />
-        </view>
-        <view v-else-if="products.length === 0" class="empty-state">
-          <text>暂无商品</text>
-        </view>
-        <view
-          v-else
-          v-for="product in products"
-          :key="product.id"
-          class="product-item"
-        >
-          <view class="product-img">
-            <wd-icon name="goods" size="48rpx" color="#ccc" />
+        <view class="product-list-inner">
+          <view v-if="loadingProducts" class="loading-state">
+            <wd-loading size="40rpx" />
           </view>
-          <view class="product-info">
-            <view class="product-name">{{ product.name }}</view>
-            <view class="product-price">¥{{ product.minPrice || '--' }}</view>
+          <view v-else-if="products.length === 0" class="empty-state">
+            <text>暂无商品</text>
           </view>
-          <view class="quantity-control">
-            <view
-              v-if="getCartQuantity(product.id) > 0"
-              class="qty-btn minus"
-              @tap="updateQuantity(cartItems.findIndex(i => i.product.id === product.id), -1)"
-            >-</view>
-            <text v-if="getCartQuantity(product.id) > 0" class="qty-num">
-              {{ getCartQuantity(product.id) }}
-            </text>
-            <view class="qty-btn plus" @tap="addToCart(product)">+</view>
+          <view
+            v-else
+            v-for="product in products"
+            :key="product.id"
+            class="product-item"
+          >
+            <view class="product-img">
+              <wd-icon name="goods" size="48rpx" color="#ccc" />
+            </view>
+            <view class="product-info">
+              <view class="product-name">{{ product.name }}</view>
+              <view class="product-price">¥{{ product.minPrice || '--' }}</view>
+            </view>
+            <view class="quantity-control">
+              <view
+                v-if="getCartQuantity(product.id) > 0"
+                class="qty-btn minus"
+                @tap="updateQuantity(cartItems.findIndex(i => i.product.id === product.id), -1)"
+              >-</view>
+              <text v-if="getCartQuantity(product.id) > 0" class="qty-num">
+                {{ getCartQuantity(product.id) }}
+              </text>
+              <view class="qty-btn plus" @tap="addToCart(product)">+</view>
+            </view>
           </view>
         </view>
       </scroll-view>
@@ -338,54 +410,61 @@ onMounted(() => {
           <view class="cart-count">已选 {{ totalCount }} 件</view>
           <view class="cart-total">合计 <text>¥{{ totalAmount.toFixed(2) }}</text></view>
         </view>
-        <button class="next-btn" :disabled="cartItems.length === 0" @tap="goConfirm">
-          下一步
+        <button class="next-btn" @tap="goConfirm">
+          {{ cartItems.length === 0 ? '跳过选品' : '下一步' }}
         </button>
       </view>
     </view>
 
     <!-- 步骤3：确认提交 -->
-    <view v-if="step === 3" class="step-content">
-      <!-- 客户信息 -->
-      <view class="confirm-section">
-        <view class="section-title">客户信息</view>
-        <view class="customer-row">
-          <view class="customer-avatar">{{ selectedCustomer?.name?.charAt(0) }}</view>
-          <view class="customer-info">
-            <view class="customer-name">{{ selectedCustomer?.name }}</view>
-            <view class="customer-phone">{{ selectedCustomer?.phone }}</view>
-          </view>
-        </view>
-      </view>
-
-      <!-- 商品清单 -->
-      <view class="confirm-section">
-        <view class="section-title">商品清单 ({{ totalCount }}件)</view>
-        <view class="cart-list">
-          <view v-for="(item, index) in cartItems" :key="item.product.id" class="cart-item">
-            <view class="item-info">
-              <view class="item-name">{{ item.product.name }}</view>
-              <view class="item-price">¥{{ item.price.toFixed(2) }} x {{ item.quantity }}</view>
+    <view v-if="step === 3" class="step-content step-confirm">
+      <!-- 可滚动内容区域 -->
+      <scroll-view class="confirm-scroll" scroll-y>
+        <!-- 客户信息 -->
+        <view class="confirm-section">
+          <view class="section-title">客户信息</view>
+          <view class="customer-row">
+            <view class="customer-avatar">{{ selectedCustomer?.name?.charAt(0) }}</view>
+            <view class="customer-info">
+              <view class="customer-name">{{ selectedCustomer?.name }}</view>
+              <view class="customer-phone">{{ selectedCustomer?.phone }}</view>
             </view>
-            <view class="item-total">¥{{ (item.price * item.quantity).toFixed(2) }}</view>
-            <wd-icon name="close" size="28rpx" color="#999" @click="removeItem(index)" />
           </view>
         </view>
-      </view>
 
-      <!-- 备注 -->
-      <view class="confirm-section">
-        <view class="section-title">备注</view>
-        <textarea
-          class="remark-input"
-          v-model="remark"
-          placeholder="添加备注（选填）"
-          :maxlength="200"
-        />
-      </view>
+        <!-- 商品清单 -->
+        <view class="confirm-section">
+          <view class="section-title">商品清单 ({{ totalCount }}件)</view>
+          <view v-if="cartItems.length > 0" class="cart-list">
+            <view v-for="(item, index) in cartItems" :key="item.product.id" class="cart-item">
+              <view class="item-info">
+                <view class="item-name">{{ item.product.name }}</view>
+                <view class="item-price">¥{{ item.price.toFixed(2) }} x {{ item.quantity }}</view>
+              </view>
+              <view class="item-total">¥{{ (item.price * item.quantity).toFixed(2) }}</view>
+              <wd-icon name="close" size="28rpx" color="#999" @click="removeItem(index)" />
+            </view>
+          </view>
+          <view v-else class="empty-cart-tip">
+            <wd-icon name="goods" size="64rpx" color="#ccc" />
+            <text>暂未选择商品，可后续添加</text>
+          </view>
+        </view>
 
-      <!-- 底部 -->
-      <view class="submit-bar">
+        <!-- 备注 -->
+        <view class="confirm-section">
+          <view class="section-title">备注</view>
+          <textarea
+            class="remark-input"
+            v-model="remark"
+            placeholder="添加备注（选填）"
+            :maxlength="200"
+          />
+        </view>
+      </scroll-view>
+
+      <!-- 固定底部栏 -->
+      <view class="submit-bar-fixed">
         <view class="total-info">
           <text class="total-label">合计</text>
           <text class="total-amount">¥{{ totalAmount.toFixed(2) }}</text>
@@ -396,10 +475,6 @@ onMounted(() => {
       </view>
     </view>
 
-    <!-- 返回按钮 -->
-    <view class="back-btn" :style="{ top: (safeArea?.navbarHeight || 0) + 'px' }" @tap="goBack">
-      <wd-icon name="arrow-left" size="40rpx" />
-    </view>
   </view>
 </template>
 
@@ -411,63 +486,35 @@ onMounted(() => {
   background: #f5f5f5;
 }
 
-.step-bar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 100rpx 60rpx 40rpx;
+.fixed-header {
+  flex-shrink: 0;
   background: #fff;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.05);
 }
 
-.step-item {
+.header-nav {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 8rpx;
+  justify-content: space-between;
+  padding: 20rpx 24rpx;
 }
 
-.step-num {
-  width: 56rpx;
-  height: 56rpx;
-  border-radius: 50%;
-  background: #e5e5e5;
-  color: #999;
+.back-btn-inline {
+  width: 72rpx;
+  height: 72rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 28rpx;
-  font-weight: 500;
-
-  .step-item.active & {
-    background: #3B82F6;
-    color: #fff;
-  }
-
-  .step-item.done & {
-    background: #10B981;
-    color: #fff;
-  }
 }
 
-.step-text {
-  font-size: 24rpx;
-  color: #999;
-
-  .step-item.active & {
-    color: #3B82F6;
-  }
+.header-title {
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #333;
 }
 
-.step-line {
-  width: 80rpx;
-  height: 4rpx;
-  background: #e5e5e5;
-  margin: 0 16rpx;
-  margin-bottom: 32rpx;
-
-  &.active {
-    background: #3B82F6;
-  }
+.header-placeholder {
+  width: 72rpx;
 }
 
 .step-content {
@@ -488,7 +535,32 @@ onMounted(() => {
   background: #f5f5f5;
   border-radius: 40rpx;
   padding: 16rpx 24rpx;
-  gap: 16rpx;
+  gap: 12rpx;
+}
+
+.search-type-select {
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
+  padding-right: 12rpx;
+  flex-shrink: 0;
+}
+
+.search-type-text {
+  font-size: 28rpx;
+  color: #333;
+  font-weight: 500;
+}
+
+.search-divider {
+  width: 2rpx;
+  height: 32rpx;
+  background: #ddd;
+  flex-shrink: 0;
+}
+
+.placeholder {
+  color: #999;
 }
 
 .search-input {
@@ -499,6 +571,10 @@ onMounted(() => {
 .customer-list,
 .product-list {
   flex: 1;
+}
+
+.customer-list-inner,
+.product-list-inner {
   padding: 24rpx;
 }
 
@@ -560,11 +636,19 @@ onMounted(() => {
   align-items: center;
   padding: 24rpx;
   background: #EBF5FF;
+  gap: 12rpx;
 }
 
 .change-btn {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
   font-size: 26rpx;
   color: #3B82F6;
+  padding: 12rpx 20rpx;
+  background: rgba(59, 130, 246, 0.1);
+  border-radius: 24rpx;
+  margin-left: auto;
 }
 
 .product-item {
@@ -716,6 +800,20 @@ onMounted(() => {
   gap: 20rpx;
 }
 
+.empty-cart-tip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48rpx 0;
+  gap: 16rpx;
+  
+  text {
+    font-size: 26rpx;
+    color: #999;
+  }
+}
+
 .cart-item {
   display: flex;
   align-items: center;
@@ -798,18 +896,26 @@ onMounted(() => {
   }
 }
 
-.back-btn {
-  position: fixed;
-  left: 32rpx;
-  // top 由动态样式控制
-  width: 80rpx;
-  height: 80rpx;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 50%;
+/* 确认提交步骤样式 */
+.step-confirm {
+  position: relative;
+}
+
+.confirm-scroll {
+  flex: 1;
+  padding-bottom: 160rpx;
+}
+
+.submit-bar-fixed {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
   display: flex;
   align-items: center;
-  justify-content: center;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
-  z-index: 100;
+  padding: 24rpx 32rpx;
+  background: #fff;
+  box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.05);
 }
+
 </style>
