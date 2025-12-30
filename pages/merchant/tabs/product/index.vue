@@ -202,6 +202,23 @@ const handleMerchantChanged = () => {
 }
 
 /**
+ * 商品变更事件处理（新增/编辑/定价后刷新）
+ */
+const handleProductChanged = () => {
+  console.log('[Product] 商品数据已变更，刷新列表')
+  loadCategories()
+  loadProducts(true)
+}
+
+/**
+ * 分类变更事件处理（分类管理页面修改后刷新）
+ */
+const handleCategoryChanged = () => {
+  console.log('[Product] 分类数据已变更，刷新分类')
+  loadCategories()
+}
+
+/**
  * Tab显示时刷新数据
  */
 const handleTabShow = () => {
@@ -213,6 +230,10 @@ const handleTabShow = () => {
 onMounted(() => {
   // 监听商户切换事件
   uni.$on('merchant-changed', handleMerchantChanged)
+  // 监听商品变更事件
+  uni.$on('product-changed', handleProductChanged)
+  // 监听分类变更事件
+  uni.$on('category-changed', handleCategoryChanged)
   // 监听Tab切换事件
   uni.$on('tab-product-show', handleTabShow)
   // 首次挂载时加载数据
@@ -223,6 +244,8 @@ onMounted(() => {
 onUnmounted(() => {
   // 移除事件监听，避免内存泄漏
   uni.$off('merchant-changed', handleMerchantChanged)
+  uni.$off('product-changed', handleProductChanged)
+  uni.$off('category-changed', handleCategoryChanged)
   uni.$off('tab-product-show', handleTabShow)
 })
 </script>

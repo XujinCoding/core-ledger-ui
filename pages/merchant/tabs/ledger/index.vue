@@ -75,8 +75,8 @@ const loadLedgers = async (reset = false) => {
     }
 
     const res = await searchLedgers({
-      customerName: searchType.value === 'name' ? filter.value.customerName || undefined : undefined,
-      customerPhone: searchType.value === 'phone' ? filter.value.customerPhone || undefined : undefined,
+      customerName: filter.value.customerName || undefined,
+      customerPhone: filter.value.customerPhone || undefined,
       ledgerStatus: filter.value.ledgerStatus ?? undefined,
       pageNumber: pageNum.value,
       pageSize: 15
@@ -126,7 +126,12 @@ const clearSearch = () => {
   loadLedgers(true)
 }
 
-const handleSearchTypeSelect = (item: { name: string; value: string }) => {
+/**
+ * 处理搜索类型选择
+ * @param item - action-sheet 选中项，包含 name 和自定义 value 属性
+ * @param index - 选中项索引
+ */
+const handleSearchTypeSelect = ({ item, index }: { item: { name: string; value: string }; index: number }) => {
   searchType.value = item.value as 'name' | 'phone'
   showSearchTypePopup.value = false
   // 切换搜索类型后，如果有关键词则重新搜索
@@ -171,6 +176,14 @@ const handleMerchantChanged = () => {
   clearSearch()
 }
 
+/**
+ * 账单变更事件处理（新增/编辑账单后刷新）
+ */
+const handleLedgerChanged = () => {
+  console.log('[Ledger] 账单数据已变更，刷新列表')
+  loadLedgers(true)
+}
+
 const handleFilterFromHome = (params: { status?: number }) => {
   if (params.status !== undefined) {
     filter.value.ledgerStatus = params.status
@@ -181,11 +194,13 @@ const handleFilterFromHome = (params: { status?: number }) => {
 onMounted(() => {
   loadLedgers(true)
   uni.$on('merchant-changed', handleMerchantChanged)
+  uni.$on('ledger-changed', handleLedgerChanged)
   uni.$on('ledger-tab-filter', handleFilterFromHome)
 })
 
 onUnmounted(() => {
   uni.$off('merchant-changed', handleMerchantChanged)
+  uni.$off('ledger-changed', handleLedgerChanged)
   uni.$off('ledger-tab-filter', handleFilterFromHome)
   if (searchTimer) clearTimeout(searchTimer)
 })

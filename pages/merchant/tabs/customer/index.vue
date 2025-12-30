@@ -29,8 +29,10 @@ const searchTypeOptions = [
 
 /**
  * 处理搜索类型选择
+ * @param item - action-sheet 选中项，包含 name 和自定义 value 属性
+ * @param index - 选中项索引
  */
-const handleSearchTypeSelect = (item: { name: string; value: string }) => {
+const handleSearchTypeSelect = ({ item, index }: { item: { name: string; value: string }; index: number }) => {
   searchType.value = item.value as 'name' | 'phone'
   showSearchTypePopup.value = false
 }

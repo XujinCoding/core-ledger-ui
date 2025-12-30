@@ -116,6 +116,8 @@ const submitForm = async () => {
     }
     
     showAddPopup.value = false
+    // 触发分类变更事件，通知商品列表刷新分类数据
+    uni.$emit('category-changed')
     await loadCategories()
   } catch (error) {
     console.error('保存分类失败:', error)
@@ -143,6 +145,8 @@ const handleDelete = (cat: CategoryTreeVO) => {
           uni.showLoading({ title: '删除中...' })
           await deleteCategory(cat.id)
           uni.showToast({ title: '删除成功', icon: 'success' })
+          // 触发分类变更事件，通知商品列表刷新分类数据
+          uni.$emit('category-changed')
           await loadCategories()
         } catch (error) {
           console.error('删除分类失败:', error)

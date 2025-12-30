@@ -5,7 +5,7 @@
  * @since 1.0.0
  */
 
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { onPullDownRefresh } from '@dcloudio/uni-app'
 import { getLedgerDetail, recordLedger, settleLedger, addPaymentRecord } from '@/api/modules/ledger'
 import type { LedgerVO } from '@/types/ledger'
@@ -136,6 +136,14 @@ const formatAmount = (amount: number | undefined) => {
 
 // ==================== 生命周期 ====================
 
+/**
+ * 账单变更事件处理（编辑后刷新）
+ */
+const handleLedgerChanged = () => {
+  console.log('[LedgerDetail] 账单数据已变更，刷新详情')
+  loadDetail()
+}
+
 onMounted(() => {
   const pages = getCurrentPages()
   const currentPage = pages[pages.length - 1] as any
@@ -148,6 +156,14 @@ onMounted(() => {
     uni.showToast({ title: '账单ID不能为空', icon: 'none' })
     setTimeout(() => uni.navigateBack(), 1500)
   }
+  
+  // 监听账单变更事件
+  uni.$on('ledger-changed', handleLedgerChanged)
+})
+
+onUnmounted(() => {
+  // 移除事件监听
+  uni.$off('ledger-changed', handleLedgerChanged)
 })
 
 onPullDownRefresh(() => {

@@ -112,6 +112,15 @@ const handleCustomerChanged = () => {
 }
 
 /**
+ * 账单变更事件处理（新增/编辑账单后刷新）
+ */
+const handleLedgerChanged = () => {
+  console.log('[CustomerDetail] 账单数据已变更，刷新账单列表')
+  loadCustomerStats()
+  loadRecentLedgers(true)
+}
+
+/**
  * 加载更多
  */
 const onLoadMore = () => {
@@ -182,11 +191,14 @@ onMounted(() => {
   
   // 监听客户变更事件
   uni.$on('customer-changed', handleCustomerChanged)
+  // 监听账单变更事件
+  uni.$on('ledger-changed', handleLedgerChanged)
 })
 
 onUnmounted(() => {
   // 移除事件监听
   uni.$off('customer-changed', handleCustomerChanged)
+  uni.$off('ledger-changed', handleLedgerChanged)
 })
 
 // 开启下拉刷新

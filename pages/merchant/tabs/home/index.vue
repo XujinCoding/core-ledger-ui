@@ -175,6 +175,16 @@ const handleMerchantChanged = () => {
   loadTodayStats()
 }
 
+/**
+ * 账单变更事件处理（新增/编辑账单后刷新）
+ */
+const handleLedgerChanged = () => {
+  console.log('[Home] 账单数据已变更，刷新首页数据')
+  loadInProgressLedgers()
+  loadMerchantStats()
+  loadTodayStats()
+}
+
 onMounted(() => {
   initStoreInfo()
   loadInProgressLedgers()
@@ -182,11 +192,14 @@ onMounted(() => {
   loadTodayStats()
   // 监听商户切换事件
   uni.$on('merchant-changed', handleMerchantChanged)
+  // 监听账单变更事件
+  uni.$on('ledger-changed', handleLedgerChanged)
 })
 
 onUnmounted(() => {
   // 移除事件监听，避免内存泄漏
   uni.$off('merchant-changed', handleMerchantChanged)
+  uni.$off('ledger-changed', handleLedgerChanged)
 })
 </script>
 

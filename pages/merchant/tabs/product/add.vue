@@ -246,7 +246,11 @@ const submit = async () => {
     }
 
     uni.showToast({ title: isEdit.value ? '修改成功' : '添加成功', icon: 'success' })
-    setTimeout(() => uni.navigateBack(), 1500)
+    setTimeout(() => {
+      // 触发商品变更事件，通知相关页面刷新
+      uni.$emit('product-changed')
+      uni.navigateBack()
+    }, 1500)
   } catch (error) {
     console.error('保存商品失败:', error)
   } finally {

@@ -255,6 +255,8 @@ const submit = async () => {
     })
     uni.showToast({ title: '创建成功', icon: 'success' })
     setTimeout(() => {
+      // 触发账单变更事件，通知相关页面刷新
+      uni.$emit('ledger-changed')
       uni.navigateBack()
     }, 1500)
   } catch (error) {

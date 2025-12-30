@@ -119,7 +119,11 @@ const savePricing = async () => {
     uni.showToast({ title: '保存成功', icon: 'success' })
     
     // 跳转回商品列表页
-    setTimeout(() => uni.navigateBack(), 1500)
+    setTimeout(() => {
+      // 触发商品变更事件，通知相关页面刷新
+      uni.$emit('product-changed')
+      uni.navigateBack()
+    }, 1500)
   } catch (error) {
     console.error('保存定价失败:', error)
   } finally {

@@ -5,7 +5,7 @@
  * @since 1.0.0
  */
 
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { getCustomer, getCustomerStats } from '@/api/modules/customer'
 import { queryLedgersByCustomer } from '@/api/modules/ledger'
 import { LedgerStatus } from '@/enums'
@@ -144,6 +144,15 @@ const handleLedgerClick = (id: number) => {
 
 // ==================== 生命周期 ====================
 
+/**
+ * 账单变更事件处理（新增/编辑账单后刷新）
+ */
+const handleLedgerChanged = () => {
+  console.log('[CustomerLedger] 账单数据已变更，刷新列表')
+  loadCustomer()
+  loadLedgers(true)
+}
+
 onMounted(() => {
   const pages = getCurrentPages()
   const currentPage = pages[pages.length - 1] as any
@@ -157,6 +166,14 @@ onMounted(() => {
     uni.showToast({ title: '客户ID不能为空', icon: 'none' })
     setTimeout(() => uni.navigateBack(), 1500)
   }
+  
+  // 监听账单变更事件
+  uni.$on('ledger-changed', handleLedgerChanged)
+})
+
+onUnmounted(() => {
+  // 移除事件监听
+  uni.$off('ledger-changed', handleLedgerChanged)
 })
 </script>
 
