@@ -88,6 +88,8 @@ const handleRegister = async () => {
   try {
     loading.value = true
     const code = await getWechatCode()
+    console.log('[Customer Register] 开始注册, code:', code)
+    
     const response = await customerWechatRegister({
       code,
       phone: form.phone,
@@ -99,13 +101,19 @@ const handleRegister = async () => {
       inviteCode: form.inviteCode || undefined
     })
 
+    console.log('[Customer Register] 注册响应:', response)
+
     if (response?.token) {
+      console.log('[Customer Register] 保存token并跳转')
       userStore.setToken(response.token)
       userStore.setUserInfo(response.userInfo)
       userStore.setIdentityType(response.userInfo.identityType)
       showToast('注册成功', true)
-      uni.reLaunch({ url: '/pages/customer/index' })
+      setTimeout(() => {
+        uni.reLaunch({ url: '/pages/customer/index' })
+      }, 1500)
     } else {
+      console.log('[Customer Register] 响应中没有token:', response)
       showToast('注册失败，请重试')
     }
   } catch (error) {
