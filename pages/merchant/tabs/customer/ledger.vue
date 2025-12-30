@@ -8,6 +8,8 @@
 import { ref, onMounted } from 'vue'
 import { getCustomer, getCustomerStats } from '@/api/modules/customer'
 import { queryLedgersByCustomer } from '@/api/modules/ledger'
+import { LedgerStatus } from '@/enums'
+import LedgerCard from '@/components/ledger/LedgerCard.vue'
 import type { CustomerVO, CustomerStatsVO } from '@/types/customer'
 import type { LedgerListVO } from '@/types/ledger'
 
@@ -22,14 +24,15 @@ const refreshing = ref(false)
 const customer = ref<CustomerVO | null>(null)
 const stats = ref<CustomerStatsVO | null>(null)
 
-// 筛选
-const statusFilter = ref('')
+// 筛选（使用数字状态值）
+const statusFilter = ref<number | null>(null)
 const statusOptions = [
-  { value: '', label: '全部' },
-  { value: 'IN_PROGRESS', label: '进行中' },
-  { value: 'ON_CREDIT', label: '赊账中' },
-  { value: 'SETTLED', label: '已结清' },
-  { value: 'CLOSED', label: '已关闭' }
+  { value: null, label: '全部' },
+  { value: LedgerStatus.IN_PROGRESS, label: '进行中' },
+  { value: LedgerStatus.PARTIAL, label: '部分缴费' },
+  { value: LedgerStatus.ON_CREDIT, label: '赊账中' },
+  { value: LedgerStatus.CLEARED, label: '已结清' },
+  { value: LedgerStatus.CLOSED, label: '已关闭' }
 ]
 
 // 账单列表
@@ -72,7 +75,7 @@ const loadLedgers = async (reset = false) => {
     const res = await queryLedgersByCustomer(
       {
         customerId: customerId.value,
-        status: statusFilter.value || undefined
+        ledgerStatus: statusFilter.value ?? undefined
       },
       { page: page.value, size: 15 }
     )
@@ -96,7 +99,7 @@ const loadLedgers = async (reset = false) => {
 /**
  * 筛选状态变更
  */
-const onStatusChange = (status: string) => {
+const onStatusChange = (status: number | null) => {
   statusFilter.value = status
   loadLedgers(true)
 }
@@ -133,29 +136,10 @@ const createLedger = () => {
 }
 
 /**
- * 获取状态文本
+ * 查看账单详情
  */
-const getStatusText = (status: string) => {
-  const map: Record<string, string> = {
-    'IN_PROGRESS': '进行中',
-    'ON_CREDIT': '赊账中',
-    'SETTLED': '已结清',
-    'CLOSED': '已关闭'
-  }
-  return map[status] || status
-}
-
-/**
- * 获取状态样式类
- */
-const getStatusClass = (status: string) => {
-  const map: Record<string, string> = {
-    'IN_PROGRESS': 'status-pending',
-    'ON_CREDIT': 'status-debt',
-    'SETTLED': 'status-paid',
-    'CLOSED': 'status-closed'
-  }
-  return map[status] || 'status-pending'
+const handleLedgerClick = (id: number) => {
+  viewLedgerDetail(id)
 }
 
 // ==================== 生命周期 ====================
@@ -215,59 +199,37 @@ onMounted(() => {
       @refresherrefresh="onRefresh"
       @scrolltolower="onLoadMore"
     >
-      <!-- 空状态 -->
-      <view v-if="ledgers.length === 0 && !loading" class="empty-state">
-        <wd-icon name="list" size="100rpx" color="#ddd" />
-        <text>暂无账单记录</text>
-      </view>
-
-      <!-- 账单列表 -->
-      <view v-else class="ledger-list">
-        <view
-          v-for="ledger in ledgers"
-          :key="ledger.id"
-          class="ledger-card"
-          @tap="viewLedgerDetail(ledger.id)"
-        >
-          <view class="ledger-header">
-            <view class="ledger-time">{{ ledger.createdAt }}</view>
-            <view class="ledger-status" :class="getStatusClass(ledger.status)">
-              {{ getStatusText(ledger.status) }}
-            </view>
-          </view>
-          
-          <view class="ledger-body">
-            <view class="ledger-remark">{{ ledger.remark || '未命名账单' }}</view>
-            <view class="ledger-items" v-if="ledger.itemCount">
-              共{{ ledger.itemCount }}件商品
-            </view>
-          </view>
-
-          <view class="ledger-footer">
-            <view class="amount-row">
-              <text class="amount-label">账单金额</text>
-              <text class="amount-value">¥{{ (ledger.totalAmount || 0).toFixed(2) }}</text>
-            </view>
-            <view class="amount-row">
-              <text class="amount-label">已支付</text>
-              <text class="amount-paid">¥{{ (ledger.paidAmount || 0).toFixed(2) }}</text>
-            </view>
-          </view>
+      <view class="ledger-scroll-inner">
+        <!-- 空状态 -->
+        <view v-if="ledgers.length === 0 && !loading" class="empty-state">
+          <wd-icon name="list" size="100rpx" color="#ddd" />
+          <text>暂无账单记录</text>
         </view>
-      </view>
 
-      <!-- 加载更多 -->
-      <view v-if="loading && ledgers.length > 0" class="loading-more">
-        <wd-loading size="40rpx" />
-        <text>加载中...</text>
-      </view>
+        <!-- 账单列表 -->
+        <view v-else class="ledger-list">
+          <LedgerCard
+            v-for="ledger in ledgers"
+            :key="ledger.id"
+            :ledger="ledger"
+            :show-customer="false"
+            @click="handleLedgerClick"
+          />
+        </view>
 
-      <!-- 没有更多 -->
-      <view v-if="!hasMore && ledgers.length > 0" class="no-more">
-        没有更多了
-      </view>
+        <!-- 加载更多 -->
+        <view v-if="loading && ledgers.length > 0" class="loading-more">
+          <wd-loading size="40rpx" />
+          <text>加载中...</text>
+        </view>
 
-      <view style="height: 160rpx;"></view>
+        <!-- 没有更多 -->
+        <view v-if="!hasMore && ledgers.length > 0" class="no-more">
+          没有更多了
+        </view>
+
+        <view style="height: 160rpx;"></view>
+      </view>
     </scroll-view>
 
     <!-- 新建账单按钮 -->
@@ -368,6 +330,9 @@ onMounted(() => {
 
 .ledger-scroll {
   flex: 1;
+}
+
+.ledger-scroll-inner {
   padding: 24rpx;
 }
 

@@ -201,16 +201,29 @@ const handleMerchantChanged = () => {
   loadProducts(true)
 }
 
-onMounted(() => {
+/**
+ * Tab显示时刷新数据
+ */
+const handleTabShow = () => {
+  console.log('[Product] Tab显示，刷新数据')
   loadCategories()
   loadProducts(true)
+}
+
+onMounted(() => {
   // 监听商户切换事件
   uni.$on('merchant-changed', handleMerchantChanged)
+  // 监听Tab切换事件
+  uni.$on('tab-product-show', handleTabShow)
+  // 首次挂载时加载数据
+  loadCategories()
+  loadProducts(true)
 })
 
 onUnmounted(() => {
   // 移除事件监听，避免内存泄漏
   uni.$off('merchant-changed', handleMerchantChanged)
+  uni.$off('tab-product-show', handleTabShow)
 })
 </script>
 
@@ -313,7 +326,7 @@ onUnmounted(() => {
             class="product-card"
           >
             <!-- 未定价标记 -->
-            <view v-if="!product.hasPrice" class="price-badge">未定价</view>
+            <view v-if="!product.price" class="price-badge">未定价</view>
             
             <!-- 商品图片 -->
             <view class="product-img">
@@ -324,8 +337,8 @@ onUnmounted(() => {
             <!-- 商品信息 -->
             <view class="product-info">
               <view class="product-name">{{ product.name }}</view>
-              <view class="product-price" :class="{ empty: !product.hasPrice }">
-                <text>¥</text>{{ product.hasPrice ? product.minPrice : '--' }}
+              <view class="product-price" :class="{ empty: !product.price }">
+                <text>¥</text>{{ product.price || '--' }}
               </view>
               
               <!-- 操作按钮 -->

@@ -10,6 +10,7 @@ import { queryInProgressLedgers } from '@/api/modules/ledger'
 import { getMerchantStats, getTodayStats } from '@/api/modules/merchant'
 import { useNavbarSafeArea } from '@/composables/useNavbarSafeArea'
 import { useUserStore } from '@/stores/modules/user'
+import { LedgerStatus, getLedgerStatusLabel } from '@/enums'
 import type { LedgerListVO } from '@/types/ledger'
 import type { MerchantStatsVO, TodayStatsVO } from '@/types/merchant'
 
@@ -136,26 +137,29 @@ const viewLedgerDetail = (id: number) => {
 }
 
 /**
- * 获取账单状态样式
+ * 获取账单状态样式（使用数字状态）
  */
-const getStatusClass = (status: string) => {
-  const map: Record<string, string> = {
-    'IN_PROGRESS': 'pending',
-    'ON_CREDIT': 'debt',
-    'SETTLED': 'paid',
-    'CLOSED': 'closed'
+const getStatusClass = (status: number) => {
+  const map: Record<number, string> = {
+    [LedgerStatus.IN_PROGRESS]: 'pending',
+    [LedgerStatus.PARTIAL]: 'partial',
+    [LedgerStatus.ON_CREDIT]: 'debt',
+    [LedgerStatus.CLEARED]: 'paid',
+    [LedgerStatus.CLOSED]: 'closed'
   }
   return map[status] || 'pending'
 }
 
-const getStatusText = (status: string) => {
-  const map: Record<string, string> = {
-    'IN_PROGRESS': '进行中',
-    'ON_CREDIT': '赊账中',
-    'SETTLED': '已结清',
-    'CLOSED': '已关闭'
-  }
-  return map[status] || status
+const getStatusText = (status: number) => {
+  return getLedgerStatusLabel(status)
+}
+
+/**
+ * 查看全部账单（跳转到账单Tab并筛选进行中状态）
+ */
+const viewAllLedgers = () => {
+  // 通过事件通知切换Tab并设置筛选条件
+  uni.$emit('switch-to-ledger-tab', { status: LedgerStatus.IN_PROGRESS })
 }
 
 // ==================== 生命周期 ====================
@@ -295,7 +299,7 @@ onUnmounted(() => {
       <view class="section">
         <view class="section-header">
           <text class="section-title">进行中的账单</text>
-          <text class="section-more" @tap="() => {}">查看全部</text>
+          <text class="section-more" @tap="viewAllLedgers">查看全部</text>
         </view>
 
         <view v-if="inProgressLedgers.length === 0" class="empty-state">
@@ -320,8 +324,8 @@ onUnmounted(() => {
                   <view class="ledger-time">{{ ledger.createdAt }}</view>
                 </view>
               </view>
-              <view class="ledger-status" :class="getStatusClass(ledger.status)">
-                {{ getStatusText(ledger.status) }}
+              <view class="ledger-status" :class="getStatusClass(ledger.ledgerStatus)">
+                {{ getStatusText(ledger.ledgerStatus) }}
               </view>
             </view>
             <view class="ledger-footer">
@@ -624,6 +628,11 @@ onUnmounted(() => {
   &.pending {
     background: #FEF3C7;
     color: #F59E0B;
+  }
+
+  &.partial {
+    background: #DBEAFE;
+    color: #3B82F6;
   }
 
   &.debt {

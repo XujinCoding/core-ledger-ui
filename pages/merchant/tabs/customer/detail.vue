@@ -275,7 +275,7 @@ onPullDownRefresh(() => {
             >
               <view class="ledger-info">
                 <view class="ledger-title">
-                  {{ ledger.remark || '未命名账单' }}
+                  {{ ledger.createInstant.substring(0, 10) + ' - '+ ledger.customerName || '未命名账单' }}
                 </view>
                 <view class="ledger-time">
                   {{ ledger.createdAt }}

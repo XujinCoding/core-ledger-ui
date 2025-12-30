@@ -5,20 +5,16 @@
  * @since 1.0.0
  */
 
-import { ref, computed, onMounted } from 'vue'
-import { useNavbarSafeArea } from '@/composables/useNavbarSafeArea'
-import { searchCustomers } from '@/api/modules/customer'
-import { listProducts } from '@/api/modules/product'
+import { ref, computed, onMounted, watch } from 'vue'
+import { searchCustomers, getCustomer } from '@/api/modules/customer'
 import { createLedger } from '@/api/modules/ledger'
+import { searchPricedSkusByName } from '@/api/modules/sku'
 import type { CustomerVO } from '@/types/customer'
-import type { ProductVO } from '@/types/product'
+import type { ProductSkuVO } from '@/types/product'
 
 // ==================== 数据状态 ====================
 
 const step = ref(1) // 1-选择客户 2-选择商品 3-确认
-
-// 导航栏安全区域
-const { safeArea } = useNavbarSafeArea()
 
 // 客户相关
 const customerKeyword = ref('')
@@ -33,18 +29,23 @@ const searchTypeOptions = [
   { name: '手机号', value: 'phone' }
 ]
 
-// 商品相关
-const productKeyword = ref('')
-const products = ref<ProductVO[]>([])
-const loadingProducts = ref(false)
-
-// 购物车
-interface CartItem {
-  product: ProductVO
+// 账单明细行
+interface LedgerLineItem {
+  id: number  // 临时ID，用于列表key
+  productId?: number // 商品ID
+  skuId?: number  // 关联的SKU ID
+  productName: string
   quantity: number
   price: number
 }
-const cartItems = ref<CartItem[]>([])
+const lineItems = ref<LedgerLineItem[]>([])
+let lineIdCounter = 0
+
+// SKU搜索相关
+const activeLineIndex = ref<number>(-1)  // 当前激活的行索引
+const skuSearchResults = ref<ProductSkuVO[]>([])
+const searchingSkus = ref(false)
+let skuSearchTimer: ReturnType<typeof setTimeout> | null = null
 
 // 备注
 const remark = ref('')
@@ -55,11 +56,11 @@ const submitting = ref(false)
 // ==================== 计算属性 ====================
 
 const totalAmount = computed(() => {
-  return cartItems.value.reduce((sum, item) => sum + item.price * item.quantity, 0)
+  return lineItems.value.reduce((sum: number, item: LedgerLineItem) => sum + (item.price || 0) * (item.quantity || 0), 0)
 })
 
 const totalCount = computed(() => {
-  return cartItems.value.reduce((sum, item) => sum + item.quantity, 0)
+  return lineItems.value.reduce((sum: number, item: LedgerLineItem) => sum + (item.quantity || 0), 0)
 })
 
 const canSubmit = computed(() => {
@@ -110,69 +111,107 @@ const searchCustomerList = async () => {
 const selectCustomer = (customer: CustomerVO) => {
   selectedCustomer.value = customer
   step.value = 2
-  loadProductList()
+  // 默认添加一行空白明细
+  if (lineItems.value.length === 0) {
+    addLineItem()
+  }
 }
 
 /**
- * 加载商品列表
+ * 添加明细行
  */
-const loadProductList = async () => {
+const addLineItem = () => {
+  lineItems.value.push({
+    id: ++lineIdCounter,
+    productName: '',
+    quantity: 1,
+    price: 0
+  })
+}
+
+/**
+ * 删除明细行
+ */
+const removeLineItem = (index: number) => {
+  lineItems.value.splice(index, 1)
+  // 如果删除的是当前激活行，关闭搜索结果
+  if (activeLineIndex.value === index) {
+    activeLineIndex.value = -1
+    skuSearchResults.value = []
+  }
+}
+
+/**
+ * 计算单行金额
+ */
+const getLineAmount = (item: LedgerLineItem) => {
+  return (item.price || 0) * (item.quantity || 0)
+}
+
+/**
+ * 处理商品名称输入 - 触发SKU搜索
+ */
+const handleProductNameInput = (index: number, value: string) => {
+  lineItems.value[index].productName = value
+  activeLineIndex.value = index
+  
+  // 清除之前的定时器
+  if (skuSearchTimer) {
+    clearTimeout(skuSearchTimer)
+  }
+  
+  // 如果输入为空，清除搜索结果
+  if (!value.trim()) {
+    skuSearchResults.value = []
+    return
+  }
+  
+  // 防抖搜索
+  skuSearchTimer = setTimeout(() => {
+    searchSkus(value.trim())
+  }, 300)
+}
+
+/**
+ * 搜索SKU
+ */
+const searchSkus = async (keyword: string) => {
+  if (!keyword) return
+  
   try {
-    loadingProducts.value = true
-    const res = await listProducts(
-      { keyword: productKeyword.value || undefined },
-      { page: 0, size: 50 }
-    )
-    products.value = res.content || []
+    searchingSkus.value = true
+    const results = await searchPricedSkusByName(keyword)
+    skuSearchResults.value = results || []
   } catch (error) {
-    console.error('加载商品失败:', error)
+    console.error('搜索SKU失败:', error)
+    skuSearchResults.value = []
   } finally {
-    loadingProducts.value = false
+    searchingSkus.value = false
   }
 }
 
 /**
- * 添加商品到购物车
+ * 选择SKU - 填充商品名称和单价
  */
-const addToCart = (product: ProductVO) => {
-  const existing = cartItems.value.find(item => item.product.id === product.id)
-  if (existing) {
-    existing.quantity++
-  } else {
-    cartItems.value.push({
-      product,
-      quantity: 1,
-      price: product.minPrice || 0
-    })
+const selectSku = (sku: ProductSkuVO) => {
+  if (activeLineIndex.value >= 0 && activeLineIndex.value < lineItems.value.length) {
+    const item = lineItems.value[activeLineIndex.value]
+    item.productId = sku.productId
+    item.skuId = sku.id
+    item.productName = sku.skuName
+    item.price = Number(sku.price) || 0
   }
+  // 关闭搜索结果
+  activeLineIndex.value = -1
+  skuSearchResults.value = []
 }
 
 /**
- * 修改数量
+ * 关闭SKU搜索结果
  */
-const updateQuantity = (index: number, delta: number) => {
-  const item = cartItems.value[index]
-  const newQty = item.quantity + delta
-  if (newQty <= 0) {
-    cartItems.value.splice(index, 1)
-  } else {
-    item.quantity = newQty
-  }
-}
-
-/**
- * 移除商品
- */
-const removeItem = (index: number) => {
-  cartItems.value.splice(index, 1)
-}
-
-/**
- * 获取商品在购物车中的数量
- */
-const getCartQuantity = (productId: number) => {
-  const item = cartItems.value.find(i => i.product.id === productId)
-  return item?.quantity || 0
+const closeSkuSearch = () => {
+  activeLineIndex.value = -1
+  skuSearchResults.value = []
 }
 
 /**
@@ -197,23 +236,22 @@ const submit = async () => {
       return
     }
     
+    // 过滤有效的明细行（商品名称不为空）
+    const validItems = lineItems.value.filter(item => item.productName.trim())
+    
     await createLedger({
       customerId: selectedCustomer.value!.id,
       merchantId: merchantId,
       memo: remark.value || undefined,
-      items: cartItems.value.length > 0 ? cartItems.value.map(item => {
-        // 优先使用第一个SKU，如果没有则不传SKU
-        const firstSku = item.product.skus?.[0]
-        return {
-          productId: item.product.id,
-          productName: item.product.name,
-          skuId: firstSku?.id,
-          skuName: firstSku?.name,
-          quantity: item.quantity,
-          price: item.price,
-          amount: item.price * item.quantity
-        }
-      }) : undefined
+      items: validItems.length > 0 ? validItems.map(item => ({
+        productId: item.productId!,
+        skuId: item.skuId,
+        productName: item.productName,
+        skuName: item.productName,
+        quantity: item.quantity || 1,
+        price: item.price || 0,
+        amount: (item.price || 0) * (item.quantity || 1)
+      })) : undefined
     })
     uni.showToast({ title: '创建成功', icon: 'success' })
     setTimeout(() => {
@@ -239,16 +277,23 @@ const goBack = () => {
 
 // ==================== 生命周期 ====================
 
-onMounted(() => {
+onMounted(async () => {
   const pages = getCurrentPages()
   const currentPage = pages[pages.length - 1] as any
   const query = currentPage.options || {}
   
-  // 如果传入了客户ID，直接跳到商品选择
+  // 如果传入了客户ID，加载客户信息并跳到明细编辑
   if (query.customerId) {
-    // TODO: 根据ID加载客户信息
-    step.value = 2
-    loadProductList()
+    try {
+      const customer = await getCustomer(Number(query.customerId))
+      selectedCustomer.value = customer
+      step.value = 2
+      addLineItem()
+    } catch (error) {
+      console.error('加载客户信息失败:', error)
+      uni.showToast({ title: '加载客户信息失败', icon: 'none' })
+      searchCustomerList()
+    }
   } else {
     searchCustomerList()
   }
@@ -257,18 +302,8 @@ onMounted(() => {
 
 <template>
   <view class="ledger-add-page">
-    <!-- 顶部固定区域：返回按钮 + 步骤条 -->
-    <view class="fixed-header" :style="{ paddingTop: (safeArea?.navbarHeight || 44) + 'px' }">
-      <!-- 返回按钮 -->
-      <view class="header-nav">
-        <view class="back-btn-inline" @tap="goBack">
-          <wd-icon name="arrow-left" size="40rpx" />
-        </view>
-        <text class="header-title">创建账单</text>
-        <view class="header-placeholder"></view>
-      </view>
-      
-      <!-- 步骤条 - 使用 wot-design-uni 官方组件 -->
+    <!-- 步骤条 -->
+    <view class="steps-header">
       <wd-steps :active="step - 1" align-center>
         <wd-step title="选择客户" />
         <wd-step title="选择商品" />
@@ -341,7 +376,7 @@ onMounted(() => {
       </scroll-view>
     </view>
 
-    <!-- 步骤2：选择商品 -->
+    <!-- 步骤2：填写账单明细 -->
     <view v-if="step === 2" class="step-content">
       <!-- 已选客户 -->
       <view class="selected-customer" v-if="selectedCustomer">
@@ -356,62 +391,112 @@ onMounted(() => {
         </view>
       </view>
 
-      <view class="search-bar">
-        <view class="search-input-wrap">
-          <wd-icon name="search" size="36rpx" color="#999" />
-          <input
-            class="search-input"
-            v-model="productKeyword"
-            placeholder="搜索商品名称"
-            @confirm="loadProductList"
-          />
-        </view>
-      </view>
+      <!-- 账单明细编辑区域 -->
+      <scroll-view class="ledger-detail-scroll" scroll-y @tap="closeSkuSearch">
+        <view class="ledger-detail-inner">
+          <view class="ledger-section">
+            <view class="section-header">
+              <text class="section-title">账单明细</text>
+              <text class="section-hint">输入商品名搜索</text>
+            </view>
+            
+            <!-- 表头 -->
+            <view class="line-table-header">
+              <text class="col-name">商品名称</text>
+              <text class="col-qty">数量</text>
+              <text class="col-price">单价</text>
+              <text class="col-amount">金额</text>
+              <text class="col-action"></text>
+            </view>
+            
+            <!-- 明细行列表 -->
+            <view class="line-items">
+              <view v-for="(item, index) in lineItems" :key="item.id" class="line-row-item">
+                <!-- 商品名称输入（支持搜索） -->
+                <view class="col-name" @tap.stop>
+                  <input 
+                    class="compact-input name-input" 
+                    :value="item.productName"
+                    @input="(e: any) => handleProductNameInput(index, e.detail.value)"
+                    @focus="activeLineIndex = index"
+                    placeholder="搜索商品"
+                  />
+                  <!-- SKU搜索结果下拉 -->
+                  <view v-if="activeLineIndex === index && skuSearchResults.length > 0" class="sku-dropdown" @tap.stop>
+                    <view v-if="searchingSkus" class="sku-loading">
+                      <wd-loading size="24rpx" />
+                    </view>
+                    <view 
+                      v-for="sku in skuSearchResults" 
+                      :key="sku.id" 
+                      class="sku-option"
+                      @tap.stop="selectSku(sku)"
+                    >
+                      <text class="sku-name">{{ sku.skuName }}</text>
+                      <text class="sku-price">¥{{ sku.price }}</text>
+                    </view>
+                  </view>
+                </view>
+                <!-- 数量 -->
+                <view class="col-qty">
+                  <input 
+                    class="compact-input qty-input" 
+                    type="number"
+                    v-model.number="item.quantity" 
+                    placeholder="1"
+                  />
+                </view>
+                <!-- 单价 -->
+                <view class="col-price">
+                  <input 
+                    class="compact-input price-input" 
+                    type="digit"
+                    v-model.number="item.price" 
+                    placeholder="0"
+                  />
+                </view>
+                <!-- 金额 -->
+                <view class="col-amount">
+                  <text class="amount-text">{{ getLineAmount(item).toFixed(2) }}</text>
+                </view>
+                <!-- 删除按钮 -->
+                <view class="col-action">
+                  <view v-if="lineItems.length > 1" class="delete-btn" @tap="removeLineItem(index)">
+                    <wd-icon name="close" size="24rpx" color="#999" />
+                  </view>
+                </view>
+              </view>
+            </view>
 
-      <scroll-view class="product-list" scroll-y>
-        <view class="product-list-inner">
-          <view v-if="loadingProducts" class="loading-state">
-            <wd-loading size="40rpx" />
-          </view>
-          <view v-else-if="products.length === 0" class="empty-state">
-            <text>暂无商品</text>
-          </view>
-          <view
-            v-else
-            v-for="product in products"
-            :key="product.id"
-            class="product-item"
-          >
-            <view class="product-img">
-              <wd-icon name="goods" size="48rpx" color="#ccc" />
+            <!-- 添加明细按钮 -->
+            <view class="add-line-btn" @tap="addLineItem">
+              <wd-icon name="add" size="28rpx" color="#3B82F6" />
+              <text>添加一行</text>
             </view>
-            <view class="product-info">
-              <view class="product-name">{{ product.name }}</view>
-              <view class="product-price">¥{{ product.minPrice || '--' }}</view>
+          </view>
+
+          <!-- 汇总区域 -->
+          <view class="ledger-summary">
+            <view class="summary-row">
+              <text class="summary-label">商品数量</text>
+              <text class="summary-value">{{ totalCount }} 件</text>
             </view>
-            <view class="quantity-control">
-              <view
-                v-if="getCartQuantity(product.id) > 0"
-                class="qty-btn minus"
-                @tap="updateQuantity(cartItems.findIndex(i => i.product.id === product.id), -1)"
-              >-</view>
-              <text v-if="getCartQuantity(product.id) > 0" class="qty-num">
-                {{ getCartQuantity(product.id) }}
-              </text>
-              <view class="qty-btn plus" @tap="addToCart(product)">+</view>
+            <view class="summary-row total">
+              <text class="summary-label">合计金额</text>
+              <text class="summary-value">¥{{ totalAmount.toFixed(2) }}</text>
             </view>
           </view>
         </view>
       </scroll-view>
 
-      <!-- 底部购物栏 -->
+      <!-- 底部操作栏 -->
       <view class="cart-bar">
         <view class="cart-info">
-          <view class="cart-count">已选 {{ totalCount }} 件</view>
+          <view class="cart-count">共 {{ lineItems.length }} 项</view>
           <view class="cart-total">合计 <text>¥{{ totalAmount.toFixed(2) }}</text></view>
         </view>
         <button class="next-btn" @tap="goConfirm">
-          {{ cartItems.length === 0 ? '跳过选品' : '下一步' }}
+          下一步
         </button>
       </view>
     </view>
@@ -435,19 +520,18 @@ onMounted(() => {
         <!-- 商品清单 -->
         <view class="confirm-section">
           <view class="section-title">商品清单 ({{ totalCount }}件)</view>
-          <view v-if="cartItems.length > 0" class="cart-list">
-            <view v-for="(item, index) in cartItems" :key="item.product.id" class="cart-item">
+          <view v-if="lineItems.filter(i => i.productName.trim()).length > 0" class="cart-list">
+            <view v-for="item in lineItems.filter(i => i.productName.trim())" :key="item.id" class="cart-item">
               <view class="item-info">
-                <view class="item-name">{{ item.product.name }}</view>
-                <view class="item-price">¥{{ item.price.toFixed(2) }} x {{ item.quantity }}</view>
+                <view class="item-name">{{ item.productName }}</view>
+                <view class="item-price">¥{{ (item.price || 0).toFixed(2) }} x {{ item.quantity || 1 }}</view>
               </view>
-              <view class="item-total">¥{{ (item.price * item.quantity).toFixed(2) }}</view>
-              <wd-icon name="close" size="28rpx" color="#999" @click="removeItem(index)" />
+              <view class="item-total">¥{{ getLineAmount(item).toFixed(2) }}</view>
             </view>
           </view>
           <view v-else class="empty-cart-tip">
             <wd-icon name="goods" size="64rpx" color="#ccc" />
-            <text>暂未选择商品，可后续添加</text>
+            <text>暂未填写商品，可后续添加</text>
           </view>
         </view>
 
@@ -486,35 +570,11 @@ onMounted(() => {
   background: #f5f5f5;
 }
 
-.fixed-header {
+.steps-header {
   flex-shrink: 0;
   background: #fff;
+  padding: 20rpx 0;
   box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.05);
-}
-
-.header-nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 20rpx 24rpx;
-}
-
-.back-btn-inline {
-  width: 72rpx;
-  height: 72rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.header-title {
-  font-size: 34rpx;
-  font-weight: 600;
-  color: #333;
-}
-
-.header-placeholder {
-  width: 72rpx;
 }
 
 .step-content {
@@ -916,6 +976,221 @@ onMounted(() => {
   padding: 24rpx 32rpx;
   background: #fff;
   box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.05);
+}
+
+/* 账单明细编辑样式 - 紧凑表格布局 */
+.ledger-detail-scroll {
+  flex: 1;
+}
+
+.ledger-detail-inner {
+  padding: 24rpx;
+}
+
+.ledger-section {
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 24rpx;
+  margin-bottom: 24rpx;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20rpx;
+}
+
+.section-hint {
+  font-size: 22rpx;
+  color: #999;
+}
+
+/* 表头样式 */
+.line-table-header {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 0;
+  border-bottom: 2rpx solid #f0f0f0;
+  font-size: 22rpx;
+  color: #999;
+}
+
+.line-table-header .col-name { flex: 3; }
+.line-table-header .col-qty { width: 100rpx; text-align: center; }
+.line-table-header .col-price { width: 120rpx; text-align: center; }
+.line-table-header .col-amount { width: 120rpx; text-align: right; }
+.line-table-header .col-action { width: 50rpx; }
+
+/* 明细行列表 */
+.line-items {
+  display: flex;
+  flex-direction: column;
+}
+
+/* 单行样式 */
+.line-row-item {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #f5f5f5;
+}
+
+.line-row-item .col-name {
+  flex: 3;
+  position: relative;
+}
+
+.line-row-item .col-qty {
+  width: 100rpx;
+}
+
+.line-row-item .col-price {
+  width: 120rpx;
+}
+
+.line-row-item .col-amount {
+  width: 120rpx;
+  text-align: right;
+}
+
+.line-row-item .col-action {
+  width: 50rpx;
+  display: flex;
+  justify-content: center;
+}
+
+/* 紧凑输入框 */
+.compact-input {
+  height: 64rpx;
+  background: #f8f9fa;
+  border: none;
+  border-radius: 8rpx;
+  padding: 0 16rpx;
+  font-size: 26rpx;
+  box-sizing: border-box;
+}
+
+.name-input {
+  width: 100%;
+}
+
+.qty-input,
+.price-input {
+  width: 100%;
+  text-align: center;
+}
+
+.amount-text {
+  font-size: 26rpx;
+  color: #EF4444;
+  font-weight: 500;
+}
+
+.delete-btn {
+  padding: 8rpx;
+}
+
+/* SKU搜索下拉 */
+.sku-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border-radius: 12rpx;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.12);
+  z-index: 100;
+  max-height: 400rpx;
+  overflow-y: auto;
+}
+
+.sku-loading {
+  padding: 24rpx;
+  text-align: center;
+}
+
+.sku-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20rpx 24rpx;
+  border-bottom: 1rpx solid #f5f5f5;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:active {
+    background: #f5f5f5;
+  }
+}
+
+.sku-name {
+  font-size: 26rpx;
+  color: #333;
+  flex: 1;
+}
+
+.sku-price {
+  font-size: 26rpx;
+  color: #EF4444;
+  margin-left: 16rpx;
+}
+
+/* 添加行按钮 */
+.add-line-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  padding: 20rpx;
+  margin-top: 16rpx;
+  background: rgba(59, 130, 246, 0.05);
+  border: 2rpx dashed #3B82F6;
+  border-radius: 12rpx;
+  
+  text {
+    font-size: 26rpx;
+    color: #3B82F6;
+    font-weight: 500;
+  }
+}
+
+.ledger-summary {
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 32rpx;
+}
+
+.ledger-summary .summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16rpx 0;
+
+  &.total {
+    border-top: 2rpx solid #f0f0f0;
+    margin-top: 8rpx;
+    padding-top: 24rpx;
+  }
+}
+
+.ledger-summary .summary-label {
+  font-size: 28rpx;
+  color: #666;
+}
+
+.ledger-summary .summary-value {
+  font-size: 28rpx;
+  color: #333;
+  font-weight: 500;
+}
+
+.ledger-summary .summary-row.total .summary-value {
+  font-size: 36rpx;
+  color: #EF4444;
+  font-weight: 600;
 }
 
 </style>

@@ -35,3 +35,12 @@ export const batchUpdatePrice = (data: SkuPriceUpdateDTO) => {
 export const searchPricedSkusByName = (name: string) => {
   return request.get<ProductSkuVO[]>('/skus/search/priced', { name })
 }
+
+/**
+ * 获取商品的所有SKU列表
+ * @param productId 商品ID
+ * @returns SKU列表
+ */
+export const getProductSkus = (productId: number) => {
+  return request.get<ProductSkuVO[]>(`/products/${productId}/skus`)
+}

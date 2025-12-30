@@ -37,3 +37,15 @@ export interface ApiResponse<T> {
   /** 响应数据 */
   data: T
 }
+
+/**
+ * MyBatis PageHelper 分页响应
+ */
+export interface PageQueryResult<T> {
+  /** 内容列表 */
+  content: T[]
+  /** 总页数 */
+  totalPages: number | null
+  /** 总元素数 */
+  totalElements: number | null
+}

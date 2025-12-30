@@ -5,7 +5,7 @@
  * @since 1.0.0
  */
 
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 
 import HomeTab from './tabs/home/index.vue'
 import CustomerTab from './tabs/customer/index.vue'
@@ -38,10 +38,33 @@ const toTab = (tab: TabKey) => {
   if (!mountedTabs.value[tab]) {
     mountedTabs.value[tab] = true
   }
+  // 切换Tab时发送事件，通知子组件刷新数据
+  setTimeout(() => {
+    uni.$emit(`tab-${tab}-show`)
+  }, 50)
+}
+
+/**
+ * 切换到账单Tab并设置筛选状态
+ */
+const switchToLedgerTab = (params?: { status?: number }) => {
+  toTab('ledger')
+  if (params?.status !== undefined) {
+    // 延迟发送，确保Tab已挂载
+    setTimeout(() => {
+      uni.$emit('ledger-tab-filter', { status: params.status })
+    }, 100)
+  }
 }
 
 onMounted(() => {
   currentTab.value = 'home'
+  // 监听从首页跳转到账单Tab的事件
+  uni.$on('switch-to-ledger-tab', switchToLedgerTab)
+})
+
+onUnmounted(() => {
+  uni.$off('switch-to-ledger-tab', switchToLedgerTab)
 })
 </script>
 

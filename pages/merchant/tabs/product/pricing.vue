@@ -7,7 +7,7 @@
 
 import { ref, computed, onMounted } from 'vue'
 import { getProduct } from '@/api/modules/product'
-import { batchUpdatePrice } from '@/api/modules/sku'
+import { batchUpdatePrice, getProductSkus } from '@/api/modules/sku'
 import type { ProductVO, ProductSkuVO } from '@/types/product'
 
 // ==================== 页面参数 ====================
@@ -25,17 +25,15 @@ interface SkuPriceItem {
   id: number
   name: string
   price: string
-  originalPrice: number
+  priceStatus: number  // 0=未定价, 1=已定价
 }
 const skuPrices = ref<SkuPriceItem[]>([])
 
 // ==================== 计算属性 ====================
 
-const hasChanges = computed(() => {
-  return skuPrices.value.some(item => {
-    const newPrice = parseFloat(item.price)
-    return !isNaN(newPrice) && newPrice !== item.originalPrice
-  })
+// 是否有SKU可以保存
+const canSave = computed(() => {
+  return skuPrices.value.length > 0
 })
 
 // ==================== 方法 ====================
@@ -46,25 +44,27 @@ const hasChanges = computed(() => {
 const loadProduct = async () => {
   try {
     loading.value = true
+    // 加载商品基本信息
     const res = await getProduct(productId.value)
     product.value = res
     
-    // 初始化SKU价格列表
-    if (res.skus && res.skus.length > 0) {
-      skuPrices.value = res.skus.map((sku: ProductSkuVO) => ({
-        id: sku.id,
-        name: sku.name || '默认规格',
-        price: sku.price?.toString() || '',
-        originalPrice: sku.price || 0
-      }))
+    // 加载商品SKU列表
+    const skuList = await getProductSkus(productId.value)
+    
+    // 初始化SKU价格列表，未定价的排在前面
+    if (skuList && skuList.length > 0) {
+      skuPrices.value = skuList
+        .map((sku: ProductSkuVO) => ({
+          id: sku.id,
+          name: sku.skuName,
+          price: sku.price?.toString() || '',
+          priceStatus: sku.priceStatus
+        }))
+        .sort((a: SkuPriceItem, b: SkuPriceItem) => a.priceStatus - b.priceStatus)  // 未定价(0)排前面
     } else {
-      // 没有SKU时显示默认SKU
-      skuPrices.value = [{
-        id: res.defaultSkuId || 0,
-        name: '默认规格',
-        price: res.minPrice?.toString() || '',
-        originalPrice: res.minPrice || 0
-      }]
+      // 没有SKU时显示提示
+      skuPrices.value = []
+      uni.showToast({ title: '该商品暂无SKU，请先添加商品属性', icon: 'none', duration: 2000 })
     }
   } catch (error) {
     console.error('加载商品失败:', error)
@@ -97,42 +97,29 @@ const applyUniformPrice = () => {
  * 保存定价
  */
 const savePricing = async () => {
-  // 验证价格
-  const invalidItems = skuPrices.value.filter(item => {
-    const price = parseFloat(item.price)
-    return isNaN(price) || price < 0
-  })
-  
-  if (invalidItems.length > 0) {
-    uni.showToast({ title: '请输入有效价格', icon: 'none' })
+  // 构建提交数据，提交所有有效价格
+  const priceUpdates = skuPrices.value
+    .filter(item => {
+      const price = parseFloat(item.price)
+      return !isNaN(price) && price > 0
+    })
+    .map(item => ({
+      skuId: item.id,
+      price: parseFloat(item.price)
+    }))
+
+  if (priceUpdates.length === 0) {
+    uni.showToast({ title: '请至少输入一个有效价格', icon: 'none' })
     return
   }
 
   try {
     submitting.value = true
-    
-    const priceUpdates = skuPrices.value
-      .filter(item => {
-        const newPrice = parseFloat(item.price)
-        return !isNaN(newPrice) && newPrice !== item.originalPrice
-      })
-      .map(item => ({
-        skuId: item.id,
-        price: parseFloat(item.price)
-      }))
-
-    if (priceUpdates.length === 0) {
-      uni.showToast({ title: '没有需要保存的修改', icon: 'none' })
-      return
-    }
-
-    await batchUpdatePrice({ prices: priceUpdates })
+    await batchUpdatePrice({ skuPrices: priceUpdates })
     uni.showToast({ title: '保存成功', icon: 'success' })
     
-    // 更新原始价格
-    skuPrices.value.forEach(item => {
-      item.originalPrice = parseFloat(item.price) || 0
-    })
+    // 跳转回商品列表页
+    setTimeout(() => uni.navigateBack(), 1500)
   } catch (error) {
     console.error('保存定价失败:', error)
   } finally {
@@ -187,20 +174,22 @@ onMounted(() => {
 
         <view class="sku-list">
           <view v-for="(item, index) in skuPrices" :key="item.id" class="sku-item">
-            <view class="sku-info">
-              <text class="sku-name">{{ item.name }}</text>
-              <text v-if="item.originalPrice" class="sku-original">
-                原价: ¥{{ item.originalPrice.toFixed(2) }}
+            <!-- 第一行：SKU名称 -->
+            <view class="sku-name">{{ item.name }}</view>
+            <!-- 第二行：左侧状态，右侧价格输入 -->
+            <view class="sku-row">
+              <text class="price-status" :class="item.priceStatus === 0 ? 'unpriced' : 'priced'">
+                {{ item.priceStatus === 0 ? '未定价' : '已定价' }}
               </text>
-            </view>
-            <view class="price-input-wrap">
-              <text class="currency">¥</text>
-              <input
-                class="price-input"
-                type="digit"
-                v-model="skuPrices[index].price"
-                placeholder="0.00"
-              />
+              <view class="price-input-wrap">
+                <text class="currency">¥</text>
+                <input
+                  class="price-input"
+                  type="digit"
+                  v-model="skuPrices[index].price"
+                  placeholder="0.00"
+                />
+              </view>
             </view>
           </view>
         </view>
@@ -223,9 +212,9 @@ onMounted(() => {
     <view class="bottom-bar" v-if="!loading">
       <button
         class="save-btn"
-        :class="{ disabled: !hasChanges }"
+        :class="{ disabled: !canSave }"
         :loading="submitting"
-        :disabled="!hasChanges"
+        :disabled="!canSave"
         @tap="savePricing"
       >
         保存定价
@@ -324,27 +313,39 @@ onMounted(() => {
 
 .sku-item {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
   padding: 24rpx;
   background: #f9fafb;
   border-radius: 16rpx;
 }
 
-.sku-info {
-  flex: 1;
-}
-
 .sku-name {
   font-size: 30rpx;
   color: #333;
-  display: block;
-  margin-bottom: 4rpx;
+  font-weight: 500;
+  margin-bottom: 16rpx;
 }
 
-.sku-original {
+.sku-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.price-status {
   font-size: 24rpx;
-  color: #999;
+  padding: 8rpx 16rpx;
+  border-radius: 8rpx;
+  
+  &.unpriced {
+    background: #FEF2F2;
+    color: #EF4444;
+  }
+  
+  &.priced {
+    background: #F0FDF4;
+    color: #22C55E;
+  }
 }
 
 .price-input-wrap {

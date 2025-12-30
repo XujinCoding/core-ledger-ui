@@ -5,6 +5,7 @@
  */
 
 import request from '@/utils/request'
+import type { PageQueryResult } from '@/types/common'
 import type {
   CreateLedgerDTO,
   UpdateLedgerItemsDTO,
@@ -13,6 +14,7 @@ import type {
   AddPaymentRecordDTO,
   CloseLedgerDTO,
   LedgerQueryDTO,
+  LedgerSearchDTO,
   LedgerVO,
   LedgerListVO
 } from '@/types/ledger'
@@ -128,4 +130,13 @@ export const queryInProgressLedgers = (page?: {
  */
 export const getLedgerDetail = (id: number) => {
   return request.get<LedgerVO>(`/ledgers/${id}`)
+}
+
+/**
+ * 搜索账单列表（支持客户姓名和电话模糊查询）
+ * @param params 搜索条件
+ * @returns 分页账单列表
+ */
+export const searchLedgers = (params: LedgerSearchDTO) => {
+  return request.get<PageQueryResult<LedgerListVO>>('/ledgers/search', params)
 }

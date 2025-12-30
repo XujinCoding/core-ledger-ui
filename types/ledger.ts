@@ -114,6 +114,22 @@ export interface LedgerQueryDTO {
 }
 
 /**
+ * 账单搜索条件（支持客户姓名和电话模糊查询）
+ */
+export interface LedgerSearchDTO {
+  /** 客户姓名（模糊查询） */
+  customerName?: string
+  /** 客户电话（模糊查询） */
+  customerPhone?: string
+  /** 账单状态 */
+  ledgerStatus?: LedgerStatus
+  /** 页码（从1开始） */
+  pageNumber?: number
+  /** 每页数量 */
+  pageSize?: number
+}
+
+/**
  * 账单明细VO
  */
 export interface LedgerItemVO {
@@ -202,7 +218,7 @@ export interface LedgerListVO {
   /** 商户名称 */
   merchantName: string
   /** 账单状态 */
-  status: LedgerStatus
+  ledgerStatus: LedgerStatus
   /** 总金额 */
   totalAmount: BigDecimal
   /** 已支付金额 */
@@ -210,7 +226,7 @@ export interface LedgerListVO {
   /** 待支付金额 */
   pendingAmount: BigDecimal
   /** 创建时间 */
-  createTime: string
+  createInstant: string
   /** 更新时间 */
-  updateTime: string
+  updateInstant: string
 }

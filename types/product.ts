@@ -82,23 +82,37 @@ export interface ProductAttrVO {
 }
 
 /**
+ * SKU属性
+ */
+export interface SkuAttrVO {
+  /** 属性名称 */
+  attrName: string
+  /** 属性值 */
+  attrValue: string
+  /** 排序 */
+  sortOrder: number
+}
+
+/**
  * SKU VO
  */
 export interface ProductSkuVO {
   /** SKU ID */
   id: number
+  /** 商品ID */
+  productId?: number
   /** SKU 名称 */
-  name: string
-  /** 属性组合（JSON字符串） */
-  attrCombination?: string
-  /** 价格 */
-  price?: BigDecimal
+  skuName: string
   /** 定价状态 */
   priceStatus: PriceStatus
-  /** 库存 */
-  stock?: number
+  /** 价格 */
+  price?: BigDecimal
+  /** 排序 */
+  sortOrder?: number
   /** 状态 */
   status: Status
+  /** SKU属性列表 */
+  skuAttrs?: SkuAttrVO[]
 }
 
 /**

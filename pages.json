@@ -84,8 +84,13 @@
 		{
 			"path": "pages/merchant/tabs/ledger/add",
 			"style": {
-				"navigationBarTitleText": "创建账单",
-				"navigationStyle": "custom"
+				"navigationBarTitleText": "创建账单"
+			}
+		},
+		{
+			"path": "pages/merchant/tabs/ledger/edit",
+			"style": {
+				"navigationBarTitleText": "编辑账单"
 			}
 		},
 		{

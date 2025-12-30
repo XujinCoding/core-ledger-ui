@@ -8,8 +8,8 @@
 import { ref, onMounted } from 'vue'
 import { getCategoryTree } from '@/api/modules/category'
 import { createProduct, updateProduct, getProduct } from '@/api/modules/product'
-import { batchUpdateAttrs } from '@/api/modules/productAttr'
-import type { CategoryTreeVO, ProductVO } from '@/types/product'
+import { batchUpdateAttrs, getProductAttrs } from '@/api/modules/productAttr'
+import type { CategoryTreeVO, ProductVO, ProductAttrVO } from '@/types/product'
 
 // ==================== 页面参数 ====================
 
@@ -48,9 +48,14 @@ const form = ref({
 })
 
 // 商品属性（用于生成SKU）
-interface AttrItem {
+interface AttrValueItem {
+  id?: number
   name: string
-  values: string[]
+}
+interface AttrItem {
+  id?: number
+  name: string
+  values: AttrValueItem[]
 }
 const attrs = ref<AttrItem[]>([])
 const newAttrName = ref('')
@@ -88,11 +93,35 @@ const loadProduct = async () => {
       description: res.description || '',
       imageUrl: res.imageUrl || ''
     }
-    // TODO: 加载属性
+    // 加载商品属性
+    await loadProductAttrs()
   } catch (error) {
     console.error('加载商品详情失败:', error)
   } finally {
     loading.value = false
+  }
+}
+
+/**
+ * 加载商品属性
+ * 后端返回字段：attrName, value；前端使用字段：name
+ */
+const loadProductAttrs = async () => {
+  if (!productId.value) return
+  try {
+    const res = await getProductAttrs(productId.value)
+    if (res && res.length > 0) {
+      attrs.value = res.map((attr: any) => ({
+        id: attr.id,
+        name: attr.attrName || attr.name,  // 兼容后端字段 attrName
+        values: attr.values.map((v: any) => ({
+          id: v.id,
+          name: v.value || v.name  // 兼容后端字段 value
+        }))
+      }))
+    }
+  } catch (error) {
+    console.error('加载商品属性失败:', error)
   }
 }
 
@@ -126,7 +155,7 @@ const addAttr = () => {
  */
 const addAttrValue = (index: number) => {
   if (!newAttrValue.value.trim()) return
-  attrs.value[index].values.push(newAttrValue.value.trim())
+  attrs.value[index].values.push({ name: newAttrValue.value.trim() })
   newAttrValue.value = ''
 }
 
@@ -198,14 +227,17 @@ const submit = async () => {
       savedProductId = res.id
     }
 
-    // 保存商品属性
+    // 保存商品属性（字段名需与后端DTO匹配：attrName, value）
+    // 新增和编辑时都需要调用属性保存接口
     const validAttrs = attrs.value.filter(a => a.values.length > 0)
     if (validAttrs.length > 0) {
       await batchUpdateAttrs(savedProductId, {
         attrs: validAttrs.map((attr, index) => ({
-          name: attr.name,
+          id: attr.id,
+          attrName: attr.name,
           values: attr.values.map((v, vIndex) => ({
-            name: v,
+            id: v.id,
+            value: v.name,
             sortOrder: vIndex
           })),
           sortOrder: index
@@ -234,6 +266,8 @@ onMounted(() => {
   if (query.id) {
     productId.value = Number(query.id)
     isEdit.value = true
+    // 设置导航栏标题为"编辑商品"
+    uni.setNavigationBarTitle({ title: '编辑商品' })
     loadProduct()
   }
 })
@@ -333,7 +367,7 @@ onMounted(() => {
               :key="vIndex"
               class="value-tag"
             >
-              {{ val }}
+              {{ val.name }}
               <wd-icon name="close" size="24rpx" @click="removeAttrValue(index, vIndex)" />
             </view>
             <view class="add-value" v-if="editingAttrIndex === index">
