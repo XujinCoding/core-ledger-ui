@@ -104,7 +104,7 @@ const handleRegister = async () => {
       userStore.setUserInfo(response.userInfo)
       userStore.setIdentityType(response.userInfo.identityType)
       showToast('注册成功', true)
-      uni.reLaunch({ url: '/pages/home/customer/index' })
+      uni.reLaunch({ url: '/pages/customer/index' })
     } else {
       showToast('注册失败，请重试')
     }
