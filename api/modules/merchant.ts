@@ -69,3 +69,12 @@ export const createMerchant = (data: CreateMerchantDTO) => {
   return request.post('/merchant/create', data)
 }
 
+/**
+ * 获取商户详情
+ * @param merchantId 商户ID
+ * @returns 商户详情
+ */
+export const getMerchantDetail = (merchantId: number) => {
+  return request.get<MerchantVO>(`/merchant/${merchantId}`)
+}
+

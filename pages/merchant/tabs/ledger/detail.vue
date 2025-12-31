@@ -57,6 +57,10 @@ const statusClass = computed(() => {
 
 const pendingAmount = computed(() => {
   if (!ledger.value) return 0
+  // 优先使用后端返回的 remainingAmount，否则计算
+  if (ledger.value.remainingAmount !== undefined) {
+    return ledger.value.remainingAmount
+  }
   return (ledger.value.totalAmount || 0) - (ledger.value.paidAmount || 0)
 })
 
@@ -250,9 +254,9 @@ onPullDownRefresh(() => { onRefresh() })
             <view class="amount-label">已支付</view>
             <view class="amount-value">¥{{ formatAmount(ledger.paidAmount) }}</view>
           </view>
-          <view class="amount-item">
+          <view class="amount-item pending">
             <view class="amount-label">待收款</view>
-            <view class="amount-value">¥{{ formatAmount(pendingAmount) }}</view>
+            <view class="amount-value highlight">¥{{ formatAmount(pendingAmount) }}</view>
           </view>
         </view>
       </view>
@@ -528,6 +532,17 @@ onPullDownRefresh(() => { onRefresh() })
 .amount-value {
   font-size: 40rpx;
   font-weight: 600;
+  
+  &.highlight {
+    color: #FBBF24;
+    text-shadow: 0 2rpx 8rpx rgba(251, 191, 36, 0.3);
+  }
+}
+
+.amount-item.pending {
+  .amount-label {
+    color: #FBBF24;
+  }
 }
 
 .content-scroll {

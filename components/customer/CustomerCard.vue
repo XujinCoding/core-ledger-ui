@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import type { CustomerVO } from '@/types/customer'
 
 const props = defineProps<{
@@ -10,8 +11,16 @@ const emit = defineEmits<{
   (e: 'click', customer: CustomerVO): void
 }>()
 
+// 头像加载状态
+const avatarLoadError = ref(false)
+
 const handleClick = () => {
   emit('click', props.customer)
+}
+
+// 头像加载失败处理
+const onAvatarError = () => {
+  avatarLoadError.value = true
 }
 
 // 获取客户类型文本
@@ -28,7 +37,15 @@ const getCustomerTypeText = (type: number) => {
 <template>
   <view class="customer-card" @click="handleClick">
     <view class="customer-avatar">
-      {{ customer.name?.charAt(0) || '客' }}
+      <image
+        v-if="customer.avatarUrl && !avatarLoadError"
+        class="avatar-img"
+        :src="customer.avatarUrl"
+        mode="aspectFill"
+        lazy-load
+        @error="onAvatarError"
+      />
+      <text v-else class="avatar-text">{{ customer.name?.charAt(0) || '客' }}</text>
     </view>
     <view class="customer-info">
       <view class="customer-name">
@@ -68,11 +85,21 @@ const getCustomerTypeText = (type: number) => {
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-right: 24rpx;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+}
+
+.avatar-text {
   font-size: 32rpx;
   font-weight: 600;
   color: #fff;
-  margin-right: 24rpx;
-  flex-shrink: 0;
 }
 
 .customer-info {

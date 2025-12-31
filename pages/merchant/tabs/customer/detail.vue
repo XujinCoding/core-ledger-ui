@@ -15,6 +15,7 @@ const customerId = ref<number>(0)
 const loading = ref(true)
 const refreshing = ref(false)
 const customer = ref<CustomerVO>({} as CustomerVO)
+const avatarLoadError = ref(false)
 const stats = ref<CustomerStatsVO>({
   totalAmount: 0,
   orderCount: 0,
@@ -34,6 +35,7 @@ const loadCustomerDetail = async () => {
   try {
     loading.value = true
     customer.value = await getCustomer(customerId.value)
+    avatarLoadError.value = false
     await Promise.all([
       loadCustomerStats(),
       loadRecentLedgers(true)
@@ -44,6 +46,13 @@ const loadCustomerDetail = async () => {
   } finally {
     loading.value = false
   }
+}
+
+/**
+ * 头像加载失败处理
+ */
+const onAvatarError = () => {
+  avatarLoadError.value = true
 }
 
 /**
@@ -213,7 +222,15 @@ onPullDownRefresh(() => {
     <view class="header">
       <view class="user-info">
         <view class="avatar">
-          {{ customer.name?.charAt(0) || '?' }}
+          <image
+            v-if="customer.avatarUrl && !avatarLoadError"
+            class="avatar-img"
+            :src="customer.avatarUrl"
+            mode="aspectFill"
+            lazy-load
+            @error="onAvatarError"
+          />
+          <text v-else class="avatar-text">{{ customer.name?.charAt(0) || '?' }}</text>
         </view>
         <view class="info">
           <view class="name">
@@ -351,9 +368,20 @@ onPullDownRefresh(() => {
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-right: 24rpx;
+  overflow: hidden;
+}
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+}
+
+.avatar-text {
   font-size: 48rpx;
   font-weight: 600;
-  margin-right: 24rpx;
+  color: #fff;
 }
 
 .info {

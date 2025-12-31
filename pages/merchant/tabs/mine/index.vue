@@ -7,7 +7,7 @@
 
 import { ref, onMounted } from 'vue'
 import { getCurrentUser, getUserIdentities, switchIdentity } from '@/api/modules/auth'
-import { getMerchantOverview } from '@/api/modules/merchant'
+import { getMerchantOverview, getMerchantDetail } from '@/api/modules/merchant'
 import { useNavbarSafeArea } from '@/composables/useNavbarSafeArea'
 import { useUserStore } from '@/stores/modules/user'
 import { IdentityType } from '@/enums'
@@ -18,6 +18,8 @@ import type { UserInfoVO, MerchantIdentity } from '@/types/auth'
 const refreshing = ref(false)
 const switching = ref(false)
 const user = ref<UserInfoVO | null>(null)
+const merchantAvatarUrl = ref<string>('')
+const avatarLoadError = ref(false)
 
 // 导航栏安全区域
 const { headerStyle, headerContentStyle } = useNavbarSafeArea()
@@ -45,11 +47,33 @@ const load = async () => {
     currentMerchantId.value = info.id
     // 加载统计数据
     await loadOverview(info.id)
+    // 加载商户详情获取头像
+    await loadMerchantAvatar(info.id)
   } catch (error) {
     console.error('加载用户信息失败:', error)
   } finally {
     refreshing.value = false
   }
+}
+
+/**
+ * 加载商户头像
+ */
+const loadMerchantAvatar = async (merchantId: number) => {
+  try {
+    const detail = await getMerchantDetail(merchantId)
+    merchantAvatarUrl.value = detail.avatarUrl || ''
+    avatarLoadError.value = false
+  } catch (error) {
+    console.error('加载商户头像失败:', error)
+  }
+}
+
+/**
+ * 头像加载失败处理
+ */
+const onAvatarError = () => {
+  avatarLoadError.value = true
 }
 
 /**
@@ -113,6 +137,8 @@ const switchMerchant = async (id: number) => {
     
     // 刷新当前页面统计数据
     await loadOverview(id)
+    // 刷新商户头像
+    await loadMerchantAvatar(id)
     
     // 发送商户切换事件，通知其他页面刷新数据
     uni.$emit('merchant-changed', id)
@@ -192,12 +218,23 @@ onMounted(() => {
     <view class="header" :style="headerStyle">
       <view class="user-info">
         <view class="user-avatar">
-          <wd-icon name="shop" size="56rpx" />
+          <image
+            v-if="merchantAvatarUrl && !avatarLoadError"
+            class="avatar-img"
+            :src="merchantAvatarUrl"
+            mode="aspectFill"
+            lazy-load
+            @error="onAvatarError"
+          />
+          <wd-icon v-else name="shop" size="56rpx" />
         </view>
         <view class="user-detail" :style="headerContentStyle">
-          <view class="user-name">{{ user?.name || '商户' }}</view>
-          <view class="user-role">
+          <view class="user-name-row">
+            <text class="user-name">{{ user?.name || '商户' }}</text>
             <text class="role-tag">商户</text>
+          </view>
+          <view class="user-phone-row">
+            <wd-icon name="phone" size="26rpx" color="rgba(255,255,255,0.9)" />
             <text class="user-phone">{{ user?.phone || '' }}</text>
           </view>
         </view>
@@ -327,22 +364,41 @@ onMounted(() => {
   justify-content: center;
   margin-right: 24rpx;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
 }
 
 .user-detail {
   flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.user-name-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-bottom: 12rpx;
 }
 
 .user-name {
   font-size: 40rpx;
   font-weight: 600;
-  margin-bottom: 8rpx;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 280rpx;
 }
 
-.user-role {
+.user-phone-row {
   display: flex;
   align-items: center;
-  gap: 12rpx;
+  gap: 8rpx;
   font-size: 26rpx;
   opacity: 0.9;
 }
@@ -352,6 +408,7 @@ onMounted(() => {
   padding: 4rpx 16rpx;
   border-radius: 20rpx;
   font-size: 22rpx;
+  flex-shrink: 0;
 }
 
 .qr-btn {
