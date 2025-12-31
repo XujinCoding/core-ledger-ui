@@ -42,6 +42,19 @@ const statusText = computed(() => {
   return getLedgerStatusLabel(ledger.value.ledgerStatus)
 })
 
+// 状态标签样式类
+const statusClass = computed(() => {
+  const status = ledger.value?.ledgerStatus
+  const classMap: Record<number, string> = {
+    1: 'status-progress',   // 进行中
+    2: 'status-partial',    // 部分缴费
+    3: 'status-cleared',    // 已结清
+    4: 'status-credit',     // 赊账中
+    5: 'status-closed'      // 已关闭
+  }
+  return classMap[status as number] || 'status-default'
+})
+
 const pendingAmount = computed(() => {
   if (!ledger.value) return 0
   return (ledger.value.totalAmount || 0) - (ledger.value.paidAmount || 0)
@@ -226,6 +239,7 @@ onPullDownRefresh(() => { onRefresh() })
               <view class="customer-name">{{ ledger.customerName }}</view>
             </view>
           </view>
+          <view class="status-tag" :class="statusClass">{{ statusText }}</view>
         </view>
         <view class="amount-box">
           <view class="amount-item">
@@ -306,10 +320,6 @@ onPullDownRefresh(() => { onRefresh() })
             <view class="info-row">
               <text class="info-label">账单编号</text>
               <text class="info-value">{{ ledger.code || ledger.id }}</text>
-            </view>
-            <view class="info-row">
-              <text class="info-label">账单状态</text>
-              <text class="info-value">{{ statusText }}</text>
             </view>
             <view class="info-row">
               <text class="info-label">创建时间</text>
@@ -463,7 +473,38 @@ onPullDownRefresh(() => { onRefresh() })
 .customer-name {
   font-size: 34rpx;
   font-weight: 600;
-  margin-bottom: 4rpx;
+}
+
+.status-tag {
+  padding: 8rpx 20rpx;
+  border-radius: 8rpx;
+  font-size: 24rpx;
+  font-weight: 500;
+  
+  &.status-progress {
+    background: rgba(255, 255, 255, 0.25);
+    color: #fff;
+  }
+  &.status-partial {
+    background: #F59E0B;
+    color: #fff;
+  }
+  &.status-cleared {
+    background: #10B981;
+    color: #fff;
+  }
+  &.status-credit {
+    background: #EF4444;
+    color: #fff;
+  }
+  &.status-closed {
+    background: rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.7);
+  }
+  &.status-default {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+  }
 }
 
 .amount-box {
