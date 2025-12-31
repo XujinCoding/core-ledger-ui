@@ -17,7 +17,8 @@ import type {
   LedgerQueryDTO,
   LedgerSearchDTO,
   LedgerVO,
-  LedgerListVO
+  LedgerListVO,
+  LedgerListStatsVO
 } from '@/types/ledger'
 
 /**
@@ -150,4 +151,13 @@ export const getLedgerDetail = (id: number) => {
  */
 export const searchLedgers = (params: LedgerSearchDTO) => {
   return request.get<PageQueryResult<LedgerListVO>>('/ledgers/search', params)
+}
+
+/**
+ * 获取账单列表统计数据
+ * @param params 搜索条件（与搜索接口相同）
+ * @returns 账单列表统计
+ */
+export const getLedgerListStats = (params?: LedgerSearchDTO) => {
+  return request.get<LedgerListStatsVO>('/ledgers/stats', params)
 }

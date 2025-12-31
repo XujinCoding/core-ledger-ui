@@ -250,3 +250,17 @@ export interface LedgerListVO {
   /** 更新时间 */
   updateInstant: string
 }
+
+/**
+ * 账单列表统计VO
+ */
+export interface LedgerListStatsVO {
+  /** 总金额 */
+  totalAmount: BigDecimal
+  /** 已收金额 */
+  paidAmount: BigDecimal
+  /** 待收金额 */
+  pendingAmount: BigDecimal
+  /** 账单数量 */
+  ledgerCount: number
+}

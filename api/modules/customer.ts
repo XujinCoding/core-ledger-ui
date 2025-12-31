@@ -87,3 +87,22 @@ export const deleteCustomer = (id: number) => {
 export const getCustomerCount = () => {
   return request.get<number>('/customers/count')
 }
+
+/**
+ * 获取客户列表统计（支持与搜索相同的条件）
+ * @param query 查询条件
+ * @returns 客户列表统计
+ */
+export const getCustomerListStats = (query?: Omit<CustomerSearchDTO, 'page' | 'size'>) => {
+  const params: Record<string, any> = { ...(query || {}) }
+  
+  // 移除空值
+  Object.keys(params).forEach((k) => {
+    const v = params[k]
+    if (v === undefined || v === null || (typeof v === 'string' && v.trim() === '')) {
+      delete params[k]
+    }
+  })
+  
+  return request.get<{ customerCount: number }>('/customers/stats', params)
+}

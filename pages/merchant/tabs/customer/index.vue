@@ -6,7 +6,7 @@
  */
 
 import { ref, onMounted, onUnmounted } from 'vue'
-import { searchCustomers, getCustomerCount } from '@/api/modules/customer'
+import { searchCustomers, getCustomerListStats } from '@/api/modules/customer'
 import { useNavbarSafeArea } from '@/composables/useNavbarSafeArea'
 import type { CustomerVO } from '@/types/customer'
 import CustomerCard from '@/components/customer/CustomerCard.vue'
@@ -48,13 +48,22 @@ const hasMore = ref(true)
 // ==================== 方法 ====================
 
 /**
- * 加载客户总数
+ * 加载客户统计
  */
-const loadCustomerCount = async () => {
+const loadCustomerStats = async () => {
   try {
-    customerCount.value = await getCustomerCount()
+    const searchParams: { name?: string; phone?: string } = {}
+    if (keyword.value) {
+      if (searchType.value === 'name') {
+        searchParams.name = keyword.value
+      } else {
+        searchParams.phone = keyword.value
+      }
+    }
+    const res = await getCustomerListStats(searchParams)
+    customerCount.value = res.customerCount || 0
   } catch (error) {
-    console.error('加载客户总数失败:', error)
+    console.error('加载客户统计失败:', error)
   }
 }
 
@@ -70,6 +79,8 @@ const loadCustomers = async (reset = false) => {
     if (reset) {
       page.value = 0
       customers.value = []
+      // 同时加载统计数据
+      loadCustomerStats()
     }
 
     const searchParams: { name?: string; phone?: string } = {}
@@ -105,7 +116,7 @@ const loadCustomers = async (reset = false) => {
  */
 const onRefresh = async () => {
   refreshing.value = true
-  await Promise.all([loadCustomers(true), loadCustomerCount()])
+  await loadCustomers(true)
   refreshing.value = false
 }
 
@@ -147,7 +158,6 @@ const addCustomer = () => {
 const handleMerchantChanged = () => {
   console.log('[Customer] 商户已切换，刷新客户列表')
   loadCustomers(true)
-  loadCustomerCount()
 }
 
 /**
@@ -156,12 +166,10 @@ const handleMerchantChanged = () => {
 const handleCustomerChanged = () => {
   console.log('[Customer] 客户数据已变更，刷新列表')
   loadCustomers(true)
-  loadCustomerCount()
 }
 
 onMounted(() => {
   loadCustomers(true)
-  loadCustomerCount()
   // 监听商户切换事件
   uni.$on('merchant-changed', handleMerchantChanged)
   // 监听客户变更事件

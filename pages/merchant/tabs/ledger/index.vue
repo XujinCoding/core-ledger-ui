@@ -6,11 +6,11 @@
  */
 
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
-import { searchLedgers } from '@/api/modules/ledger'
+import { searchLedgers, getLedgerListStats } from '@/api/modules/ledger'
 import { useNavbarSafeArea } from '@/composables/useNavbarSafeArea'
 import { LedgerStatus } from '@/enums'
 import LedgerCard from '@/components/ledger/LedgerCard.vue'
-import type { LedgerListVO } from '@/types/ledger'
+import type { LedgerListVO, LedgerListStatsVO } from '@/types/ledger'
 
 // ==================== 页面参数 ====================
 
@@ -51,10 +51,11 @@ const statusOptions = [
 ]
 
 // 统计信息
-const stats = ref({
+const stats = ref<LedgerListStatsVO>({
   totalAmount: 0,
   paidAmount: 0,
-  debtAmount: 0
+  pendingAmount: 0,
+  ledgerCount: 0
 })
 
 // ==================== 计算属性 ====================
@@ -72,6 +73,8 @@ const loadLedgers = async (reset = false) => {
     if (reset) {
       pageNum.value = 1
       ledgers.value = []
+      // 同时加载统计数据
+      loadStats()
     }
 
     const res = await searchLedgers({
@@ -96,6 +99,19 @@ const loadLedgers = async (reset = false) => {
   } finally {
     loading.value = false
     refreshing.value = false
+  }
+}
+
+const loadStats = async () => {
+  try {
+    const res = await getLedgerListStats({
+      customerName: filter.value.customerName || undefined,
+      customerPhone: filter.value.customerPhone || undefined,
+      ledgerStatus: filter.value.ledgerStatus ?? undefined
+    })
+    stats.value = res
+  } catch (error) {
+    console.error('加载统计数据失败:', error)
   }
 }
 
@@ -260,15 +276,15 @@ onUnmounted(() => {
       <!-- 统计卡片 -->
       <view class="stats-card">
         <view class="stat-item">
-          <view class="stat-value">¥{{ stats.totalAmount.toLocaleString() }}</view>
+          <view class="stat-value">¥{{ Number(stats.totalAmount || 0).toLocaleString() }}</view>
           <view class="stat-label">总金额</view>
         </view>
         <view class="stat-item">
-          <view class="stat-value">¥{{ stats.paidAmount.toLocaleString() }}</view>
+          <view class="stat-value">¥{{ Number(stats.paidAmount || 0).toLocaleString() }}</view>
           <view class="stat-label">已收金额</view>
         </view>
         <view class="stat-item">
-          <view class="stat-value debt">¥{{ stats.debtAmount.toLocaleString() }}</view>
+          <view class="stat-value debt">¥{{ Number(stats.pendingAmount || 0).toLocaleString() }}</view>
           <view class="stat-label">待收金额</view>
         </view>
       </view>
