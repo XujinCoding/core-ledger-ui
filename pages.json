@@ -2,7 +2,10 @@
 	"easycom": {
 		"autoscan": true,
 		"custom": {
-			"^wd-(.*)": "@/uni_modules/wot-design-uni/components/wd-$1/wd-$1.vue"
+			"^wd-(.*)": "@/uni_modules/wot-design-uni/components/wd-$1/wd-$1.vue",
+			"SmsCodeInput": "@/components/SmsCodeInput.vue",
+			"AddressSelector": "@/components/AddressSelector.vue",
+			"empty-state": "@/components/empty-state.vue"
 		}
 	},
 	"pages": [

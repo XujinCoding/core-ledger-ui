@@ -7,8 +7,10 @@
 
 import { ref, reactive } from 'vue'
 import { customerWechatRegister } from '@/api/modules/auth'
+import { SmsScene } from '@/api/modules/sms'
 import { useUserStore } from '@/stores/modules/user'
 import AddressSelector from '@/components/AddressSelector.vue'
+import SmsCodeInput from '@/components/SmsCodeInput.vue'
 import { getWechatCode } from '@/composables/useWechatLogin'
 
 const userStore = useUserStore()
@@ -26,6 +28,7 @@ const showToast = (message: string, success = false) => {
 
 interface CustomerForm {
   phone: string
+  smsCode: string
   customerName: string
   nickname: string
   gender: number  // 0-未知 1-男 2-女
@@ -37,6 +40,7 @@ interface CustomerForm {
 
 const form = reactive<CustomerForm>({
   phone: '',
+  smsCode: '',
   customerName: '',
   nickname: '',
   gender: 0,
@@ -71,6 +75,14 @@ const validateForm = (): boolean => {
     showToast('手机号格式不正确')
     return false
   }
+  if (!form.smsCode) {
+    showToast('请输入验证码')
+    return false
+  }
+  if (!/^\d{4,6}$/.test(form.smsCode)) {
+    showToast('验证码格式不正确')
+    return false
+  }
   if (!form.addressId) {
     showToast('请选择所在地区')
     return false
@@ -93,6 +105,7 @@ const handleRegister = async () => {
     const response = await customerWechatRegister({
       code,
       phone: form.phone,
+      smsCode: form.smsCode,
       customerName: form.customerName,
       gender: form.gender || undefined,
       age: form.age ? parseInt(form.age) : undefined,
@@ -196,6 +209,14 @@ const handleScanCode = () => {
             placeholder="请输入手机号"
             placeholder-class="placeholder"
             maxlength="11"
+          />
+        </view>
+        <view class="form-group">
+          <view class="form-label">验证码 <text class="required">*</text></view>
+          <SmsCodeInput
+            v-model="form.smsCode"
+            :phone="form.phone"
+            :scene="SmsScene.CUSTOMER_REGISTER"
           />
         </view>
         <view class="form-group">

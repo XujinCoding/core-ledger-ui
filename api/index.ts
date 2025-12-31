@@ -24,3 +24,9 @@ export * from './modules/product'
 export * from './modules/category'
 export * from './modules/productAttr'
 export * from './modules/sku'
+
+// 短信相关
+export * from './modules/sms'
+
+// 文件上传相关
+export * from './modules/file'

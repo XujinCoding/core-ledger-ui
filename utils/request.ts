@@ -472,6 +472,9 @@ class Request {
 const request = new Request()
 export default request
 
+// 导出 baseURL 获取函数
+export const getBaseUrl = () => CONFIG.baseURL
+
 // 同时导出类型供外部使用
 export type { 
   RequestConfig, 

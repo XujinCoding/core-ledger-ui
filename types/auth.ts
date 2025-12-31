@@ -34,6 +34,8 @@ export interface MerchantRegisterDTO {
   code: string
   /** 手机号 */
   phone: string
+  /** 短信验证码 */
+  smsCode: string
   /** 用户名 */
   username: string
   /** 密码 */
@@ -58,6 +60,8 @@ export interface CustomerRegisterDTO {
   code: string
   /** 手机号 */
   phone: string
+  /** 短信验证码 */
+  smsCode: string
   /** 微信昵称 */
   nickname?: string
   /** 微信头像URL */
@@ -75,7 +79,7 @@ export interface CustomerRegisterDTO {
   /** 详细地址 */
   addressDetail?: string
   /** 商户邀请码*/
-  inviteCode: string
+  inviteCode?: string
 }
 
 /**
