@@ -10,6 +10,7 @@ import { getMerchant, updateMerchantInfo, createMerchant } from '@/api/modules/m
 import { useNavbarSafeArea } from '@/composables/useNavbarSafeArea'
 import { useUserStore } from '@/stores/modules/user'
 import AddressSelector from '@/components/AddressSelector.vue'
+import ImageUploader from '@/components/ImageUploader.vue'
 import type { MerchantVO } from '@/types/merchant'
 
 // ==================== 数据状态 ====================
@@ -33,6 +34,7 @@ const navbarTotalHeight = computed(() => {
 const form = ref({
   name: '',
   phone: '',
+  avatarUrl: '',
   addressId: null as number | null,
   addressDetail: ''
 })
@@ -69,6 +71,7 @@ const loadStoreInfo = async () => {
     form.value = {
       name: info.name || '',
       phone: info.phone || '',
+      avatarUrl: info.avatarUrl || '',
       addressId: info.addressId || null,
       addressDetail: info.addressDetail || ''
     }
@@ -96,6 +99,7 @@ const handleSubmit = async () => {
       await createMerchant({
         merchantName: form.value.name,
         phone: form.value.phone,
+        avatarUrl: form.value.avatarUrl || undefined,
         addressId: form.value.addressId || undefined,
         addressDetail: form.value.addressDetail
       })
@@ -106,6 +110,7 @@ const handleSubmit = async () => {
       await updateMerchantInfo(merchant.value.id, {
         name: form.value.name,
         phone: form.value.phone,
+        avatarUrl: form.value.avatarUrl || undefined,
         addressId: form.value.addressId || undefined,
         addressDetail: form.value.addressDetail
       })
@@ -137,6 +142,7 @@ const switchToCreateMode = () => {
   form.value = {
     name: '',
     phone: merchant.value?.phone || '',
+    avatarUrl: '',
     addressId: null,
     addressDetail: ''
   }
@@ -166,6 +172,19 @@ onMounted(() => {
 
     <!-- 表单内容 -->
     <view class="form-content" :style="{ paddingTop: navbarTotalHeight + 'px' }">
+      <!-- 头像上传 -->
+      <view class="form-section avatar-section">
+        <view class="avatar-label">店铺头像</view>
+        <ImageUploader
+          v-model="form.avatarUrl"
+          width="160rpx"
+          height="160rpx"
+          placeholder="上传头像"
+          round
+          :disabled="loading"
+        />
+      </view>
+
       <view class="form-section">
         <wd-cell-group border>
           <wd-input
@@ -279,6 +298,18 @@ onMounted(() => {
   overflow: hidden;
   margin-top: 16rpx;
   margin-bottom: 32rpx;
+}
+
+.avatar-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24rpx 32rpx;
+}
+
+.avatar-label {
+  font-size: 28rpx;
+  color: #333;
 }
 
 .address-group {

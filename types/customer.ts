@@ -34,6 +34,8 @@ export interface CustomerVO {
   addressDetail?: string
   /** 备注 */
   remark?: string
+  /** 客户头像URL */
+  avatarUrl?: string
   /** 商户ID */
   merchantId?: number
   /** 商户名称 */
@@ -84,6 +86,8 @@ export interface CustomerUpdateDTO {
   addressDetail?: string
   /** 备注 */
   remark?: string
+  /** 客户头像URL */
+  avatarUrl?: string
 }
 
 /**

@@ -30,6 +30,8 @@ export interface CreateCustomerDTO {
   age?: number
   /** 备注 */
   remark?: string
+  /** 客户头像URL */
+  avatarUrl?: string
 }
 
 /**
@@ -48,6 +50,16 @@ export interface MerchantVO {
   inviteCode: string
   /** 二维码URL */
   qrCodeUrl?: string
+  /** 商户头像URL */
+  avatarUrl?: string
+  /** 商户名称（别名） */
+  name?: string
+  /** 手机号 */
+  phone?: string
+  /** 地址ID */
+  addressId?: number
+  /** 详细地址 */
+  addressDetail?: string
   /** 创建时间 */
   createTime?: string
   /** 更新时间 */
@@ -104,6 +116,8 @@ export interface UpdateMerchantDTO {
   addressId?: number
   /** 详细地址 */
   addressDetail?: string
+  /** 商户头像URL */
+  avatarUrl?: string
 }
 
 /**
@@ -118,4 +132,6 @@ export interface CreateMerchantDTO {
   addressId?: number
   /** 详细地址 */
   addressDetail?: string
+  /** 商户头像URL */
+  avatarUrl?: string
 }

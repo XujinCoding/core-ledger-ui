@@ -4,7 +4,7 @@
  * @since 1.0.0
  */
 
-import { getBaseUrl } from '@/utils/request'
+import request from '@/utils/request'
 
 /**
  * 上传图片到 GitHub 图床
@@ -12,37 +12,7 @@ import { getBaseUrl } from '@/utils/request'
  * @returns 图片访问 URL
  */
 export const uploadImage = (filePath: string): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const token = uni.getStorageSync('token')
-    
-    uni.uploadFile({
-      url: `${getBaseUrl()}/file/upload/image`,
-      filePath,
-      name: 'file',
-      header: {
-        'Authorization': token ? `Bearer ${token}` : ''
-      },
-      success: (res) => {
-        if (res.statusCode === 200) {
-          try {
-            const data = JSON.parse(res.data)
-            if (data.code === 200) {
-              resolve(data.data)
-            } else {
-              reject(new Error(data.message || '上传失败'))
-            }
-          } catch (e) {
-            reject(new Error('解析响应失败'))
-          }
-        } else {
-          reject(new Error(`上传失败: ${res.statusCode}`))
-        }
-      },
-      fail: (err) => {
-        reject(new Error(err.errMsg || '上传失败'))
-      }
-    })
-  })
+  return request.upload<string>('/file/upload/image', filePath, { name: 'file' })
 }
 
 /**

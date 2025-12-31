@@ -10,6 +10,7 @@ import { merchantWechatRegister } from '@/api/modules/auth'
 import { SmsScene } from '@/api/modules/sms'
 import AddressSelector from '@/components/AddressSelector.vue'
 import SmsCodeInput from '@/components/SmsCodeInput.vue'
+import ImageUploader from '@/components/ImageUploader.vue'
 import { useWechatLogin, getWechatCode } from '@/composables/useWechatLogin'
 
 const { handleLoginResponse } = useWechatLogin()
@@ -32,6 +33,7 @@ interface MerchantForm {
   password: string
   confirmPassword: string
   merchantName: string
+  avatarUrl: string
   addressId: number | null
   addressDetail: string
 }
@@ -43,6 +45,7 @@ const form = reactive<MerchantForm>({
   password: '',
   confirmPassword: '',
   merchantName: '',
+  avatarUrl: '',
   addressId: null,
   addressDetail: ''
 })
@@ -124,6 +127,7 @@ const handleRegister = async () => {
       username: form.username,
       password: form.password,
       merchantName: form.merchantName,
+      avatarUrl: form.avatarUrl || undefined,
       addressId: form.addressId!,
       addressDetail: form.addressDetail
     })
@@ -175,6 +179,19 @@ const handleRegister = async () => {
         <view class="section-title">
           <wd-icon name="shop" size="32rpx" color="#3B82F6" />
           <text>店铺信息</text>
+        </view>
+        <view class="form-group">
+          <view class="form-label">店铺头像</view>
+          <view class="avatar-upload-wrapper">
+            <ImageUploader
+              v-model="form.avatarUrl"
+              width="160rpx"
+              height="160rpx"
+              placeholder="上传头像"
+              round
+            />
+            <view class="avatar-tip">建议上传正方形图片</view>
+          </view>
         </view>
         <view class="form-group">
           <view class="form-label">店铺名称 <text class="required">*</text></view>
@@ -422,6 +439,17 @@ const handleRegister = async () => {
   font-size: 24rpx;
   color: #999;
   margin-top: 12rpx;
+}
+
+.avatar-upload-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+}
+
+.avatar-tip {
+  font-size: 24rpx;
+  color: #999;
 }
 
 .footer-btns {

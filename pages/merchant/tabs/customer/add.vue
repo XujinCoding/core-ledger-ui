@@ -6,6 +6,7 @@ import type { CreateCustomerDTO } from '@/types/merchant'
 import type { CustomerUpdateDTO } from '@/types/customer'
 import { useUserStore } from '@/stores/modules/user'
 import AddressSelector from '@/components/AddressSelector.vue'
+import ImageUploader from '@/components/ImageUploader.vue'
 
 // 编辑模式
 const isEdit = ref(false)
@@ -18,6 +19,7 @@ const form = ref<CreateCustomerDTO>({
   name: '',
   phone: '',
   alias: '',
+  avatarUrl: '',
   gender: 1,
   age: undefined,
   addressId: undefined,
@@ -56,6 +58,7 @@ const loadCustomer = async () => {
       name: customer.name || '',
       phone: customer.phone || '',
       alias: customer.alias || '',
+      avatarUrl: customer.avatarUrl || '',
       gender: customer.gender || 0,
       age: customer.age,
       addressId: customer.addressId,
@@ -125,6 +128,18 @@ onMounted(() => {
   <view class="customer-add-page">
     <wd-form ref="formRef" :model="form" :rules="rules" label-width="100px">
       <wd-cell-group border>
+        <!-- 头像上传 -->
+        <view class="avatar-field">
+          <view class="avatar-label">客户头像</view>
+          <ImageUploader
+            v-model="form.avatarUrl"
+            width="120rpx"
+            height="120rpx"
+            placeholder="上传"
+            round
+          />
+        </view>
+
         <wd-input
           v-model="form.name"
           label="客户姓名"
@@ -252,6 +267,21 @@ onMounted(() => {
   background: #fff;
   border-top: 1rpx solid #f0f0f0;
   border-bottom: 1rpx solid #f0f0f0;
+}
+
+// 头像上传样式
+.avatar-field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24rpx 30rpx;
+  background: #fff;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.avatar-label {
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.85);
 }
 
 .gender-label {

@@ -11,6 +11,7 @@ import { SmsScene } from '@/api/modules/sms'
 import { useUserStore } from '@/stores/modules/user'
 import AddressSelector from '@/components/AddressSelector.vue'
 import SmsCodeInput from '@/components/SmsCodeInput.vue'
+import ImageUploader from '@/components/ImageUploader.vue'
 import { getWechatCode } from '@/composables/useWechatLogin'
 
 const userStore = useUserStore()
@@ -31,6 +32,7 @@ interface CustomerForm {
   smsCode: string
   customerName: string
   nickname: string
+  avatarUrl: string
   gender: number  // 0-未知 1-男 2-女
   age: string
   addressId: number | null
@@ -43,6 +45,7 @@ const form = reactive<CustomerForm>({
   smsCode: '',
   customerName: '',
   nickname: '',
+  avatarUrl: '',
   gender: 0,
   age: '',
   addressId: null,
@@ -107,6 +110,7 @@ const handleRegister = async () => {
       phone: form.phone,
       smsCode: form.smsCode,
       customerName: form.customerName,
+      avatarUrl: form.avatarUrl || undefined,
       gender: form.gender || undefined,
       age: form.age ? parseInt(form.age) : undefined,
       addressId: form.addressId!,
@@ -190,6 +194,19 @@ const handleScanCode = () => {
         <view class="section-title">
           <wd-icon name="user" size="32rpx" color="#10B981" />
           <text>基本信息</text>
+        </view>
+        <view class="form-group">
+          <view class="form-label">头像</view>
+          <view class="avatar-upload-wrapper">
+            <ImageUploader
+              v-model="form.avatarUrl"
+              width="160rpx"
+              height="160rpx"
+              placeholder="上传头像"
+              round
+            />
+            <view class="avatar-tip">建议上传正方形图片</view>
+          </view>
         </view>
         <view class="form-group">
           <view class="form-label">姓名 <text class="required">*</text></view>
@@ -476,6 +493,17 @@ const handleScanCode = () => {
   font-size: 24rpx;
   color: #999;
   margin-top: 12rpx;
+}
+
+.avatar-upload-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+}
+
+.avatar-tip {
+  font-size: 24rpx;
+  color: #999;
 }
 
 .gender-selector {

@@ -9,6 +9,7 @@ import { ref, onMounted } from 'vue'
 import { getCategoryTree } from '@/api/modules/category'
 import { createProduct, updateProduct, getProduct } from '@/api/modules/product'
 import { batchUpdateAttrs, getProductAttrs } from '@/api/modules/productAttr'
+import { uploadImage } from '@/api/modules/file'
 import type { CategoryTreeVO, ProductVO, ProductAttrVO } from '@/types/product'
 
 // ==================== 页面参数 ====================
@@ -179,9 +180,25 @@ const removeAttr = (index: number) => {
 const chooseImage = () => {
   uni.chooseImage({
     count: 1,
-    success: (res) => {
-      form.value.imageUrl = res.tempFilePaths[0]
-      // TODO: 上传图片到服务器
+    sizeType: ['compressed'],
+    sourceType: ['album', 'camera'],
+    success: async (res) => {
+      const filePath = res.tempFilePaths[0]
+      try {
+        uni.showLoading({ title: '上传中...' })
+        const url = await uploadImage(filePath)
+        form.value.imageUrl = url
+        uni.hideLoading()
+      } catch (error) {
+        uni.hideLoading()
+        console.error('上传图片失败:', error)
+        uni.showToast({ title: '上传失败', icon: 'none' })
+      }
+    },
+    fail: (err) => {
+      if (!err.errMsg?.includes('cancel')) {
+        uni.showToast({ title: '选择图片失败', icon: 'none' })
+      }
     }
   })
 }
