@@ -13,6 +13,7 @@ import type {
   SettleLedgerDTO,
   AddPaymentRecordDTO,
   CloseLedgerDTO,
+  UpdateLedgerMemoDTO,
   LedgerQueryDTO,
   LedgerSearchDTO,
   LedgerVO,
@@ -66,6 +67,16 @@ export const settleLedger = (id: number, data: SettleLedgerDTO) => {
  */
 export const addPaymentRecord = (id: number, data: AddPaymentRecordDTO) => {
   return request.post<LedgerVO>(`/ledgers/${id}/payment-records`, data)
+}
+
+/**
+ * 修改账单备注
+ * @param id 账单ID
+ * @param data 修改备注请求
+ * @returns 更新后的账单
+ */
+export const updateLedgerMemo = (id: number, data: UpdateLedgerMemoDTO) => {
+  return request.patch<LedgerVO>(`/ledgers/${id}/memo`, data)
 }
 
 /**

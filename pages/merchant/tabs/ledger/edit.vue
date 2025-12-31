@@ -216,7 +216,6 @@ const submit = async () => {
     }, 1500)
   } catch (error) {
     console.error('保存失败:', error)
-    uni.showToast({ title: '保存失败', icon: 'none' })
   } finally {
     submitting.value = false
   }
