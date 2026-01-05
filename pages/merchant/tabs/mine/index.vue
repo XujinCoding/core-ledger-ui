@@ -231,7 +231,6 @@ onMounted(() => {
         <view class="user-detail" :style="headerContentStyle">
           <view class="user-name-row">
             <text class="user-name">{{ user?.name || '商户' }}</text>
-            <text class="role-tag">商户</text>
           </view>
           <view class="user-phone-row">
             <wd-icon name="phone" size="26rpx" color="rgba(255,255,255,0.9)" />
@@ -303,7 +302,7 @@ onMounted(() => {
           <wd-icon name="arrow-right" size="32rpx" color="#ccc" />
         </view>
         <view class="menu-item" @tap="handleMenuClick('category')">
-          <view class="menu-icon orange"><wd-icon name="tag" size="36rpx" /></view>
+          <view class="menu-icon orange"><wd-icon name="app" size="36rpx" /></view>
           <text class="menu-text">分类管理</text>
           <wd-icon name="arrow-right" size="32rpx" color="#ccc" />
         </view>
@@ -382,7 +381,6 @@ onMounted(() => {
 .user-name-row {
   display: flex;
   align-items: center;
-  gap: 12rpx;
   margin-bottom: 12rpx;
 }
 
@@ -392,7 +390,6 @@ onMounted(() => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 280rpx;
 }
 
 .user-phone-row {
@@ -401,14 +398,6 @@ onMounted(() => {
   gap: 8rpx;
   font-size: 26rpx;
   opacity: 0.9;
-}
-
-.role-tag {
-  background: rgba(255, 255, 255, 0.2);
-  padding: 4rpx 16rpx;
-  border-radius: 20rpx;
-  font-size: 22rpx;
-  flex-shrink: 0;
 }
 
 .qr-btn {

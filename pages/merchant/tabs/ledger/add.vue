@@ -352,7 +352,7 @@ onMounted(async () => {
         cancel-text="取消"
       />
 
-      <scroll-view class="customer-list" scroll-y>
+      <scroll-view class="customer-list" scroll-y enable-flex>
         <view class="customer-list-inner">
           <view v-if="loadingCustomers" class="loading-state">
             <wd-loading size="40rpx" />
@@ -630,7 +630,11 @@ onMounted(async () => {
   font-size: 28rpx;
 }
 
-.customer-list,
+.customer-list {
+  flex: 1;
+  height: 0;
+}
+
 .product-list {
   flex: 1;
 }

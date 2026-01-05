@@ -5,9 +5,9 @@
  * @since 1.0.0
  */
 
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { queryInProgressLedgers } from '@/api/modules/ledger'
-import { getMerchantStats, getTodayStats } from '@/api/modules/merchant'
+import { getMerchantStats, getTodayStats, getMerchantDetail } from '@/api/modules/merchant'
 import { useNavbarSafeArea } from '@/composables/useNavbarSafeArea'
 import { useUserStore } from '@/stores/modules/user'
 import { LedgerStatus, getLedgerStatusLabel } from '@/enums'
@@ -31,6 +31,10 @@ const storeInfo = ref({
   avatar: ''
 })
 
+// 商户头像
+const merchantAvatarUrl = ref<string>('')
+const avatarLoadError = ref(false)
+
 /**
  * 初始化店铺信息
  */
@@ -38,6 +42,29 @@ const initStoreInfo = () => {
   // 从 userStore 获取商户名称
   userStore.initializeFromStorage()
   storeInfo.value.name = userStore.userInfo?.name || '我的店铺'
+}
+
+/**
+ * 加载商户头像
+ */
+const loadMerchantAvatar = async () => {
+  const merchantId = userStore.userInfo?.id
+  if (!merchantId) return
+  
+  try {
+    const detail = await getMerchantDetail(merchantId)
+    merchantAvatarUrl.value = detail.avatarUrl || ''
+    avatarLoadError.value = false
+  } catch (error) {
+    console.error('加载商户头像失败:', error)
+  }
+}
+
+/**
+ * 头像加载失败处理
+ */
+const onAvatarError = () => {
+  avatarLoadError.value = true
 }
 
 // 销售统计
@@ -57,6 +84,21 @@ const todayStats = ref<TodayStatsVO>({
 
 // 进行中账单列表
 const inProgressLedgers = ref<LedgerListVO[]>([])
+
+// ==================== 计算属性 ====================
+
+/**
+ * 格式化今日日期：yyyy-mm-dd 星期X
+ */
+const todayDateStr = computed(() => {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  const weekDays = ['日', '一', '二', '三', '四', '五', '六']
+  const weekDay = weekDays[now.getDay()]
+  return `${year}-${month}-${day} 星期${weekDay}`
+})
 
 // ==================== 方法 ====================
 
@@ -110,7 +152,8 @@ const onRefresh = async () => {
   await Promise.all([
     loadInProgressLedgers(),
     loadMerchantStats(),
-    loadTodayStats()
+    loadTodayStats(),
+    loadMerchantAvatar()
   ])
   refreshing.value = false
 }
@@ -173,6 +216,7 @@ const handleMerchantChanged = () => {
   loadInProgressLedgers()
   loadMerchantStats()
   loadTodayStats()
+  loadMerchantAvatar()
 }
 
 /**
@@ -190,6 +234,7 @@ onMounted(() => {
   loadInProgressLedgers()
   loadMerchantStats()
   loadTodayStats()
+  loadMerchantAvatar()
   // 监听商户切换事件
   uni.$on('merchant-changed', handleMerchantChanged)
   // 监听账单变更事件
@@ -215,7 +260,15 @@ onUnmounted(() => {
     <view class="home-header" :style="headerStyle">
       <view class="store-info" :style="headerContentStyle">
         <view class="store-avatar">
-          <wd-icon name="shop" size="48rpx" color="#fff" />
+          <image
+            v-if="merchantAvatarUrl && !avatarLoadError"
+            class="avatar-img"
+            :src="merchantAvatarUrl"
+            mode="aspectFill"
+            lazy-load
+            @error="onAvatarError"
+          />
+          <wd-icon v-else name="shop" size="48rpx" color="#fff" />
         </view>
         <view class="store-detail">
           <view class="store-name">{{ storeInfo.name }}</view>
@@ -266,7 +319,7 @@ onUnmounted(() => {
       <view class="section">
         <view class="section-header">
           <text class="section-title">今日汇总</text>
-          <text class="section-date">{{ new Date().toLocaleDateString() }}</text>
+          <text class="section-date">{{ todayDateStr }}</text>
         </view>
         <view class="today-stats">
           <view class="today-item">
@@ -384,6 +437,13 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   margin-right: 24rpx;
+  overflow: hidden;
+}
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
 }
 
 .store-detail {

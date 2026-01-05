@@ -180,19 +180,19 @@ onMounted(() => {
           <view class="gender-label">性别</view>
           <view class="gender-options">
             <view 
-              class="gender-option" 
+              class="gender-option male" 
               :class="{ active: form.gender === 1 }"
               @tap="form.gender = 1"
             >
-              <wd-icon name="user" size="32rpx" />
+              <text class="gender-icon">♂</text>
               <text>男</text>
             </view>
             <view 
-              class="gender-option" 
+              class="gender-option female" 
               :class="{ active: form.gender === 2 }"
               @tap="form.gender = 2"
             >
-              <wd-icon name="user" size="32rpx" />
+              <text class="gender-icon">♀</text>
               <text>女</text>
             </view>
           </view>
@@ -309,22 +309,43 @@ onMounted(() => {
   border: 2rpx solid transparent;
   transition: all 0.2s;
   
+  .gender-icon {
+    font-size: 36rpx;
+  }
+  
   text {
     font-size: 28rpx;
     color: #666;
   }
   
+  &.male {
+    .gender-icon {
+      color: #3B82F6;
+    }
+  }
+  
+  &.female {
+    .gender-icon {
+      color: #EC4899;
+    }
+  }
+  
   &.active {
-    background: rgba(59, 130, 246, 0.1);
     border-color: #3B82F6;
+    background: rgba(59, 130, 246, 0.1);
     
     text {
       color: #3B82F6;
       font-weight: 500;
     }
+  }
+  
+  &.female.active {
+    border-color: #EC4899;
+    background: rgba(236, 72, 153, 0.1);
     
-    :deep(.wd-icon) {
-      color: #3B82F6 !important;
+    text {
+      color: #EC4899;
     }
   }
 }
