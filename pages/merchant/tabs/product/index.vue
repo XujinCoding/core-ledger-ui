@@ -15,6 +15,7 @@ import type { ProductVO } from '@/types/product'
 // ==================== 数据状态 ====================
 
 const loading = ref(false)
+const refreshing = ref(false)  // 下拉刷新状态
 const keyword = ref('')
 
 // 导航栏安全区域
@@ -126,6 +127,31 @@ const loadProducts = async (reset = false) => {
     console.error('加载商品列表失败:', error)
   } finally {
     loading.value = false
+  }
+}
+
+/**
+ * 下拉刷新
+ */
+const onRefresh = async () => {
+  if (refreshing.value) return
+  
+  try {
+    refreshing.value = true
+    console.log('[Product] 下拉刷新')
+    
+    // 重新加载分类和商品
+    await Promise.all([
+      loadCategories(),
+      loadProducts(true)
+    ])
+    
+    uni.showToast({ title: '刷新成功', icon: 'success', duration: 1500 })
+  } catch (error) {
+    console.error('刷新失败:', error)
+    uni.showToast({ title: '刷新失败', icon: 'none' })
+  } finally {
+    refreshing.value = false
   }
 }
 
@@ -303,6 +329,9 @@ onUnmounted(() => {
       <scroll-view
         class="product-main"
         scroll-y
+        refresher-enabled
+        :refresher-triggered="refreshing"
+        @refresherrefresh="onRefresh"
         @scrolltolower="onLoadMore"
       >
         <!-- 子分类标签 -->
