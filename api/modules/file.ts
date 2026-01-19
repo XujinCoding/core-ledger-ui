@@ -7,20 +7,30 @@
 import request from '@/utils/request'
 
 /**
- * 上传图片到 GitHub 图床
- * @param filePath 本地文件路径
- * @returns 图片访问 URL
+ * 文件上传响应
  */
-export const uploadImage = (filePath: string): Promise<string> => {
-  return request.upload<string>('/file/upload/image', filePath, { name: 'file' })
+export interface FileUploadResponse {
+  /** 文件路径（objectKey），用于保存到数据库 */
+  path: string
+  /** 预览URL（预签名URL），用于前端立即显示 */
+  url: string
+}
+
+/**
+ * 上传图片到腾讯云COS
+ * @param filePath 本地文件路径
+ * @returns 文件上传响应（包含path和url）
+ */
+export const uploadImage = (filePath: string): Promise<FileUploadResponse> => {
+  return request.upload<FileUploadResponse>('/file/upload/image', filePath, { name: 'file' })
 }
 
 /**
  * 选择并上传图片
  * @param count 最多选择图片数量，默认1
- * @returns 上传后的图片 URL 数组
+ * @returns 上传后的文件上传响应数组
  */
-export const chooseAndUploadImage = (count = 1): Promise<string[]> => {
+export const chooseAndUploadImage = (count = 1): Promise<FileUploadResponse[]> => {
   return new Promise((resolve, reject) => {
     uni.chooseImage({
       count,
@@ -28,12 +38,12 @@ export const chooseAndUploadImage = (count = 1): Promise<string[]> => {
       sourceType: ['album', 'camera'],
       success: async (res) => {
         try {
-          const urls: string[] = []
+          const results: FileUploadResponse[] = []
           for (const filePath of res.tempFilePaths) {
-            const url = await uploadImage(filePath)
-            urls.push(url)
+            const result = await uploadImage(filePath)
+            results.push(result)
           }
-          resolve(urls)
+          resolve(results)
         } catch (e) {
           reject(e)
         }

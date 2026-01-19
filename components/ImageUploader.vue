@@ -9,8 +9,10 @@ import { ref, computed } from 'vue'
 import { uploadImage } from '@/api/modules/file'
 
 const props = withDefaults(defineProps<{
-  /** 图片URL */
+  /** 图片路径（objectKey，用于保存到数据库） */
   modelValue?: string
+  /** 预览URL（用于显示图片） */
+  previewUrl?: string
   /** 宽度 */
   width?: string
   /** 高度 */
@@ -31,11 +33,18 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: string): void
-  (e: 'success', url: string): void
+  (e: 'update:previewUrl', value: string): void
+  (e: 'success', path: string, url: string): void
   (e: 'error', error: any): void
 }>()
 
 const uploading = ref(false)
+const currentPreviewUrl = ref(props.previewUrl || props.modelValue || '')
+
+// 显示的图片URL（优先使用previewUrl，否则使用modelValue）
+const displayUrl = computed(() => {
+  return currentPreviewUrl.value || props.previewUrl || props.modelValue || ''
+})
 
 // 样式
 const containerStyle = computed(() => ({
@@ -68,9 +77,16 @@ const handleChoose = async () => {
 const handleUpload = async (filePath: string) => {
   try {
     uploading.value = true
-    const url = await uploadImage(filePath)
-    emit('update:modelValue', url)
-    emit('success', url)
+    const result = await uploadImage(filePath)
+    
+    // 更新路径（用于保存到数据库）
+    emit('update:modelValue', result.path)
+    
+    // 更新预览URL（用于立即显示）
+    currentPreviewUrl.value = result.url
+    emit('update:previewUrl', result.url)
+    
+    emit('success', result.path, result.url)
   } catch (error) {
     console.error('上传图片失败:', error)
     emit('error', error)
@@ -89,8 +105,8 @@ const handleUpload = async (filePath: string) => {
   >
     <!-- 已上传图片 -->
     <image 
-      v-if="modelValue" 
-      :src="modelValue" 
+      v-if="displayUrl" 
+      :src="displayUrl" 
       mode="aspectFill" 
       class="preview-image"
       :style="containerStyle"

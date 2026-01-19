@@ -45,7 +45,8 @@ const form = ref({
   price: null as number | null,
   unit: '',
   description: '',
-  imageUrl: ''
+  imageUrl: '',
+  imagePreviewUrl: ''  // 用于显示的预览URL
 })
 
 // 商品属性（用于生成SKU）
@@ -92,7 +93,8 @@ const loadProduct = async () => {
       price: res.price || 0,
       unit: res.unit || '件',
       description: res.description || '',
-      imageUrl: res.imageUrl || ''
+      imageUrl: res.imageUrl || '',
+      imagePreviewUrl: res.imageUrl || ''  // 编辑时，后端返回的已经是预签名URL
     }
     // 加载商品属性
     await loadProductAttrs()
@@ -186,8 +188,10 @@ const chooseImage = () => {
       const filePath = res.tempFilePaths[0]
       try {
         uni.showLoading({ title: '上传中...' })
-        const url = await uploadImage(filePath)
-        form.value.imageUrl = url
+        const result = await uploadImage(filePath)
+        // 保存path用于提交，url用于显示
+        form.value.imageUrl = result.path
+        form.value.imagePreviewUrl = result.url
         uni.hideLoading()
       } catch (error) {
         uni.hideLoading()
@@ -360,8 +364,7 @@ onMounted(() => {
       <view class="form-section">
         <view class="section-title">商品图片</view>
         <view class="image-upload" @tap="chooseImage">
-          <image v-if="form.imageUrl && form.imageUrl.startsWith('http')" :src="form.imageUrl" mode="aspectFill" class="preview-img" />
-          <image v-else-if="form.imageUrl && form.imageUrl.startsWith('/')" :src="form.imageUrl" mode="aspectFill" class="preview-img" />
+          <image v-if="form.imagePreviewUrl" :src="form.imagePreviewUrl" mode="aspectFill" class="preview-img" />
           <view v-else class="upload-placeholder">
             <wd-icon name="add" size="56rpx" color="#999" />
             <text>添加图片</text>
