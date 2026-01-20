@@ -46,11 +46,23 @@ export const useWechatLogin = () => {
 
   /**
    * 执行微信登录
+   * @param identityType 身份类型
+   * @param agreedPrivacy 是否同意隐私政策
    */
-  const handleWechatLogin = async (identityType: IdentityType): Promise<LoginVO | null> => {
+  const handleWechatLogin = async (identityType: IdentityType, agreedPrivacy: boolean = false): Promise<LoginVO | null> => {
     try {
       loading.value = true
       error.value = ''
+
+      // 0. 检查隐私政策同意状态
+      if (!agreedPrivacy) {
+        uni.showToast({
+          title: '请先阅读并同意用户协议和隐私政策',
+          icon: 'none',
+          duration: 2000
+        })
+        return null
+      }
 
       // 1. 调用微信登录获取 code
       console.log('[Login] 开始微信登录，身份类型:', identityType)
@@ -71,12 +83,28 @@ export const useWechatLogin = () => {
       const message = err instanceof Error ? err.message : '登录失败，请重试'
       error.value = message
       console.error('[Login] 登录出错:', err)
-      uni.showToast({
-        title: message,
-        icon: 'error',
-        duration: 2000
+      
+      // 显示授权失败的错误处理对话框
+      return new Promise((resolve) => {
+        uni.showModal({
+          title: '授权失败',
+          content: '需要您的授权才能使用完整功能，请重新尝试',
+          confirmText: '重新授权',
+          cancelText: '返回',
+          success: (res) => {
+            if (res.confirm) {
+              // 用户点击重新授权，递归调用登录函数
+              handleWechatLogin(identityType, agreedPrivacy).then(resolve)
+            } else {
+              // 用户点击返回，返回 null
+              resolve(null)
+            }
+          },
+          fail: () => {
+            resolve(null)
+          }
+        })
       })
-      return null
     } finally {
       loading.value = false
     }

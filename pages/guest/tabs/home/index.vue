@@ -1,0 +1,657 @@
+<script setup lang="ts">
+/**
+ * 游客模式首页Tab
+ * @author Core Ledger Team
+ * @since 1.0.0
+ */
+
+import { ref, computed, onMounted } from 'vue'
+import { useGuestData } from '@/composables/useGuestData'
+import { useNavbarSafeArea } from '@/composables/useNavbarSafeArea'
+import { useGuestMode } from '@/composables/useGuestMode'
+
+// ==================== 数据状态 ====================
+
+const refreshing = ref(false)
+
+// 导航栏安全区域
+const { headerStyle, headerContentStyle } = useNavbarSafeArea()
+
+// 游客数据
+const { getCustomers, getLedgers } = useGuestData()
+const customers = ref(getCustomers())
+const ledgers = ref(getLedgers())
+
+// 游客模式限制
+const { handleGuestAction } = useGuestMode()
+
+// ==================== 计算属性 ====================
+
+/**
+ * 格式化今日日期：yyyy-mm-dd 星期X
+ */
+const todayDateStr = computed(() => {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  const weekDays = ['日', '一', '二', '三', '四', '五', '六']
+  const weekDay = weekDays[now.getDay()]
+  return `${year}-${month}-${day} 星期${weekDay}`
+})
+
+/**
+ * 统计数据
+ */
+const stats = computed(() => {
+  if (!customers.value || !ledgers.value) {
+    return {
+      monthlySales: 0,
+      pendingAmount: 0,
+      monthlyOrders: 0
+    }
+  }
+  
+  const totalDebt = customers.value.reduce((sum, c) => sum + (parseFloat(c.balance as any) || 0), 0)
+  const totalAmount = ledgers.value.reduce((sum, l) => sum + (parseFloat(l.totalAmount) || 0), 0)
+  const totalPaid = ledgers.value.reduce((sum, l) => sum + (parseFloat(l.paidAmount) || 0), 0)
+  
+  return {
+    monthlySales: totalAmount,
+    pendingAmount: totalDebt,
+    monthlyOrders: ledgers.value.length
+  }
+})
+
+/**
+ * 今日汇总（示例数据）
+ */
+const todayStats = computed(() => {
+  if (!ledgers.value) {
+    return {
+      sales: 0,
+      payment: 0,
+      debt: 0,
+      orders: 0
+    }
+  }
+  
+  // 使用部分账单数据作为今日数据
+  const todayLedgers = ledgers.value.slice(0, 2)
+  const sales = todayLedgers.reduce((sum, l) => sum + (parseFloat(l.totalAmount) || 0), 0)
+  const payment = todayLedgers.reduce((sum, l) => sum + (parseFloat(l.paidAmount) || 0), 0)
+  const debt = sales - payment
+  
+  return {
+    sales,
+    payment,
+    debt,
+    orders: todayLedgers.length
+  }
+})
+
+/**
+ * 进行中的账单（取前5条）
+ */
+const inProgressLedgers = computed(() => {
+  if (!ledgers.value) return []
+  return ledgers.value.slice(0, 5)
+})
+
+// ==================== 方法 ====================
+
+/**
+ * 刷新数据
+ */
+const onRefresh = async () => {
+  refreshing.value = true
+  // 模拟刷新延迟
+  await new Promise(resolve => setTimeout(resolve, 500))
+  refreshing.value = false
+  uni.showToast({ title: '刷新成功', icon: 'success', duration: 1500 })
+}
+
+/**
+ * 查看账单详情 - 提示需要登录
+ */
+const viewLedgerDetail = () => {
+  handleGuestAction('查看账单详情')
+}
+
+/**
+ * 获取账单状态样式
+ */
+const getStatusClass = (status: number) => {
+  const map: Record<number, string> = {
+    1: 'pending',
+    2: 'partial',
+    3: 'debt',
+    4: 'paid',
+    5: 'closed'
+  }
+  return map[status] || 'pending'
+}
+
+/**
+ * 获取账单状态文本
+ */
+const getStatusText = (status: number) => {
+  const map: Record<number, string> = {
+    1: '进行中',
+    2: '部分缴费',
+    3: '赊账中',
+    4: '已结清',
+    5: '已关闭'
+  }
+  return map[status] || '进行中'
+}
+
+/**
+ * 查看全部账单
+ */
+const viewAllLedgers = () => {
+  // 通过事件通知切换到账单Tab
+  uni.$emit('guest-switch-tab', 'ledger')
+}
+
+// ==================== 生命周期 ====================
+
+onMounted(() => {
+  // 初始化加载
+})
+</script>
+
+<template>
+  <scroll-view
+    class="home-page"
+    scroll-y
+    refresher-enabled
+    :refresher-triggered="refreshing"
+    @refresherrefresh="onRefresh"
+  >
+    <!-- 头部店铺信息 -->
+    <view class="home-header" :style="headerStyle">
+      <view class="store-info" :style="headerContentStyle">
+        <view class="store-avatar">
+          <wd-icon name="shop" size="48rpx" color="#fff" />
+        </view>
+        <view class="store-detail">
+          <view class="store-name">示例店铺</view>
+        </view>
+        <view class="header-actions">
+          <wd-icon name="bell" size="44rpx" color="#fff" />
+        </view>
+      </view>
+
+      <!-- 销售统计 -->
+      <view class="stats-row">
+        <view class="stat-item">
+          <view class="stat-value">¥{{ stats.monthlySales.toLocaleString() }}</view>
+          <view class="stat-label">本月销售</view>
+        </view>
+        <view class="stat-divider"></view>
+        <view class="stat-item">
+          <view class="stat-value debt">¥{{ stats.pendingAmount.toLocaleString() }}</view>
+          <view class="stat-label">待收款</view>
+        </view>
+        <view class="stat-divider"></view>
+        <view class="stat-item">
+          <view class="stat-value">{{ stats.monthlyOrders }}</view>
+          <view class="stat-label">本月订单</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 页面内容 -->
+    <view class="page-content">
+      <!-- 快捷操作 -->
+      <view class="quick-actions">
+        <view class="action-item" @tap="handleGuestAction('新建账单')">
+          <view class="action-icon" style="background: #3B82F6;">
+            <wd-icon name="add-circle" size="44rpx" color="#fff" />
+          </view>
+          <text class="action-label">新建账单</text>
+        </view>
+        <view class="action-item" @tap="handleGuestAction('添加客户')">
+          <view class="action-icon" style="background: #10B981;">
+            <wd-icon name="user-add" size="44rpx" color="#fff" />
+          </view>
+          <text class="action-label">添加客户</text>
+        </view>
+        <view class="action-item" @tap="handleGuestAction('添加商品')">
+          <view class="action-icon" style="background: #F59E0B;">
+            <wd-icon name="goods" size="44rpx" color="#fff" />
+          </view>
+          <text class="action-label">添加商品</text>
+        </view>
+        <view class="action-item" @tap="handleGuestAction('统计报表')">
+          <view class="action-icon" style="background: #8B5CF6;">
+            <wd-icon name="chart" size="44rpx" color="#fff" />
+          </view>
+          <text class="action-label">统计报表</text>
+        </view>
+      </view>
+
+      <!-- 今日汇总 -->
+      <view class="section">
+        <view class="section-header">
+          <text class="section-title">今日汇总</text>
+          <text class="section-date">{{ todayDateStr }}</text>
+        </view>
+        <view class="today-stats">
+          <view class="today-item">
+            <view class="today-icon blue">
+              <wd-icon name="money-circle" size="40rpx" />
+            </view>
+            <view class="today-info">
+              <view class="today-label">销售额</view>
+              <view class="today-value">¥{{ todayStats.sales.toLocaleString() }}</view>
+            </view>
+          </view>
+          <view class="today-item">
+            <view class="today-icon green">
+              <wd-icon name="check-circle" size="40rpx" />
+            </view>
+            <view class="today-info">
+              <view class="today-label">已收款</view>
+              <view class="today-value">¥{{ todayStats.payment.toLocaleString() }}</view>
+            </view>
+          </view>
+          <view class="today-item">
+            <view class="today-icon red">
+              <wd-icon name="warning" size="40rpx" />
+            </view>
+            <view class="today-info">
+              <view class="today-label">新增欠款</view>
+              <view class="today-value">¥{{ todayStats.debt.toLocaleString() }}</view>
+            </view>
+          </view>
+          <view class="today-item">
+            <view class="today-icon purple">
+              <wd-icon name="list" size="40rpx" />
+            </view>
+            <view class="today-info">
+              <view class="today-label">订单数</view>
+              <view class="today-value">{{ todayStats.orders }}单</view>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 进行中的账单 -->
+      <view class="section">
+        <view class="section-header">
+          <text class="section-title">进行中的账单</text>
+          <text class="section-more" @tap="viewAllLedgers">查看全部</text>
+        </view>
+
+        <view v-if="inProgressLedgers.length === 0" class="empty-state">
+          <wd-icon name="inbox" size="80rpx" color="#ddd" />
+          <text>暂无进行中的账单</text>
+        </view>
+
+        <view v-else class="ledger-list">
+          <view
+            v-for="ledger in inProgressLedgers"
+            :key="ledger.id"
+            class="ledger-card"
+            @tap="viewLedgerDetail"
+          >
+            <view class="ledger-header">
+              <view class="customer-info">
+                <view class="customer-avatar">
+                  {{ ledger.customerName?.charAt(0) || '?' }}
+                </view>
+                <view class="customer-detail">
+                  <view class="customer-name">{{ ledger.customerName }}</view>
+                  <view class="ledger-time">{{ ledger.createInstant }}</view>
+                </view>
+              </view>
+              <view class="ledger-status" :class="getStatusClass(ledger.ledgerStatus)">
+                {{ getStatusText(ledger.ledgerStatus) }}
+              </view>
+            </view>
+            <view class="ledger-footer">
+              <view class="ledger-amount">
+                <text class="amount-label">总计</text>
+                <text class="amount-value">¥{{ ledger.totalAmount }}</text>
+              </view>
+              <view class="ledger-paid">
+                已付 ¥{{ ledger.paidAmount || 0 }}
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+</template>
+
+<style lang="scss" scoped>
+.home-page {
+  height: 100%;
+  background: #f5f5f5;
+}
+
+.home-header {
+  background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+  padding: 32rpx;
+  // padding-top 由 headerStyle 动态控制
+}
+
+.store-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 32rpx;
+}
+
+.store-avatar {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 24rpx;
+  overflow: hidden;
+}
+
+.store-detail {
+  flex: 1;
+}
+
+.store-name {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #fff;
+}
+
+.header-actions {
+  opacity: 0.9;
+}
+
+.stats-row {
+  display: flex;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 16rpx;
+  padding: 24rpx 0;
+}
+
+.stat-item {
+  flex: 1;
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 40rpx;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 8rpx;
+
+  &.debt {
+    color: #FCA5A5;
+  }
+}
+
+.stat-label {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.stat-divider {
+  width: 2rpx;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.page-content {
+  padding: 24rpx;
+}
+
+.quick-actions {
+  display: flex;
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 32rpx 16rpx;
+  margin-bottom: 24rpx;
+}
+
+.action-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.action-icon {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16rpx;
+}
+
+.action-label {
+  font-size: 24rpx;
+  color: #666;
+}
+
+.section {
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 32rpx;
+  margin-bottom: 24rpx;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24rpx;
+}
+
+.section-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.section-date {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.section-more {
+  font-size: 26rpx;
+  color: #3B82F6;
+}
+
+.today-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24rpx;
+}
+
+.today-item {
+  display: flex;
+  align-items: center;
+  padding: 20rpx;
+  background: #f9fafb;
+  border-radius: 16rpx;
+}
+
+.today-icon {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 20rpx;
+
+  &.blue {
+    background: #EBF5FF;
+    color: #3B82F6;
+  }
+
+  &.green {
+    background: #D1FAE5;
+    color: #10B981;
+  }
+
+  &.red {
+    background: #FEE2E2;
+    color: #EF4444;
+  }
+
+  &.purple {
+    background: #EDE9FE;
+    color: #8B5CF6;
+  }
+}
+
+.today-info {
+  flex: 1;
+}
+
+.today-label {
+  font-size: 24rpx;
+  color: #999;
+  margin-bottom: 4rpx;
+}
+
+.today-value {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.empty-state {
+  padding: 60rpx 0;
+  text-align: center;
+  color: #999;
+  font-size: 28rpx;
+
+  text {
+    display: block;
+    margin-top: 16rpx;
+  }
+}
+
+.ledger-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.ledger-card {
+  background: #f9fafb;
+  border-radius: 16rpx;
+  padding: 24rpx;
+}
+
+.ledger-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16rpx;
+}
+
+.customer-info {
+  display: flex;
+  align-items: center;
+}
+
+.customer-avatar {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28rpx;
+  font-weight: 600;
+  margin-right: 16rpx;
+}
+
+.customer-detail {
+  flex: 1;
+}
+
+.customer-name {
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #333;
+}
+
+.ledger-time {
+  font-size: 22rpx;
+  color: #999;
+  margin-top: 4rpx;
+}
+
+.ledger-status {
+  padding: 8rpx 20rpx;
+  border-radius: 24rpx;
+  font-size: 22rpx;
+
+  &.pending {
+    background: #FEF3C7;
+    color: #F59E0B;
+  }
+
+  &.partial {
+    background: #DBEAFE;
+    color: #3B82F6;
+  }
+
+  &.debt {
+    background: #FEE2E2;
+    color: #EF4444;
+  }
+
+  &.paid {
+    background: #D1FAE5;
+    color: #10B981;
+  }
+
+  &.closed {
+    background: #F3F4F6;
+    color: #6B7280;
+  }
+}
+
+.ledger-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 16rpx;
+  border-top: 2rpx solid #e5e5e5;
+}
+
+.ledger-amount {
+  display: flex;
+  align-items: baseline;
+  gap: 8rpx;
+}
+
+.amount-label {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.amount-value {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.ledger-paid {
+  font-size: 24rpx;
+  color: #10B981;
+}
+</style>

@@ -9,6 +9,8 @@
 	import { useWechatLogin } from '@/composables/useWechatLogin'
 	import { useNavbarSafeArea } from '@/composables/useNavbarSafeArea'
 	import { IdentityType } from '@/enums'
+	import AgreementModal from '@/components/AgreementModal.vue'
+	import { USER_AGREEMENT, PRIVACY_POLICY } from '@/constants/agreements'
 
 	const { loading, handleWechatLogin, handleLoginResponse } = useWechatLogin()
 
@@ -18,6 +20,11 @@
 	// 身份选择：默认选择商户
 	const selectedIdentity = ref<IdentityType>(IdentityType.MERCHANT_OWNER)
 
+	// 隐私政策复选框状态
+	const agreed = ref<boolean>(false)
+	const showUserAgreement = ref<boolean>(false)
+	const showPrivacyPolicy = ref<boolean>(false)
+
 	/**
 	 * 选择身份
 	 */
@@ -26,10 +33,34 @@
 	}
 
 	/**
+	 * 打开用户协议弹窗
+	 */
+	const openUserAgreement = () => {
+	  showUserAgreement.value = true
+	}
+
+	/**
+	 * 打开隐私政策弹窗
+	 */
+	const openPrivacyPolicy = () => {
+	  showPrivacyPolicy.value = true
+	}
+
+	/**
 	 * 处理登录
 	 */
 	const handleLogin = async () => {
-	  const response = await handleWechatLogin(selectedIdentity.value)
+	  // 检查是否勾选隐私政策复选框
+	  if (!agreed.value) {
+	    uni.showToast({
+	      title: '请先阅读并同意用户协议和隐私政策',
+	      icon: 'none',
+	      duration: 2000
+	    })
+	    return
+	  }
+
+	  const response = await handleWechatLogin(selectedIdentity.value, agreed.value)
 	  // 处理登录响应（跳转或显示注册/身份选择页面）
 	  await handleLoginResponse(response)
 	}
@@ -79,16 +110,21 @@
 
       <!-- 登录按钮区域 -->
       <view class="login-action">
+        <!-- 隐私政策复选框 -->
+        <view class="privacy-checkbox">
+          <wd-checkbox v-model="agreed" shape="square">
+            <view class="checkbox-label">
+              我已阅读并同意
+              <text class="link" @tap.stop="openUserAgreement">《用户协议》</text>
+              和
+              <text class="link" @tap.stop="openPrivacyPolicy">《隐私政策》</text>
+            </view>
+          </wd-checkbox>
+        </view>
+
         <button class="wechat-btn" :loading="loading" @tap="handleLogin">
           <text v-if="!loading">微信一键登录</text>
         </button>
-
-        <view class="agreement">
-          登录即表示同意
-          <text class="link">《用户协议》</text>
-          和
-          <text class="link">《隐私政策》</text>
-        </view>
 
         <view class="login-tip">
           <wd-icon name="info-outline" size="28rpx" />
@@ -96,6 +132,20 @@
         </view>
       </view>
     </view>
+
+    <!-- 用户协议弹窗 -->
+    <AgreementModal
+      v-model:visible="showUserAgreement"
+      :title="USER_AGREEMENT.title"
+      :content="USER_AGREEMENT.content"
+    />
+
+    <!-- 隐私政策弹窗 -->
+    <AgreementModal
+      v-model:visible="showPrivacyPolicy"
+      :title="PRIVACY_POLICY.title"
+      :content="PRIVACY_POLICY.content"
+    />
   </view>
 </template>
 
@@ -234,6 +284,22 @@
 .login-action {
   margin-top: auto;
   padding-bottom: env(safe-area-inset-bottom, 32rpx);
+}
+
+.privacy-checkbox {
+  margin-bottom: 32rpx;
+  padding: 0 8rpx;
+
+  .checkbox-label {
+    font-size: 26rpx;
+    color: #666;
+    line-height: 1.6;
+  }
+
+  .link {
+    color: #3B82F6;
+    text-decoration: none;
+  }
 }
 
 .wechat-btn {

@@ -1,0 +1,14 @@
+{
+  "name": "core-ledger-ui",
+  "version": "1.0.0",
+  "description": "Core Ledger UI - uni-app project",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "vitest": "^1.0.0",
+    "@vitest/ui": "^1.0.0",
+    "jsdom": "^23.0.0"
+  }
+}

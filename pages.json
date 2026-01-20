@@ -11,6 +11,13 @@
 	},
 	"pages": [
 		{
+			"path": "pages/guest/index",
+			"style": {
+				"navigationBarTitleText": "Core Ledger",
+				"navigationStyle": "custom"
+			}
+		},
+		{
 			"path": "pages/login/index",
 			"style": {
 				"navigationBarTitleText": "登录",
