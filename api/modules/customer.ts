@@ -5,10 +5,11 @@
  */
 
 import request from '@/utils/request'
-import type { 
-  CustomerVO, 
-  CustomerSearchDTO, 
-  CustomerUpdateDTO, 
+import type {
+  CustomerVO,
+  CustomerSearchDTO,
+  CustomerUpdateDTO,
+  CustomerProfileUpdateDTO,
   CustomerPageVO,
   CustomerStatsVO
 } from '@/types/customer'
@@ -95,7 +96,7 @@ export const getCustomerCount = () => {
  */
 export const getCustomerListStats = (query?: Omit<CustomerSearchDTO, 'page' | 'size'>) => {
   const params: Record<string, any> = { ...(query || {}) }
-  
+
   // 移除空值
   Object.keys(params).forEach((k) => {
     const v = params[k]
@@ -103,6 +104,23 @@ export const getCustomerListStats = (query?: Omit<CustomerSearchDTO, 'page' | 's
       delete params[k]
     }
   })
-  
+
   return request.get<{ customerCount: number }>('/customers/stats', params)
+}
+
+/**
+ * 获取当前客户的个人信息
+ * @returns 客户个人信息
+ */
+export const getProfile = () => {
+  return request.get<CustomerVO>('/customers/profile')
+}
+
+/**
+ * 修改个人信息
+ * @param data 个人信息更新请求
+ * @returns 更新后的客户信息
+ */
+export const updateProfile = (data: CustomerProfileUpdateDTO) => {
+  return request.put<CustomerVO>('/customers/profile', data)
 }

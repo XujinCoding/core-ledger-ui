@@ -91,6 +91,26 @@ export interface CustomerUpdateDTO {
 }
 
 /**
+ * 客户个人信息更新DTO
+ */
+export interface CustomerProfileUpdateDTO {
+  /** 客户姓名 */
+  name?: string
+  /** 别名/昵称 */
+  alias?: string
+  /** 性别 */
+  gender?: Gender
+  /** 年龄 */
+  age?: number
+  /** 地址ID */
+  addressId?: number
+  /** 详细地址 */
+  addressDetail?: string
+  /** 客户头像URL */
+  avatarUrl?: string
+}
+
+/**
  * 客户统计信息VO
  */
 export interface CustomerStatsVO {

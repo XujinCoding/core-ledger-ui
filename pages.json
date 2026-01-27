@@ -62,6 +62,13 @@
 			}
 		},
 		{
+			"path": "pages/customer/profile",
+			"style": {
+				"navigationBarTitleText": "个人信息",
+				"navigationStyle": "custom"
+			}
+		},
+		{
 			"path": "pages/merchant/index",
 			"style": {
 				"navigationBarTitleText": "",
