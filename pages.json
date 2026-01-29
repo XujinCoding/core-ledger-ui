@@ -64,8 +64,19 @@
 		{
 			"path": "pages/customer/profile",
 			"style": {
-				"navigationBarTitleText": "个人信息",
-				"navigationStyle": "custom"
+				"navigationBarTitleText": "个人信息"
+			}
+		},
+		{
+			"path": "pages/customer/bind-merchant",
+			"style": {
+				"navigationBarTitleText": "绑定商户"
+			}
+		},
+		{
+			"path": "pages/customer/switch-merchant",
+			"style": {
+				"navigationBarTitleText": "切换商户"
 			}
 		},
 		{

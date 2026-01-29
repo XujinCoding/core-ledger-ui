@@ -32,41 +32,40 @@ const selectedId = ref<number | null>(null)
  * 初始化页面，获取客户列表
  */
 onMounted(() => {
-  // 从路由参数获取客户列表
   const pages = getCurrentPages()
-  const currentPage = pages[pages.length - 1]
-  
-  // 尝试从路由参数获取
-  if (currentPage.$route?.params?.customers) {
-    customers.value = currentPage.$route.params.customers
-  }
-  
-  // 如果没有获取到，尝试从事件获取
-  if (customers.value.length === 0 && currentPage.$route?.query?.customers) {
-    try {
-      customers.value = JSON.parse(currentPage.$route.query.customers as string)
-    } catch (error) {
-      console.error('[Select Customer] 解析客户列表失败:', error)
-    }
+  const currentPage = pages[pages.length - 1] as any
+
+  // 从 eventChannel 获取数据
+  const eventChannel = currentPage.getOpenerEventChannel?.()
+  if (eventChannel) {
+    eventChannel.on('customersData', (data: { customers: CustomerIdentity[], userInfo: any }) => {
+      console.log('[Select Customer] 收到客户数据:', data)
+      if (data.customers && data.customers.length > 0) {
+        customers.value = data.customers
+      }
+    })
   }
 
-  console.log('[Select Customer] 客户列表:', customers.value)
+  console.log('[Select Customer] 页面初始化完成')
 })
 
 /**
  * 处理客户选择
  */
 const handleSelectCustomer = async (customer: CustomerIdentity) => {
+  if (loading.value) return
+
   try {
     loading.value = true
     selectedId.value = customer.id
 
-    console.log('[Select Customer] 选择客户:', customer.id)
+    console.log('[Select Customer] 选择客户:', customer.id, '商户ID:', customer.merchantId)
 
     // 调用切换身份接口
     const response = await switchIdentity({
-      identityType: 'CUSTOMER',
-      customerId: customer.id
+      identityType: 'CUSTOMER' as any,
+      customerId: customer.id,
+      merchantId: customer.merchantId
     })
 
     console.log('[Select Customer] 切换身份响应:', response)
@@ -77,18 +76,20 @@ const handleSelectCustomer = async (customer: CustomerIdentity) => {
       userStore.setUserInfo(response.userInfo)
       userStore.setIdentityType(response.userInfo.identityType)
 
-      showToast('切换成功', 'success')
+      showToast('登录成功', 'success')
 
-      // 跳转到首页
-      uni.reLaunch({
-        url: '/pages/home/index'
-      })
+      // 跳转到客户首页
+      setTimeout(() => {
+        uni.reLaunch({
+          url: '/pages/customer/index'
+        })
+      }, 1000)
     } else {
-      showToast('切换失败，请重试', 'error')
+      showToast('登录失败，请重试', 'error')
     }
   } catch (error) {
     console.error('[Select Customer] 切换身份失败:', error)
-    // 错误提示已在 request.ts 中处理
+    showToast('登录失败，请重试', 'error')
   } finally {
     loading.value = false
     selectedId.value = null
@@ -97,102 +98,254 @@ const handleSelectCustomer = async (customer: CustomerIdentity) => {
 </script>
 
 <template>
-  <view class="select-customer-page" :style="{ paddingTop: safeArea?.navbarHeight + 'px' }">
-    <!-- 顶部说明 -->
+  <view class="select-customer-page">
+    <!-- 头部区域 -->
     <view class="header">
-      <text class="title">选择客户</text>
-      <text class="subtitle">请选择要登录的客户</text>
+      <view class="header-content">
+        <view class="header-icon">
+          <wd-icon name="user" size="80rpx" color="#fff" />
+        </view>
+        <view class="header-text">
+          <text class="title">选择客户身份</text>
+          <text class="subtitle">您有 {{ customers.length }} 个客户身份，请选择要登录的身份</text>
+        </view>
+      </view>
     </view>
 
     <!-- 客户列表 -->
     <view class="content">
-      <wd-cell-group border>
-        <wd-cell
+      <view class="customer-list">
+        <view
           v-for="customer in customers"
           :key="customer.id"
-          :title="customer.customerName"
-          :label="`${customer.merchantName} - ${customer.customerNo}`"
-          is-link
-          :clickable="!loading"
-          @click="handleSelectCustomer(customer)"
+          class="customer-card"
+          :class="{ selected: selectedId === customer.id }"
+          @tap="handleSelectCustomer(customer)"
         >
-          <template #right-icon>
-            <wd-loading
-              v-if="loading && selectedId === customer.id"
-              type="ring"
-              size="24rpx"
-            />
-          </template>
-        </wd-cell>
-      </wd-cell-group>
+          <view class="customer-icon">
+            <wd-icon name="user" size="48rpx" />
+          </view>
+          <view class="customer-info">
+            <view class="customer-name">{{ customer.customerName }}</view>
+            <view class="customer-detail">
+              <view class="detail-row">
+                <text class="detail-label">商户</text>
+                <text class="detail-value">{{ customer.merchantName }}</text>
+              </view>
+              <view class="detail-row">
+                <text class="detail-label">编号</text>
+                <text class="detail-value">{{ customer.customerNo }}</text>
+              </view>
+            </view>
+          </view>
+          <view class="customer-action">
+            <wd-loading v-if="loading && selectedId === customer.id" type="ring" size="40rpx" color="#3B82F6" />
+            <wd-icon v-else name="arrow-right" size="36rpx" color="#ccc" />
+          </view>
+        </view>
+      </view>
+
+      <!-- 空状态 -->
+      <view v-if="customers.length === 0" class="empty-state">
+        <wd-icon name="user" size="120rpx" color="#ddd" />
+        <text class="empty-text">暂无客户数据</text>
+        <text class="empty-tip">请联系商户添加客户身份</text>
+      </view>
     </view>
 
-    <!-- 空状态 -->
-    <view v-if="customers.length === 0" class="empty">
-      <text class="empty-text">暂无客户数据</text>
+    <!-- 底部提示 -->
+    <view class="footer">
+      <view class="footer-tip">
+        <wd-icon name="info-outline" size="28rpx" color="#999" />
+        <text>选择客户身份后将进入对应的客户视图</text>
+      </view>
     </view>
   </view>
 </template>
 
 <style lang="scss" scoped>
 .select-customer-page {
+  min-height: 100vh;
+  background: #f5f5f5;
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  background-color: #f5f5f5;
-  overflow: hidden;
 }
 
+// 头部区域
 .header {
-  flex: 0 0 auto;
-  padding: 40rpx;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-
-  .title {
-    display: block;
-    font-size: 36rpx;
-    font-weight: bold;
-    margin-bottom: 8rpx;
-  }
-
-  .subtitle {
-    display: block;
-    font-size: 26rpx;
-    opacity: 0.9;
-  }
+  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+  padding-bottom: 60rpx;
 }
 
-.content {
-  flex: 1;
-  padding: 20rpx;
-
-  :deep(.wd-cell-group) {
-    background: white;
-    border-radius: 8rpx;
-    overflow: hidden;
-  }
-
-  :deep(.wd-cell) {
-    padding: 20rpx;
-    border-bottom: 1rpx solid #eee;
-
-    &:last-child {
-      border-bottom: none;
-    }
-  }
+.header-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40rpx 32rpx;
 }
 
-.empty {
-  flex: 1;
+.header-icon {
+  width: 140rpx;
+  height: 140rpx;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40rpx;
+  margin-bottom: 24rpx;
+}
 
-  .empty-text {
-    font-size: 28rpx;
-    color: #999;
+.header-text {
+  text-align: center;
+  color: #fff;
+}
+
+.title {
+  display: block;
+  font-size: 40rpx;
+  font-weight: 600;
+  margin-bottom: 12rpx;
+}
+
+.subtitle {
+  display: block;
+  font-size: 26rpx;
+  opacity: 0.9;
+}
+
+// 内容区域
+.content {
+  flex: 1;
+  margin-top: -40rpx;
+  padding: 0 32rpx;
+  position: relative;
+  z-index: 1;
+}
+
+.customer-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+}
+
+.customer-card {
+  display: flex;
+  align-items: center;
+  padding: 32rpx;
+  background: #fff;
+  border-radius: 24rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.05);
+  gap: 24rpx;
+  transition: all 0.2s;
+
+  &:active {
+    transform: scale(0.98);
+    background: #f9f9f9;
   }
+
+  &.selected {
+    border: 4rpx solid #3B82F6;
+    background: #EBF5FF;
+  }
+}
+
+.customer-icon {
+  width: 96rpx;
+  height: 96rpx;
+  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+  border-radius: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.customer-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.customer-name {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.customer-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.detail-row {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.detail-label {
+  font-size: 24rpx;
+  color: #999;
+  width: 60rpx;
+}
+
+.detail-value {
+  font-size: 24rpx;
+  color: #666;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.customer-action {
+  flex-shrink: 0;
+  width: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// 空状态
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 120rpx 32rpx;
+  background: #fff;
+  border-radius: 24rpx;
+}
+
+.empty-text {
+  font-size: 32rpx;
+  color: #666;
+  margin-top: 32rpx;
+}
+
+.empty-tip {
+  font-size: 26rpx;
+  color: #999;
+  margin-top: 12rpx;
+}
+
+// 底部提示
+.footer {
+  padding: 32rpx;
+  padding-bottom: calc(32rpx + env(safe-area-inset-bottom));
+}
+
+.footer-tip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  font-size: 24rpx;
+  color: #999;
 }
 </style>

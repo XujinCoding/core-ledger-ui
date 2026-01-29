@@ -108,6 +108,10 @@ export interface CustomerProfileUpdateDTO {
   addressDetail?: string
   /** 客户头像URL */
   avatarUrl?: string
+  /** 手机号 */
+  phone?: string
+  /** 短信验证码 */
+  smsCode?: string
 }
 
 /**

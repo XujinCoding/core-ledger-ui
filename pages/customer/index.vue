@@ -1,14 +1,17 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { getCurrentUser } from '@/api/modules/auth'
+import { getCurrentUser, getUserIdentities } from '@/api/modules/auth'
 import { getProfile } from '@/api/modules/customer'
 import { useNavbarSafeArea } from '@/composables/useNavbarSafeArea'
-import type { UserInfoVO } from '@/types/auth'
+import { useUserStore } from '@/stores/modules/user'
+import type { UserInfoVO, CustomerIdentity } from '@/types/auth'
 import type { CustomerVO } from '@/types/customer'
 
+const userStore = useUserStore()
 const refreshing = ref(false)
 const user = ref<UserInfoVO | null>(null)
 const profile = ref<CustomerVO | null>(null)
+const currentMerchant = ref<CustomerIdentity | null>(null)
 
 // 导航栏安全区域
 const { safeArea } = useNavbarSafeArea()
@@ -24,6 +27,17 @@ const load = async () => {
       profile.value = profileInfo
     } catch (error) {
       console.error('加载个人信息失败:', error)
+    }
+
+    // 加载当前商户信息
+    try {
+      const identities = await getUserIdentities()
+      const merchantId = userStore.userInfo?.merchantId
+      if (merchantId && identities.customers) {
+        currentMerchant.value = identities.customers.find(c => c.merchantId === merchantId) || null
+      }
+    } catch (error) {
+      console.error('加载商户信息失败:', error)
     }
   } finally {
     refreshing.value = false
@@ -48,6 +62,7 @@ const customerCode = computed(() => {
 })
 const phone = computed(() => user.value?.phone || '-')
 const avatarUrl = computed(() => profile.value?.avatarUrl || '')
+const merchantName = computed(() => currentMerchant.value?.merchantName || '')
 
 /**
  * 跳转到个人信息页面
@@ -57,17 +72,36 @@ const goToProfile = () => {
     url: '/pages/customer/profile'
   })
 }
+
+/**
+ * 跳转到绑定商户页面
+ */
+const goToBindMerchant = () => {
+  uni.navigateTo({
+    url: '/pages/customer/bind-merchant'
+  })
+}
+
+/**
+ * 跳转到切换商户页面
+ */
+const goToSwitchMerchant = () => {
+  uni.navigateTo({
+    url: '/pages/customer/switch-merchant'
+  })
+}
 </script>
 
 <template>
-  <scroll-view
-    class="tab-scroll"
-    scroll-y
-    refresher-enabled
-    :refresher-triggered="refreshing"
-    @refresherrefresh="onRefresh"
-  >
-    <view class="section" :style="{ paddingTop: safeArea?.navbarHeight + 'px' }">
+  <view class="customer-page">
+    <scroll-view
+      class="tab-scroll"
+      scroll-y
+      refresher-enabled
+      :refresher-triggered="refreshing"
+      @refresherrefresh="onRefresh"
+    >
+      <view class="section" :style="{ paddingTop: safeArea?.navbarHeight + 'px' }">
       <!-- 用户信息卡片 -->
       <view class="user-card">
         <view class="user-card-bg"></view>
@@ -94,6 +128,23 @@ const goToProfile = () => {
         </view>
       </view>
 
+      <!-- 当前商户卡片 - 独立突出显示 -->
+      <view class="merchant-switch-card" @tap="goToSwitchMerchant">
+        <view class="merchant-switch-left">
+          <view class="merchant-icon-wrapper">
+            <wd-icon name="shop" size="44rpx" color="#fff" />
+          </view>
+          <view class="merchant-info">
+            <view class="merchant-label">当前商户</view>
+            <view class="merchant-name">{{ merchantName || '未选择商户' }}</view>
+          </view>
+        </view>
+        <view class="merchant-switch-right">
+          <text class="switch-text">切换</text>
+          <wd-icon name="arrow-right" size="32rpx" color="#3B82F6" />
+        </view>
+      </view>
+
       <!-- 功能菜单 -->
       <view class="menu-section">
         <wd-cell-group border>
@@ -103,21 +154,37 @@ const goToProfile = () => {
             @click="goToProfile"
           >
             <template #icon>
-              <view class="menu-icon">
+              <view class="menu-icon blue">
                 <wd-icon name="user" size="36rpx" color="#3B82F6" />
+              </view>
+            </template>
+          </wd-cell>
+          <wd-cell
+            title="绑定商户"
+            is-link
+            @click="goToBindMerchant"
+          >
+            <template #icon>
+              <view class="menu-icon green">
+                <wd-icon name="link" size="36rpx" color="#10B981" />
               </view>
             </template>
           </wd-cell>
         </wd-cell-group>
       </view>
-    </view>
-  </scroll-view>
+      </view>
+    </scroll-view>
+  </view>
 </template>
 
 <style lang="scss" scoped>
+.customer-page {
+  height: 100vh;
+  background: #f5f5f5;
+}
+
 .tab-scroll {
   height: 100%;
-  background: #f5f5f5;
 }
 
 .section {
@@ -131,7 +198,7 @@ const goToProfile = () => {
   border-radius: 24rpx;
   overflow: hidden;
   box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.06);
-  margin-bottom: 32rpx;
+  margin-bottom: 24rpx;
 }
 
 .user-card-bg {
@@ -202,6 +269,75 @@ const goToProfile = () => {
   color: #666;
 }
 
+// 商户切换卡片 - 独立突出显示
+.merchant-switch-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 28rpx 24rpx;
+  margin-bottom: 24rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
+
+  &:active {
+    transform: scale(0.98);
+    background: #fafafa;
+  }
+}
+
+.merchant-switch-left {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  flex: 1;
+  min-width: 0;
+}
+
+.merchant-icon-wrapper {
+  width: 80rpx;
+  height: 80rpx;
+  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+  border-radius: 20rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.merchant-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.merchant-label {
+  font-size: 24rpx;
+  color: #999;
+  margin-bottom: 4rpx;
+}
+
+.merchant-name {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.merchant-switch-right {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  flex-shrink: 0;
+}
+
+.switch-text {
+  font-size: 26rpx;
+  color: #3B82F6;
+  font-weight: 500;
+}
+
 // 功能菜单
 .menu-section {
   margin-top: 0;
@@ -219,7 +355,14 @@ const goToProfile = () => {
   width: 64rpx;
   height: 64rpx;
   border-radius: 50%;
-  background: #EFF6FF;
   margin-right: 24rpx;
+
+  &.blue {
+    background: #EFF6FF;
+  }
+
+  &.green {
+    background: #ECFDF5;
+  }
 }
 </style>

@@ -5,11 +5,12 @@
  * @since 1.0.0
  */
 
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { getProfile, updateProfile } from '@/api/modules/customer'
-import { useNavbarSafeArea } from '@/composables/useNavbarSafeArea'
+import { SmsScene } from '@/api/modules/sms'
 import AddressSelector from '@/components/AddressSelector.vue'
 import ImageUploader from '@/components/ImageUploader.vue'
+import SmsCodeInput from '@/components/SmsCodeInput.vue'
 import type { CustomerVO, CustomerProfileUpdateDTO } from '@/types/customer'
 import { Gender } from '@/enums'
 
@@ -19,15 +20,6 @@ const loading = ref(false)
 const submitting = ref(false)
 const customer = ref<CustomerVO | null>(null)
 
-// 导航栏安全区域
-const { safeArea } = useNavbarSafeArea()
-
-// 计算导航栏总高度
-const navbarTotalHeight = computed(() => {
-  if (!safeArea.value) return 88
-  return safeArea.value.navbarHeight + 44
-})
-
 // 表单数据
 const form = ref({
   name: '',
@@ -36,8 +28,18 @@ const form = ref({
   age: undefined as number | undefined,
   avatarUrl: '',
   addressId: null as number | null,
-  addressDetail: ''
+  addressDetail: '',
+  phone: '',
+  smsCode: ''
 })
+
+// 原始手机号
+const originalPhone = ref('')
+// 原始头像URL（文件路径，非预签名URL）
+const originalAvatarUrl = ref('')
+
+// 是否修改了手机号
+const isPhoneChanged = computed(() => form.value.phone !== originalPhone.value)
 
 // ==================== 方法 ====================
 
@@ -49,6 +51,12 @@ const loadProfile = async () => {
   try {
     const info = await getProfile()
     customer.value = info
+    originalPhone.value = info.phone || ''
+
+    // 保存原始头像URL（这是预签名URL，我们需要从后端获取原始路径）
+    // 由于后端返回的是预签名URL，我们需要保存一个标记来判断是否修改了头像
+    originalAvatarUrl.value = info.avatarUrl || ''
+
     form.value = {
       name: info.name || '',
       alias: info.alias || '',
@@ -56,7 +64,9 @@ const loadProfile = async () => {
       age: info.age,
       avatarUrl: info.avatarUrl || '',
       addressId: info.addressId || null,
-      addressDetail: info.addressDetail || ''
+      addressDetail: info.addressDetail || '',
+      phone: info.phone || '',
+      smsCode: ''
     }
   } catch (error) {
     console.error('加载个人信息失败:', error)
@@ -75,6 +85,22 @@ const handleSubmit = async () => {
     return
   }
 
+  // 如果修改了手机号，需要验证码
+  if (isPhoneChanged.value) {
+    if (!form.value.phone) {
+      uni.showToast({ title: '请输入手机号', icon: 'none' })
+      return
+    }
+    if (!/^1[3-9]\d{9}$/.test(form.value.phone)) {
+      uni.showToast({ title: '手机号格式不正确', icon: 'none' })
+      return
+    }
+    if (!form.value.smsCode) {
+      uni.showToast({ title: '请输入验证码', icon: 'none' })
+      return
+    }
+  }
+
   submitting.value = true
   try {
     const data: CustomerProfileUpdateDTO = {
@@ -82,9 +108,23 @@ const handleSubmit = async () => {
       alias: form.value.alias || undefined,
       gender: form.value.gender,
       age: form.value.age,
-      avatarUrl: form.value.avatarUrl || undefined,
       addressId: form.value.addressId || undefined,
       addressDetail: form.value.addressDetail
+    }
+
+    // 只有当头像URL发生变化时才提交（排除预签名URL的情况）
+    // 如果avatarUrl是新上传的（不是预签名URL），才提交
+    if (form.value.avatarUrl && form.value.avatarUrl !== originalAvatarUrl.value) {
+      // 判断是否是新上传的文件路径（不包含http/https）
+      if (!form.value.avatarUrl.startsWith('http')) {
+        data.avatarUrl = form.value.avatarUrl
+      }
+    }
+
+    // 如果修改了手机号，添加手机号和验证码
+    if (isPhoneChanged.value) {
+      data.phone = form.value.phone
+      data.smsCode = form.value.smsCode
     }
 
     await updateProfile(data)
@@ -94,17 +134,9 @@ const handleSubmit = async () => {
     }, 1500)
   } catch (error) {
     console.error('修改个人信息失败:', error)
-    // 错误提示已在 request.ts 中处理
   } finally {
     submitting.value = false
   }
-}
-
-/**
- * 返回上一页
- */
-const goBack = () => {
-  uni.navigateBack()
 }
 
 /**
@@ -123,134 +155,142 @@ onMounted(() => {
 
 <template>
   <view class="profile-page">
-    <!-- 自定义导航栏 -->
-    <view class="navbar" :style="{ height: navbarTotalHeight + 'px' }">
-      <view class="navbar-content" :style="{ marginTop: (safeArea?.statusBarHeight || 20) + 'px' }">
-        <view class="navbar-left" @tap="goBack">
-          <wd-icon name="arrow-left" size="44rpx" />
-        </view>
-        <view class="navbar-title">个人信息</view>
-        <view class="navbar-right"></view>
-      </view>
-    </view>
-
     <!-- 表单内容 -->
-    <view class="form-content" :style="{ paddingTop: navbarTotalHeight + 'px' }">
-      <!-- 头像上传 -->
-      <view class="form-section avatar-section">
-        <view class="avatar-label">头像</view>
-        <ImageUploader
-          v-model="form.avatarUrl"
-          width="160rpx"
-          height="160rpx"
-          placeholder="上传头像"
-          round
-          :disabled="loading"
-        />
+    <scroll-view class="page-content" scroll-y>
+      <!-- 头像卡片 -->
+      <view class="avatar-card">
+        <view class="avatar-wrapper">
+          <ImageUploader
+            v-model="form.avatarUrl"
+            width="140rpx"
+            height="140rpx"
+            placeholder="上传"
+            round
+            :disabled="loading"
+          />
+        </view>
+        <view class="avatar-tip">点击上传头像</view>
       </view>
 
       <!-- 基本信息 -->
-      <view class="form-section">
-        <wd-cell-group border>
-          <wd-input
+      <view class="info-card">
+        <view class="card-title">
+          <wd-icon name="user" size="28rpx" color="#3B82F6" />
+          <text>基本信息</text>
+        </view>
+        <view class="form-row">
+          <view class="form-label">姓名 <text class="required">*</text></view>
+          <input
+            class="form-input"
             v-model="form.name"
-            label="姓名"
-            label-width="180rpx"
-            placeholder="请输入姓名"
-            clearable
+            placeholder="请输入真实姓名"
+            placeholder-class="placeholder"
             :disabled="loading"
-            required
           />
-          <wd-input
+        </view>
+        <view class="form-row">
+          <view class="form-label">别名</view>
+          <input
+            class="form-input"
             v-model="form.alias"
-            label="别名/昵称"
-            label-width="180rpx"
-            placeholder="请输入别名或昵称"
-            clearable
+            placeholder="商户称呼您的方式"
+            placeholder-class="placeholder"
             :disabled="loading"
           />
-        </wd-cell-group>
-      </view>
-
-      <!-- 性别选择 -->
-      <view class="form-section">
-        <view class="gender-section">
-          <view class="gender-label">性别</view>
-          <view class="gender-buttons">
+        </view>
+        <view class="form-row">
+          <view class="form-label">性别</view>
+          <view class="gender-selector">
             <view
               class="gender-btn"
               :class="{ active: form.gender === Gender.MALE }"
               @tap="selectGender(Gender.MALE)"
-            >
-              <wd-icon name="male" size="32rpx" />
-              <text>男</text>
-            </view>
+            >♂ 男</view>
             <view
               class="gender-btn"
               :class="{ active: form.gender === Gender.FEMALE }"
               @tap="selectGender(Gender.FEMALE)"
-            >
-              <wd-icon name="female" size="32rpx" />
-              <text>女</text>
-            </view>
+            >♀ 女</view>
+          </view>
+        </view>
+        <view class="form-row">
+          <view class="form-label">年龄</view>
+          <input
+            class="form-input"
+            v-model="form.age"
+            type="number"
+            placeholder="选填"
+            placeholder-class="placeholder"
+            :disabled="loading"
+          />
+        </view>
+      </view>
+
+      <!-- 联系方式 -->
+      <view class="info-card">
+        <view class="card-title">
+          <wd-icon name="phone" size="28rpx" color="#10B981" />
+          <text>联系方式</text>
+        </view>
+        <view class="form-row">
+          <view class="form-label">手机号</view>
+          <input
+            class="form-input"
+            v-model="form.phone"
+            type="number"
+            placeholder="请输入手机号"
+            placeholder-class="placeholder"
+            maxlength="11"
+            :disabled="loading"
+          />
+        </view>
+        <view v-if="isPhoneChanged" class="form-row">
+          <view class="form-label">验证码 <text class="required">*</text></view>
+          <view class="form-value">
+            <SmsCodeInput
+              v-model="form.smsCode"
+              :phone="form.phone"
+              :scene="SmsScene.CHANGE_PHONE"
+            />
           </view>
         </view>
       </view>
 
-      <!-- 年龄 -->
-      <view class="form-section">
-        <wd-cell-group border>
-          <wd-input
-            v-model="form.age"
-            label="年龄"
-            label-width="180rpx"
-            placeholder="请输入年龄"
-            type="number"
-            clearable
-            :disabled="loading"
-          />
-        </wd-cell-group>
-      </view>
-
-      <!-- 地址选择 -->
-      <view class="form-section">
-        <view class="address-group">
+      <!-- 地址信息 -->
+      <view class="info-card">
+        <view class="card-title">
+          <wd-icon name="location" size="28rpx" color="#F59E0B" />
+          <text>地址信息</text>
+        </view>
+        <view class="form-row address-row">
           <AddressSelector
             v-model="form.addressId"
             label="所在地区"
-            placeholder="请选择所在地区"
+            placeholder="请选择"
             :min-level="2"
+          />
+        </view>
+        <view class="form-row">
+          <view class="form-label">详细地址</view>
+          <input
+            class="form-input"
+            v-model="form.addressDetail"
+            placeholder="街道、门牌号等"
+            placeholder-class="placeholder"
+            :disabled="loading"
           />
         </view>
       </view>
 
-      <!-- 详细地址 -->
-      <view class="form-section">
-        <wd-cell-group border>
-          <wd-input
-            v-model="form.addressDetail"
-            label="详细地址"
-            label-width="180rpx"
-            placeholder="请输入详细地址（街道门牌号等）"
-            clearable
-            :disabled="loading"
-          />
-        </wd-cell-group>
-      </view>
+      <!-- 底部占位 -->
+      <view style="height: 160rpx;"></view>
+    </scroll-view>
 
-      <!-- 提交按钮 -->
-      <view class="submit-section">
-        <wd-button
-          type="primary"
-          block
-          size="large"
-          :loading="submitting"
-          :disabled="loading"
-          @click="handleSubmit"
-        >
-          保存修改
-        </wd-button>
-      </view>
+    <!-- 底部按钮 -->
+    <view class="footer-btns">
+      <button class="btn-primary" :loading="submitting" :disabled="loading" @tap="handleSubmit">
+        保存修改
+      </button>
     </view>
   </view>
 </template>
@@ -258,102 +298,163 @@ onMounted(() => {
 <style lang="scss" scoped>
 .profile-page {
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   background: #f5f5f5;
 }
 
-.navbar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  background: #fff;
-  z-index: 100;
-  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
-}
-
-.navbar-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 88rpx;
-  padding: 0 32rpx;
-}
-
-.navbar-left,
-.navbar-right {
-  width: 80rpx;
-}
-
-.navbar-title {
-  font-size: 34rpx;
-  font-weight: 600;
-  color: #333;
-}
-
-.form-content {
-  padding: 32rpx;
-}
-
-.form-section {
-  background: #fff;
-  border-radius: 24rpx;
-  overflow: hidden;
-  margin-top: 16rpx;
-  margin-bottom: 32rpx;
-}
-
-.avatar-section {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 24rpx 32rpx;
-}
-
-.avatar-label {
-  font-size: 28rpx;
-  color: #333;
-}
-
-.gender-section {
-  padding: 24rpx 32rpx;
-}
-
-.gender-label {
-  font-size: 28rpx;
-  color: #333;
-  margin-bottom: 24rpx;
-}
-
-.gender-buttons {
-  display: flex;
-  gap: 24rpx;
-}
-
-.gender-btn {
+.page-content {
   flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12rpx;
-  height: 80rpx;
-  border: 2rpx solid #e5e5e5;
-  border-radius: 16rpx;
-  font-size: 28rpx;
-  color: #666;
-  transition: all 0.3s;
+}
 
-  &.active {
-    border-color: #3B82F6;
-    background: #EFF6FF;
-    color: #3B82F6;
+// 头像卡片
+.avatar-card {
+  background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+  padding: 40rpx 32rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.avatar-wrapper {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  padding: 6rpx;
+}
+
+.avatar-tip {
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.8);
+  margin-top: 12rpx;
+}
+
+// 信息卡片
+.info-card {
+  background: #fff;
+  border-radius: 16rpx;
+  margin: 20rpx 24rpx;
+  padding: 20rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+
+  &:first-of-type {
+    margin-top: -30rpx;
+    position: relative;
+    z-index: 1;
   }
 }
 
-.address-group {
-  padding: 10px 15px;
+.card-title {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 16rpx;
+  padding-bottom: 12rpx;
+  border-bottom: 2rpx solid #f5f5f5;
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
 }
 
-.submit-section {
-  margin-top: 48rpx;
+// 表单行 - 标签和输入框在同一行
+.form-row {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #f5f5f5;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &.address-row {
+    padding: 8rpx 0;
+  }
+}
+
+.form-label {
+  font-size: 26rpx;
+  color: #666;
+  width: 140rpx;
+  flex-shrink: 0;
+}
+
+.required {
+  color: #EF4444;
+}
+
+.form-input {
+  flex: 1;
+  height: 64rpx;
+  background: transparent;
+  border: none;
+  font-size: 28rpx;
+  color: #333;
+  text-align: right;
+}
+
+.form-value {
+  flex: 1;
+}
+
+.placeholder {
+  color: #bbb;
+}
+
+// 性别选择器
+.gender-selector {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 16rpx;
+}
+
+.gender-btn {
+  padding: 12rpx 24rpx;
+  font-size: 26rpx;
+  color: #666;
+  background: #f5f5f5;
+  border-radius: 8rpx;
+  transition: all 0.2s;
+
+  &.active {
+    background: #EFF6FF;
+    color: #3B82F6;
+    font-weight: 500;
+  }
+}
+
+// 底部按钮
+.footer-btns {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 16rpx 32rpx;
+  padding-bottom: calc(16rpx + env(safe-area-inset-bottom));
+  background: #fff;
+  box-shadow: 0 -2rpx 10rpx rgba(0, 0, 0, 0.05);
+  z-index: 100;
+}
+
+.btn-primary {
+  width: 100%;
+  height: 84rpx;
+  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+  color: #fff;
+  font-size: 30rpx;
+  font-weight: 500;
+  border-radius: 42rpx;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &::after {
+    border: none;
+  }
+
+  &:active {
+    opacity: 0.9;
+  }
 }
 </style>

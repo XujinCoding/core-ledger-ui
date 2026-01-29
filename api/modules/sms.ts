@@ -17,7 +17,9 @@ export enum SmsScene {
   /** 登录验证 */
   LOGIN = 'LOGIN',
   /** 重置密码 */
-  RESET_PASSWORD = 'RESET_PASSWORD'
+  RESET_PASSWORD = 'RESET_PASSWORD',
+  /** 修改手机号 */
+  CHANGE_PHONE = 'CHANGE_PHONE'
 }
 
 /**
