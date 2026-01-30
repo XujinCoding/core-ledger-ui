@@ -49,6 +49,9 @@ const form = ref({
   imagePreviewUrl: ''  // 用于显示的预览URL
 })
 
+// 原始图片URL（用于判断是否修改了图片）
+const originalImageUrl = ref('')
+
 // 商品属性（用于生成SKU）
 interface AttrValueItem {
   id?: number
@@ -86,6 +89,8 @@ const loadProduct = async () => {
   try {
     loading.value = true
     const res = await getProduct(productId.value)
+    // 保存原始图片URL（预签名URL）
+    originalImageUrl.value = res.imageUrl || ''
     form.value = {
       name: res.name || '',
       categoryId: res.categoryId,
@@ -93,8 +98,8 @@ const loadProduct = async () => {
       price: res.price || 0,
       unit: res.unit || '件',
       description: res.description || '',
-      imageUrl: res.imageUrl || '',
-      imagePreviewUrl: res.imageUrl || ''  // 编辑时，后端返回的已经是预签名URL
+      imageUrl: '',  // 编辑时不设置imageUrl，只有新上传时才设置
+      imagePreviewUrl: res.imageUrl || ''  // 用于显示的预签名URL
     }
     // 加载商品属性
     await loadProductAttrs()
@@ -230,13 +235,17 @@ const submit = async () => {
 
   try {
     submitting.value = true
-    const data = {
+    const data: any = {
       name: form.value.name,
       categoryId: form.value.categoryId,
       price: form.value.price || 0,
       unit: form.value.unit,
-      description: form.value.description,
-      imageUrl: form.value.imageUrl
+      description: form.value.description
+    }
+
+    // 只有当图片URL存在且不是预签名URL时才提交
+    if (form.value.imageUrl && !form.value.imageUrl.startsWith('http')) {
+      data.imageUrl = form.value.imageUrl
     }
 
     let savedProductId: number

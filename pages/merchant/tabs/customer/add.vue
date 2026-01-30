@@ -14,6 +14,9 @@ const customerId = ref<number | null>(null)
 
 const userStore = useUserStore()
 
+// 原始头像URL（用于判断是否修改了头像）
+const originalAvatarUrl = ref('')
+
 const form = ref<CreateCustomerDTO>({
   merchantId: 0,
   name: '',
@@ -37,8 +40,8 @@ const rules = {
   ],
   phone: [
     { required: true, message: '请输入手机号', trigger: 'blur' },
-    { 
-      pattern: /^1[3-9]\d{9}$/, 
+    {
+      pattern: /^1[3-9]\d{9}$/,
       message: '请输入正确的手机号',
       trigger: 'blur'
     }
@@ -53,6 +56,8 @@ const loadCustomer = async () => {
   try {
     pageLoading.value = true
     const customer = await getCustomer(customerId.value)
+    // 保存原始头像URL
+    originalAvatarUrl.value = customer.avatarUrl || ''
     form.value = {
       merchantId: customer.merchantId || userStore.userInfo?.id || 0,
       name: customer.name || '',
@@ -78,7 +83,24 @@ const handleSubmit = async () => {
   try {
     loading.value = true
     if (isEdit.value && customerId.value) {
-      await updateCustomer(customerId.value, form.value as any)
+      // 编辑模式：判断头像是否修改
+      const submitData: CustomerUpdateDTO = {
+        name: form.value.name,
+        phone: form.value.phone,
+        alias: form.value.alias,
+        gender: form.value.gender,
+        age: form.value.age,
+        addressId: form.value.addressId,
+        addressDetail: form.value.addressDetail,
+        remark: form.value.remark
+      }
+      // 只有当头像URL发生变化且不是预签名URL时才提交
+      if (form.value.avatarUrl && form.value.avatarUrl !== originalAvatarUrl.value) {
+        if (!form.value.avatarUrl.startsWith('http')) {
+          submitData.avatarUrl = form.value.avatarUrl
+        }
+      }
+      await updateCustomer(customerId.value, submitData)
       uni.showToast({ title: '修改成功', icon: 'success' })
     } else {
       // 设置当前商户ID

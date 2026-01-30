@@ -21,6 +21,9 @@ const merchant = ref<MerchantVO | null>(null)
 const isCreateMode = ref(false)
 const userStore = useUserStore()
 
+// 原始头像URL（用于判断是否修改了头像）
+const originalAvatarUrl = ref('')
+
 // 导航栏安全区域
 const { safeArea } = useNavbarSafeArea()
 
@@ -68,6 +71,8 @@ const loadStoreInfo = async () => {
   try {
     const info = await getMerchant(merchantId)
     merchant.value = info
+    // 保存原始头像URL
+    originalAvatarUrl.value = info.avatarUrl || ''
     form.value = {
       name: info.name || '',
       phone: info.phone || '',
@@ -107,13 +112,20 @@ const handleSubmit = async () => {
     } else {
       // 更新店铺
       if (!merchant.value?.id) return
-      await updateMerchantInfo(merchant.value.id, {
+      // 构建提交数据，判断头像是否修改
+      const submitData: any = {
         name: form.value.name,
         phone: form.value.phone,
-        avatarUrl: form.value.avatarUrl || undefined,
         addressId: form.value.addressId || undefined,
         addressDetail: form.value.addressDetail
-      })
+      }
+      // 只有当头像URL发生变化且不是预签名URL时才提交
+      if (form.value.avatarUrl && form.value.avatarUrl !== originalAvatarUrl.value) {
+        if (!form.value.avatarUrl.startsWith('http')) {
+          submitData.avatarUrl = form.value.avatarUrl
+        }
+      }
+      await updateMerchantInfo(merchant.value.id, submitData)
       uni.showToast({ title: '修改成功', icon: 'success' })
     }
     setTimeout(() => {
