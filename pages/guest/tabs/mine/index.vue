@@ -110,21 +110,6 @@ const handleMenuClick = (menuName: string) => {
         </view>
       </view>
 
-      <!-- 关于 -->
-      <view class="menu-section">
-        <view class="menu-title">关于</view>
-        <view class="menu-item" @tap="handleMenuClick('帮助中心')">
-          <view class="menu-icon gray"><wd-icon name="question" size="36rpx" /></view>
-          <text class="menu-text">帮助中心</text>
-          <wd-icon name="arrow-right" size="32rpx" color="#ccc" />
-        </view>
-        <view class="menu-item" @tap="handleMenuClick('关于我们')">
-          <view class="menu-icon gray"><wd-icon name="info-circle" size="36rpx" /></view>
-          <text class="menu-text">关于我们</text>
-          <wd-icon name="arrow-right" size="32rpx" color="#ccc" />
-        </view>
-      </view>
-
       <view style="height: 40rpx;"></view>
     </view>
   </scroll-view>
