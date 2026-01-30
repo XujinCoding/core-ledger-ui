@@ -70,9 +70,7 @@
   <view class="login-page" :style="{ paddingTop: safeArea?.navbarHeight + 'px' }">
     <!-- Logo区域 -->
     <view class="login-header">
-      <view class="login-logo">
-        <wd-icon name="notes" size="88rpx" color="#fff" />
-      </view>
+      <image class="login-logo" src="/static/logo.png" mode="aspectFit" />
       <view class="login-title">账单管理</view>
       <view class="login-subtitle">简单高效的商户记账工具</view>
     </view>
@@ -166,15 +164,10 @@
 }
 
 .login-logo {
-  width: 120rpx;
-  height: 120rpx;
-  background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+  width: 180rpx;
+  height: 180rpx;
   border-radius: 32rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   margin: 0 auto 24rpx;
-  box-shadow: 0 12rpx 36rpx rgba(59, 130, 246, 0.3);
 }
 
 .login-title {
