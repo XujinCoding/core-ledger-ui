@@ -70,7 +70,7 @@
   <view class="login-page" :style="{ paddingTop: safeArea?.navbarHeight + 'px' }">
     <!-- Logo区域 -->
     <view class="login-header">
-      <image class="login-logo" src="/static/logo.png" mode="aspectFit" />
+      <image class="login-logo" src="https://image-1304329767.cos.ap-guangzhou.myqcloud.com/logo/logo.png" mode="aspectFit" />
       <view class="login-title">账单管理</view>
       <view class="login-subtitle">简单高效的商户记账工具</view>
     </view>
