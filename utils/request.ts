@@ -64,7 +64,7 @@ type BusinessCodeMap = Record<number, string>
 const CONFIG = {
   // baseURL: import.meta.env.VITE_API_BASE_URL || 'https://api.example.com',
   // baseURL: 'http://10.0.63.247:8080/code-ledger/api',
-  baseURL: 'https://82.157.123.96/code-ledger/api',
+  baseURL: 'https://www.ezhangben.cloud/code-ledger/api',
   timeout: 30000,
   tokenKey: 'ACCESS_TOKEN',
   

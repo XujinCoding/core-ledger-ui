@@ -163,11 +163,11 @@ const createLedger = () => {
       <!-- 统计卡片 -->
       <view class="stats-card">
         <view class="stat-item">
-          <view class="stat-value">¥{{ Number(stats.totalAmount || 0).toLocaleString() }}</view>
+          <view class="stat-value">¥0 </view>
           <view class="stat-label">总金额</view>
         </view>
         <view class="stat-item">
-          <view class="stat-value">¥{{ Number(stats.paidAmount || 0).toLocaleString() }}</view>
+          <view class="stat-value">¥0</view>
           <view class="stat-label">已收金额</view>
         </view>
         <view class="stat-item">

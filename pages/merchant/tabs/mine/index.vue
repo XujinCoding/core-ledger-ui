@@ -20,6 +20,8 @@ const switching = ref(false)
 const user = ref<UserInfoVO | null>(null)
 const merchantAvatarUrl = ref<string>('')
 const avatarLoadError = ref(false)
+const qrCodeUrl = ref<string>('')
+const showQrCodePopup = ref(false)
 
 // 导航栏安全区域
 const { headerStyle, headerContentStyle } = useNavbarSafeArea()
@@ -63,6 +65,7 @@ const loadMerchantAvatar = async (merchantId: number) => {
   try {
     const detail = await getMerchantDetail(merchantId)
     merchantAvatarUrl.value = detail.avatarUrl || ''
+    qrCodeUrl.value = detail.qrCodeUrl || ''
     avatarLoadError.value = false
   } catch (error) {
     console.error('加载商户头像失败:', error)
@@ -198,6 +201,27 @@ const handleLogout = () => {
   })
 }
 
+/**
+ * 显示二维码弹窗
+ */
+const showQrCode = () => {
+  console.log('showQrCode 被调用, qrCodeUrl:', qrCodeUrl.value)
+  if (!qrCodeUrl.value) {
+    uni.showToast({ title: '二维码不存在', icon: 'none' })
+    return
+  }
+  console.log('准备打开弹窗')
+  showQrCodePopup.value = true
+  console.log('showQrCodePopup.value:', showQrCodePopup.value)
+}
+
+/**
+ * 关闭二维码弹窗
+ */
+const closeQrCode = () => {
+  showQrCodePopup.value = false
+}
+
 // ==================== 生命周期 ====================
 
 onMounted(() => {
@@ -228,7 +252,7 @@ onMounted(() => {
           />
           <wd-icon v-else name="shop" size="56rpx" />
         </view>
-        <view class="user-detail" :style="headerContentStyle">
+        <view class="user-detail">
           <view class="user-name-row">
             <text class="user-name">{{ user?.name || '商户' }}</text>
           </view>
@@ -237,7 +261,7 @@ onMounted(() => {
             <text class="user-phone">{{ user?.phone || '' }}</text>
           </view>
         </view>
-        <view class="qr-btn">
+        <view class="qr-btn" @tap.stop="showQrCode" @click.stop="showQrCode">
           <wd-icon name="qrcode" size="40rpx" />
         </view>
       </view>
@@ -332,6 +356,22 @@ onMounted(() => {
 
       <view style="height: 40rpx;"></view>
     </view>
+
+    <!-- 二维码弹窗 -->
+    <wd-popup v-model="showQrCodePopup" position="center" :close-on-click-modal="true">
+      <view class="qrcode-popup">
+        <view class="qrcode-header">
+          <text class="qrcode-title">店铺二维码</text>
+          <view class="qrcode-close" @tap="closeQrCode">
+            <wd-icon name="close" size="32rpx" />
+          </view>
+        </view>
+        <view class="qrcode-content">
+          <image class="qrcode-image" :src="qrCodeUrl" mode="aspectFit" />
+          <text class="qrcode-tip">扫描二维码访问店铺</text>
+        </view>
+      </view>
+    </wd-popup>
   </scroll-view>
 </template>
 
@@ -409,6 +449,15 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  margin-left: auto;
+  margin-right: 16rpx;
+  cursor: pointer;
+  transition: all 0.3s;
+
+  &:active {
+    opacity: 0.7;
+    transform: scale(0.95);
+  }
 }
 
 .page-content {
@@ -595,5 +644,56 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   gap: 12rpx;
+}
+
+.qrcode-popup {
+  background: #fff;
+  border-radius: 24rpx;
+  width: 560rpx;
+  overflow: hidden;
+}
+
+.qrcode-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 32rpx;
+  border-bottom: 2rpx solid #f5f5f5;
+}
+
+.qrcode-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.qrcode-close {
+  width: 56rpx;
+  height: 56rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+}
+
+.qrcode-content {
+  padding: 48rpx 32rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.qrcode-image {
+  width: 400rpx;
+  height: 400rpx;
+  border-radius: 16rpx;
+  background: #f5f5f5;
+}
+
+.qrcode-tip {
+  margin-top: 32rpx;
+  font-size: 26rpx;
+  color: #999;
+  text-align: center;
 }
 </style>
