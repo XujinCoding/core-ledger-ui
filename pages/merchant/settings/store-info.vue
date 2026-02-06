@@ -61,7 +61,7 @@ const loadStoreInfo = async () => {
   }
 
   // 获取当前商户ID
-  const merchantId = userStore.userInfo?.id
+  const merchantId = userStore.userInfo?.merchantId
   if (!merchantId) {
     uni.showToast({ title: '未找到商户信息', icon: 'none' })
     return

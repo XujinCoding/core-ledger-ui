@@ -46,11 +46,11 @@ const load = async () => {
   try {
     const info = await getCurrentUser()
     user.value = info
-    currentMerchantId.value = info.id
+    currentMerchantId.value = info.merchantId
     // 加载统计数据
-    await loadOverview(info.id)
+    await loadOverview(info.merchantId)
     // 加载商户详情获取头像
-    await loadMerchantAvatar(info.id)
+    await loadMerchantAvatar(info.merchantId)
   } catch (error) {
     console.error('加载用户信息失败:', error)
   } finally {

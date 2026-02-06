@@ -41,7 +41,7 @@ const yearOptions = computed(() => {
 
 // ==================== 计算属性 ====================
 
-const merchantId = computed(() => userStore.userInfo?.id || 0)
+const merchantId = computed(() => userStore.userInfo?.merchantId || 0)
 
 const tabTitle = computed(() => {
   const titles: Record<TimeType, string> = {

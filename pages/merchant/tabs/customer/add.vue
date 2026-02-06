@@ -59,7 +59,7 @@ const loadCustomer = async () => {
     // 保存原始头像URL
     originalAvatarUrl.value = customer.avatarUrl || ''
     form.value = {
-      merchantId: customer.merchantId || userStore.userInfo?.id || 0,
+      merchantId: customer.merchantId || userStore.userInfo?.merchantId || 0,
       name: customer.name || '',
       phone: customer.phone || '',
       alias: customer.alias || '',
@@ -104,7 +104,7 @@ const handleSubmit = async () => {
       uni.showToast({ title: '修改成功', icon: 'success' })
     } else {
       // 设置当前商户ID
-      form.value.merchantId = userStore.userInfo?.id || 0
+      form.value.merchantId = userStore.userInfo?.merchantId || 0
       await createCustomer(form.value)
       uni.showToast({ title: '添加成功', icon: 'success' })
     }

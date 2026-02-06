@@ -48,7 +48,7 @@ const initStoreInfo = () => {
  * 加载商户头像
  */
 const loadMerchantAvatar = async () => {
-  const merchantId = userStore.userInfo?.id
+  const merchantId = userStore.userInfo?.merchantId
   if (!merchantId) return
   
   try {
@@ -118,7 +118,7 @@ const loadInProgressLedgers = async () => {
  * 加载商户统计数据
  */
 const loadMerchantStats = async () => {
-  const merchantId = userStore.userInfo?.id
+  const merchantId = userStore.userInfo?.merchantId
   if (!merchantId) return
   
   try {
@@ -133,7 +133,7 @@ const loadMerchantStats = async () => {
  * 加载今日汇总数据
  */
 const loadTodayStats = async () => {
-  const merchantId = userStore.userInfo?.id
+  const merchantId = userStore.userInfo?.merchantId
   if (!merchantId) return
   
   try {
