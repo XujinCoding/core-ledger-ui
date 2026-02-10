@@ -288,7 +288,7 @@ onUnmounted(() => {
         <view class="stat-divider"></view>
         <view class="stat-item">
           <view class="stat-value debt">¥{{ stats.pendingAmount.toLocaleString() }}</view>
-          <view class="stat-label">待收款</view>
+          <view class="stat-label">本月赊账金额</view>
         </view>
         <view class="stat-divider"></view>
         <view class="stat-item">
