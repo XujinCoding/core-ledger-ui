@@ -324,8 +324,8 @@ function isSelected(item: AddressItem): boolean {
 			@tap="openPicker"
 		>
 			<view class="trigger-label" v-if="label">
+        <text v-if="required" class="required-mark">*</text>
 				{{ label }}
-				<text v-if="required" class="required-mark">*</text>
 			</view>
 			<view class="trigger-input">
 				<text v-if="displayText" class="trigger-value">{{ displayText }}</text>
@@ -436,7 +436,8 @@ function isSelected(item: AddressItem): boolean {
 }
 
 .required-mark {
-	color: #EF4444;
+  font-size: 18px;
+	color: #fa4350;
 	margin-left: 4rpx;
 }
 

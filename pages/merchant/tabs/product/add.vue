@@ -5,7 +5,7 @@
  * @since 1.0.0
  */
 
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { getCategoryTree } from '@/api/modules/category'
 import { createProduct, updateProduct, getProduct } from '@/api/modules/product'
 import { batchUpdateAttrs, getProductAttrs } from '@/api/modules/productAttr'
@@ -26,6 +26,51 @@ const submitting = ref(false)
 const categories = ref<CategoryTreeVO[]>([])
 const showCategoryPicker = ref(false)
 const expandedCategories = ref<number[]>([])
+
+// 扁平化分类项接口
+interface FlattenedCategory {
+  id: number
+  name: string
+  level: number
+  parentId: number | null
+  hasChildren: boolean
+}
+
+// 扁平化分类数据（用于递归显示）
+const flattenedCategories = computed(() => {
+  const result: FlattenedCategory[] = []
+  const flatten = (items: CategoryTreeVO[], level: number, parentId: number | null) => {
+    for (const item of items) {
+      result.push({
+        id: item.id,
+        name: item.name,
+        level,
+        parentId,
+        hasChildren: !!(item.children && item.children.length > 0)
+      })
+      if (item.children && item.children.length > 0) {
+        flatten(item.children, level + 1, item.id)
+      }
+    }
+  }
+  flatten(categories.value, 0, null)
+  return result
+})
+
+// 判断分类是否可见（父级都展开时才可见）
+const isCategoryVisible = (cat: FlattenedCategory): boolean => {
+  if (cat.level === 0) return true
+  // 找到所有祖先节点，检查是否都已展开
+  let currentParentId = cat.parentId
+  while (currentParentId !== null) {
+    if (!expandedCategories.value.includes(currentParentId)) {
+      return false
+    }
+    const parent = flattenedCategories.value.find(c => c.id === currentParentId)
+    currentParentId = parent?.parentId ?? null
+  }
+  return true
+}
 
 // 展开/收起分类
 const toggleExpand = (id: number) => {
@@ -136,7 +181,7 @@ const loadProductAttrs = async () => {
 /**
  * 选择分类
  */
-const selectCategory = (cat: CategoryTreeVO) => {
+const selectCategory = (cat: FlattenedCategory | CategoryTreeVO) => {
   form.value.categoryId = cat.id
   form.value.categoryName = cat.name
   showCategoryPicker.value = false
@@ -447,13 +492,17 @@ onMounted(() => {
           <wd-icon name="close" size="40rpx" @click="showCategoryPicker = false" />
         </view>
         <scroll-view class="picker-content" scroll-y>
-          <!-- 树形分类列表 -->
-          <view v-for="cat in categories" :key="cat.id" class="category-tree-item">
-            <!-- 父分类 -->
-            <view class="category-option parent" :class="{ selected: form.categoryId === cat.id }">
+          <!-- 树形分类列表（递归渲染） -->
+          <template v-for="cat in flattenedCategories" :key="cat.id">
+            <view
+              v-if="isCategoryVisible(cat)"
+              class="category-option"
+              :class="{ selected: form.categoryId === cat.id }"
+              :style="{ paddingLeft: (32 + cat.level * 48) + 'rpx' }"
+            >
               <view class="option-left">
                 <view
-                  v-if="cat.children && cat.children.length > 0"
+                  v-if="cat.hasChildren"
                   class="expand-btn"
                   @tap.stop="toggleExpand(cat.id)"
                 >
@@ -468,20 +517,7 @@ onMounted(() => {
               </view>
               <wd-icon v-if="form.categoryId === cat.id" name="check" size="32rpx" color="#3B82F6" />
             </view>
-            <!-- 子分类 -->
-            <view v-if="expandedCategories.includes(cat.id) && cat.children" class="children-list">
-              <view
-                v-for="child in cat.children"
-                :key="child.id"
-                class="category-option child"
-                :class="{ selected: form.categoryId === child.id }"
-                @tap="selectCategory(child)"
-              >
-                <text>{{ child.name }}</text>
-                <wd-icon v-if="form.categoryId === child.id" name="check" size="32rpx" color="#3B82F6" />
-              </view>
-            </view>
-          </view>
+          </template>
         </scroll-view>
       </view>
     </wd-popup>
@@ -790,10 +826,6 @@ onMounted(() => {
   flex: 1;
 }
 
-.category-tree-item {
-  border-bottom: 2rpx solid #f5f5f5;
-}
-
 .category-option {
   display: flex;
   align-items: center;
@@ -801,16 +833,8 @@ onMounted(() => {
   padding: 28rpx 32rpx;
   font-size: 30rpx;
   color: #333;
-
-  &.parent {
-    background: #fff;
-  }
-
-  &.child {
-    padding-left: 80rpx;
-    background: #f9fafb;
-    border-top: 2rpx solid #f0f0f0;
-  }
+  background: #fff;
+  border-bottom: 2rpx solid #f5f5f5;
 
   &.selected {
     color: #3B82F6;
@@ -835,9 +859,5 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   margin-left: -10rpx;
-}
-
-.children-list {
-  background: #f9fafb;
 }
 </style>

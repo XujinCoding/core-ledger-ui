@@ -97,6 +97,16 @@ const handleSubmit = async () => {
     return
   }
   
+  if (!form.value.phone.trim()) {
+    uni.showToast({ title: '请输入联系电话', icon: 'none' })
+    return
+  }
+  
+  if (!form.value.addressId) {
+    uni.showToast({ title: '请选择所在地区', icon: 'none' })
+    return
+  }
+  
   submitting.value = true
   try {
     if (isCreateMode.value) {
@@ -206,6 +216,7 @@ onMounted(() => {
             placeholder="请输入店铺名称"
             clearable
             :disabled="loading"
+            required
           />
           <wd-input
             v-model="form.phone"
@@ -214,18 +225,20 @@ onMounted(() => {
             placeholder="请输入联系电话"
             clearable
             :disabled="loading"
+            required
           />
         </wd-cell-group>
       </view>
 
       <!-- 地址选择 -->
       <view class="form-section">
-        <view class="address-group">
+        <view class="address-field">
           <AddressSelector
             v-model="form.addressId"
             label="所在地区"
-            placeholder="请选择所在地区"
+            placeholder="请选择地址"
             :min-level="2"
+            required
           />
         </view>
       </view>
@@ -324,8 +337,8 @@ onMounted(() => {
   color: #333;
 }
 
-.address-group {
-  padding: 10px 15px;
+.address-field {
+  padding: 24rpx 32rpx;
 }
 
 .submit-section {
