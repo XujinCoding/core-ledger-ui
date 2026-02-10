@@ -23,6 +23,10 @@ const paymentMethod = ref<PaymentMethod>(PaymentMethod.CASH)
 const paymentLoading = ref(false)
 const popupType = ref<'record' | 'payment' | 'settle'>('payment')
 
+// 结账二次确认弹窗
+const showSettleConfirm = ref(false)
+const settleConfirmData = ref({ settleAmount: 0, discountAmount: 0 })
+
 // 备注编辑弹窗
 const showMemoPopup = ref(false)
 const editMemo = ref('')
@@ -137,6 +141,30 @@ const confirmPayment = async () => {
     return
   }
 
+  // 结账操作：先弹出二次确认
+  if (popupType.value === 'settle') {
+    const discount = pendingAmount.value - amount
+    settleConfirmData.value = {
+      settleAmount: amount,
+      discountAmount: discount > 0 ? discount : 0
+    }
+    showSettleConfirm.value = true
+    return
+  }
+
+  await doSubmit(amount)
+}
+
+const doSettleConfirm = async () => {
+  await doSubmit(settleConfirmData.value.settleAmount)
+  showSettleConfirm.value = false
+}
+
+const cancelSettleConfirm = () => {
+  showSettleConfirm.value = false
+}
+
+const doSubmit = async (amount: number) => {
   try {
     paymentLoading.value = true
     if (popupType.value === 'record') {
@@ -403,6 +431,40 @@ onPullDownRefresh(() => { onRefresh() })
           </view>
           <view class="popup-footer">
             <button class="confirm-btn" :loading="memoLoading" @tap="saveMemo">确认修改</button>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 结账二次确认弹窗 -->
+    <view v-if="showSettleConfirm" class="popup-mask" @tap="cancelSettleConfirm">
+      <view class="settle-confirm-container" @tap.stop>
+        <view class="settle-confirm-panel">
+          <view class="settle-confirm-icon">
+            <wd-icon name="warning" size="64rpx" color="#F59E0B" />
+          </view>
+          <view class="settle-confirm-title">确认结账</view>
+          <view class="settle-confirm-desc">提交后将立即完成结账，请确认以下信息：</view>
+          <view class="settle-confirm-info">
+            <view class="settle-info-row">
+              <text class="settle-info-label">待收款金额</text>
+              <text class="settle-info-value">¥{{ formatAmount(pendingAmount) }}</text>
+            </view>
+            <view class="settle-info-row">
+              <text class="settle-info-label">本次结账金额</text>
+              <text class="settle-info-value">¥{{ formatAmount(settleConfirmData.settleAmount) }}</text>
+            </view>
+            <view class="settle-info-row discount-row" v-if="settleConfirmData.discountAmount > 0">
+              <text class="settle-info-label">本次优惠金额</text>
+              <text class="settle-info-value discount-value">¥{{ formatAmount(settleConfirmData.discountAmount) }}</text>
+            </view>
+          </view>
+          <view v-if="settleConfirmData.discountAmount > 0" class="settle-confirm-tip">
+            剩余 ¥{{ formatAmount(settleConfirmData.discountAmount) }} 未缴费将作为优惠处理
+          </view>
+          <view class="settle-confirm-btns">
+            <button class="settle-cancel-btn" @tap="cancelSettleConfirm">取消</button>
+            <button class="settle-ok-btn" :loading="paymentLoading" @tap="doSettleConfirm">确认结账</button>
           </view>
         </view>
       </view>
@@ -927,6 +989,131 @@ onPullDownRefresh(() => { onRefresh() })
   color: #fff;
   border-radius: 48rpx;
   font-size: 32rpx;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  &::after { border: none; }
+}
+
+/* 结账二次确认弹窗 */
+.settle-confirm-container {
+  width: 100%;
+  padding: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: fadeScaleIn 0.25s ease;
+}
+
+@keyframes fadeScaleIn {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+.settle-confirm-panel {
+  width: 100%;
+  max-width: 600rpx;
+  background: #fff;
+  border-radius: 32rpx;
+  padding: 48rpx 40rpx 40rpx;
+  text-align: center;
+  box-shadow: 0 8rpx 60rpx rgba(0, 0, 0, 0.15);
+}
+
+.settle-confirm-icon {
+  margin-bottom: 20rpx;
+}
+
+.settle-confirm-title {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 16rpx;
+}
+
+.settle-confirm-desc {
+  font-size: 26rpx;
+  color: #999;
+  margin-bottom: 32rpx;
+}
+
+.settle-confirm-info {
+  background: #F9FAFB;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin-bottom: 24rpx;
+}
+
+.settle-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12rpx 0;
+  &.discount-row {
+    border-top: 2rpx dashed #E5E7EB;
+    margin-top: 8rpx;
+    padding-top: 20rpx;
+  }
+}
+
+.settle-info-label {
+  font-size: 28rpx;
+  color: #666;
+}
+
+.settle-info-value {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #333;
+  &.discount-value {
+    color: #EF4444;
+    font-size: 32rpx;
+  }
+}
+
+.settle-confirm-tip {
+  background: #FEF3C7;
+  color: #92400E;
+  font-size: 26rpx;
+  padding: 16rpx 24rpx;
+  border-radius: 12rpx;
+  margin-bottom: 32rpx;
+  text-align: left;
+}
+
+.settle-confirm-btns {
+  display: flex;
+  gap: 24rpx;
+}
+
+.settle-cancel-btn {
+  flex: 1;
+  height: 88rpx;
+  background: #F3F4F6;
+  color: #666;
+  border-radius: 44rpx;
+  font-size: 30rpx;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  &::after { border: none; }
+}
+
+.settle-ok-btn {
+  flex: 1;
+  height: 88rpx;
+  background: #3B82F6;
+  color: #fff;
+  border-radius: 44rpx;
+  font-size: 30rpx;
   font-weight: 500;
   display: flex;
   align-items: center;
