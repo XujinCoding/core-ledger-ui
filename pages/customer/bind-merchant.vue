@@ -125,11 +125,10 @@ const handleBind = async () => {
           <text>手动输入邀请码</text>
         </view>
         <view class="form-group">
-          <input
-            class="form-input"
+          <wd-input
             v-model="inviteCode"
             placeholder="请输入商户邀请码"
-            placeholder-class="placeholder"
+            clearable
           />
         </view>
       </view>
@@ -148,6 +147,8 @@ const handleBind = async () => {
 </template>
 
 <style lang="scss" scoped>
+@import '@/styles/variables.scss';
+
 .bind-merchant-page {
   min-height: 100vh;
   display: flex;
@@ -167,45 +168,45 @@ const handleBind = async () => {
 
 .form-section {
   background: #fff;
-  border-radius: 16rpx;
-  padding: 20rpx;
-  margin: 16rpx 24rpx;
+  border-radius: $border-radius-lg;
+  padding: $spacing-sm;
+  margin: $spacing-sm $spacing-md;
 }
 
 .section-title {
-  font-size: 28rpx;
+  font-size: $font-size-content;
   font-weight: 600;
   color: #333;
-  margin-bottom: 16rpx;
-  padding-bottom: 12rpx;
+  margin-bottom: $spacing-sm;
+  padding-bottom: $spacing-small;
   border-bottom: 2rpx solid #f5f5f5;
   display: flex;
   align-items: center;
-  gap: 12rpx;
+  gap: $spacing-small;
 }
 
 .scan-box {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 32rpx 24rpx;
+  padding: $spacing-lg $spacing-md;
 }
 
 .scan-icon-large {
   width: 140rpx;
   height: 140rpx;
   background: #EFF6FF;
-  border-radius: 50%;
+  border-radius: $border-radius-round;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 20rpx;
+  margin-bottom: $spacing-sm;
 }
 
 .scan-text {
-  font-size: 26rpx;
+  font-size: $font-size-small;
   color: #666;
-  margin-bottom: 24rpx;
+  margin-bottom: $spacing-md;
 }
 
 .scan-btn {
@@ -213,13 +214,13 @@ const handleBind = async () => {
   height: 80rpx;
   background: #fff;
   border: 2rpx solid #3B82F6;
-  border-radius: 12rpx;
+  border-radius: $border-radius-md;
   color: #3B82F6;
-  font-size: 28rpx;
+  font-size: $font-size-content;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12rpx;
+  gap: $spacing-small;
 
   &::after {
     border: none;
@@ -229,7 +230,7 @@ const handleBind = async () => {
 .divider {
   display: flex;
   align-items: center;
-  margin: 24rpx 24rpx 16rpx;
+  margin: $spacing-md $spacing-md $spacing-sm;
 }
 
 .divider-line {
@@ -239,8 +240,8 @@ const handleBind = async () => {
 }
 
 .divider-text {
-  padding: 0 24rpx;
-  font-size: 24rpx;
+  padding: 0 $spacing-md;
+  font-size: $font-size-secondary;
   color: #999;
 }
 
@@ -248,20 +249,17 @@ const handleBind = async () => {
   margin-bottom: 0;
 }
 
-.form-input {
+:deep(.wd-input) {
   width: 100%;
   height: 80rpx;
   background: #f9fafb;
   border: 2rpx solid #e5e5e5;
-  border-radius: 12rpx;
-  padding: 0 20rpx;
-  font-size: 28rpx;
-  color: #333;
-  box-sizing: border-box;
-}
-
-.placeholder {
-  color: #999;
+  border-radius: $border-radius-md;
+  
+  .wd-input__inner {
+    font-size: $font-size-content;
+    padding: 0 $spacing-sm;
+  }
 }
 
 .footer-btns {
@@ -269,10 +267,10 @@ const handleBind = async () => {
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 20rpx 32rpx;
-  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+  padding: $spacing-sm $spacing-lg;
+  padding-bottom: calc(#{$spacing-sm} + env(safe-area-inset-bottom));
   background: #fff;
-  box-shadow: 0 -2rpx 10rpx rgba(0, 0, 0, 0.05);
+  box-shadow: $box-shadow-md;
 }
 
 .btn-primary {
@@ -280,7 +278,7 @@ const handleBind = async () => {
   height: 88rpx;
   background: #3B82F6;
   color: #fff;
-  font-size: 30rpx;
+  font-size: $font-size-large;
   font-weight: 500;
   border-radius: 44rpx;
   border: none;

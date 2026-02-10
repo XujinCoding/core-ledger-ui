@@ -159,6 +159,8 @@ onMounted(() => {
 </template>
 
 <style lang="scss" scoped>
+@import '@/styles/variables.scss';
+
 .switch-merchant-page {
   min-height: 100vh;
   background: #f5f5f5;
@@ -179,19 +181,19 @@ onMounted(() => {
 .merchant-list {
   display: flex;
   flex-direction: column;
-  gap: 16rpx;
-  margin: 16rpx 24rpx 0;
+  gap: $spacing-sm;
+  margin: $spacing-sm $spacing-md 0;
 }
 
 .merchant-card {
   display: flex;
   align-items: center;
-  padding: 24rpx;
+  padding: $spacing-md;
   background: #fff;
-  border-radius: 16rpx;
-  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.03);
-  gap: 20rpx;
-  transition: all 0.2s;
+  border-radius: $border-radius-lg;
+  box-shadow: $box-shadow-sm;
+  gap: $spacing-sm;
+  transition: all $transition-fast;
 
   &:active {
     transform: scale(0.98);
@@ -213,7 +215,7 @@ onMounted(() => {
   width: 80rpx;
   height: 80rpx;
   background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
-  border-radius: 16rpx;
+  border-radius: $border-radius-lg;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -227,25 +229,25 @@ onMounted(() => {
 }
 
 .merchant-name {
-  font-size: 30rpx;
+  font-size: $font-size-large;
   font-weight: 600;
   color: #333;
-  margin-bottom: 8rpx;
+  margin-bottom: $spacing-xs;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   display: flex;
   align-items: center;
-  gap: 12rpx;
+  gap: $spacing-small;
 }
 
 .current-badge {
   display: inline-block;
-  padding: 4rpx 12rpx;
+  padding: 4rpx $spacing-small;
   background: #10B981;
   color: #fff;
-  font-size: 20rpx;
-  border-radius: 8rpx;
+  font-size: $font-size-aid;
+  border-radius: $border-radius-sm;
   font-weight: 500;
 }
 
@@ -258,17 +260,17 @@ onMounted(() => {
 .detail-row {
   display: flex;
   align-items: center;
-  gap: 12rpx;
+  gap: $spacing-small;
 }
 
 .detail-label {
-  font-size: 24rpx;
+  font-size: $font-size-secondary;
   color: #999;
   width: 70rpx;
 }
 
 .detail-value {
-  font-size: 24rpx;
+  font-size: $font-size-secondary;
   color: #666;
   flex: 1;
   overflow: hidden;
@@ -290,22 +292,22 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 100rpx 32rpx;
+  padding: 100rpx $spacing-lg;
   background: #fff;
-  border-radius: 16rpx;
-  margin: 16rpx 24rpx 0;
+  border-radius: $border-radius-lg;
+  margin: $spacing-sm $spacing-md 0;
 }
 
 .empty-text {
-  font-size: 30rpx;
+  font-size: $font-size-large;
   color: #666;
-  margin-top: 24rpx;
+  margin-top: $spacing-md;
 }
 
 .empty-tip {
-  font-size: 26rpx;
+  font-size: $font-size-small;
   color: #999;
-  margin-top: 8rpx;
+  margin-top: $spacing-xs;
 }
 
 // 底部提示
@@ -313,9 +315,9 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8rpx;
-  font-size: 24rpx;
+  gap: $spacing-xs;
+  font-size: $font-size-secondary;
   color: #999;
-  padding: 32rpx 24rpx;
+  padding: $spacing-lg $spacing-md;
 }
 </style>

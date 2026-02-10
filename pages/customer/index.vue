@@ -178,6 +178,8 @@ const goToSwitchMerchant = () => {
 </template>
 
 <style lang="scss" scoped>
+@import '@/styles/variables.scss';
+
 .customer-page {
   height: 100vh;
   background: #f5f5f5;
@@ -188,17 +190,17 @@ const goToSwitchMerchant = () => {
 }
 
 .section {
-  padding: 32rpx 32rpx 0;
+  padding: $spacing-lg $spacing-lg 0;
 }
 
 // 用户信息卡片
 .user-card {
   position: relative;
   background: #fff;
-  border-radius: 24rpx;
+  border-radius: $spacing-md;
   overflow: hidden;
-  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.06);
-  margin-bottom: 24rpx;
+  box-shadow: $box-shadow-md;
+  margin-bottom: $spacing-md;
 }
 
 .user-card-bg {
@@ -214,19 +216,19 @@ const goToSwitchMerchant = () => {
   position: relative;
   display: flex;
   align-items: center;
-  padding: 40rpx 32rpx 32rpx;
+  padding: 40rpx $spacing-lg $spacing-lg;
 }
 
 .user-avatar {
   width: 120rpx;
   height: 120rpx;
-  border-radius: 50%;
+  border-radius: $border-radius-round;
   background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   border: 6rpx solid #fff;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+  box-shadow: $box-shadow-md;
   overflow: hidden;
   flex-shrink: 0;
 }
@@ -238,34 +240,34 @@ const goToSwitchMerchant = () => {
 
 .user-info {
   flex: 1;
-  margin-left: 32rpx;
+  margin-left: $spacing-lg;
 }
 
 .user-name {
-  font-size: 36rpx;
+  font-size: $font-size-xlarge;
   font-weight: 600;
   color: #fff;
-  margin-bottom: 8rpx;
+  margin-bottom: $spacing-xs;
 }
 
 .user-code {
-  font-size: 24rpx;
+  font-size: $font-size-secondary;
   color: rgba(255, 255, 255, 0.8);
 }
 
 .user-card-footer {
-  padding: 24rpx 32rpx;
+  padding: $spacing-md $spacing-lg;
   border-top: 1rpx solid #f0f0f0;
 }
 
 .info-item {
   display: flex;
   align-items: center;
-  gap: 12rpx;
+  gap: $spacing-small;
 }
 
 .info-text {
-  font-size: 28rpx;
+  font-size: $font-size-content;
   color: #666;
 }
 
@@ -275,10 +277,10 @@ const goToSwitchMerchant = () => {
   align-items: center;
   justify-content: space-between;
   background: #fff;
-  border-radius: 20rpx;
-  padding: 28rpx 24rpx;
-  margin-bottom: 24rpx;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
+  border-radius: $spacing-sm;
+  padding: $font-size-content $spacing-md;
+  margin-bottom: $spacing-md;
+  box-shadow: $box-shadow-sm;
 
   &:active {
     transform: scale(0.98);
@@ -289,7 +291,7 @@ const goToSwitchMerchant = () => {
 .merchant-switch-left {
   display: flex;
   align-items: center;
-  gap: 20rpx;
+  gap: $spacing-sm;
   flex: 1;
   min-width: 0;
 }
@@ -298,7 +300,7 @@ const goToSwitchMerchant = () => {
   width: 80rpx;
   height: 80rpx;
   background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
-  border-radius: 20rpx;
+  border-radius: $spacing-sm;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -311,13 +313,13 @@ const goToSwitchMerchant = () => {
 }
 
 .merchant-label {
-  font-size: 24rpx;
+  font-size: $font-size-secondary;
   color: #999;
   margin-bottom: 4rpx;
 }
 
 .merchant-name {
-  font-size: 30rpx;
+  font-size: $font-size-large;
   font-weight: 600;
   color: #333;
   overflow: hidden;
@@ -328,12 +330,12 @@ const goToSwitchMerchant = () => {
 .merchant-switch-right {
   display: flex;
   align-items: center;
-  gap: 8rpx;
+  gap: $spacing-xs;
   flex-shrink: 0;
 }
 
 .switch-text {
-  font-size: 26rpx;
+  font-size: $font-size-small;
   color: #3B82F6;
   font-weight: 500;
 }
@@ -344,7 +346,7 @@ const goToSwitchMerchant = () => {
 }
 
 .menu-section :deep(.wd-cell-group) {
-  border-radius: 24rpx;
+  border-radius: $spacing-md;
   overflow: hidden;
 }
 
@@ -354,8 +356,8 @@ const goToSwitchMerchant = () => {
   justify-content: center;
   width: 64rpx;
   height: 64rpx;
-  border-radius: 50%;
-  margin-right: 24rpx;
+  border-radius: $border-radius-round;
+  margin-right: $spacing-md;
 
   &.blue {
     background: #EFF6FF;

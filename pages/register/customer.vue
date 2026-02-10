@@ -213,23 +213,23 @@ const handleScanCode = () => {
           </view>
         </view>
         <view class="form-group">
-          <view class="form-label">姓名 <text class="required">*</text></view>
-          <input
-            class="form-input"
+          <view class="form-label">姓名</view>
+          <wd-input
             v-model="form.customerName"
             placeholder="请输入您的真实姓名"
-            placeholder-class="placeholder"
+            required
+            clearable
           />
         </view>
         <view class="form-group">
-          <view class="form-label">手机号 <text class="required">*</text></view>
-          <input
-            class="form-input"
+          <view class="form-label">手机号</view>
+          <wd-input
             v-model="form.phone"
             type="number"
             placeholder="请输入手机号"
-            placeholder-class="placeholder"
-            maxlength="11"
+            :maxlength="11"
+            required
+            clearable
           />
         </view>
         <view class="form-group">
@@ -242,11 +242,10 @@ const handleScanCode = () => {
         </view>
         <view class="form-group">
           <view class="form-label">别名/昵称</view>
-          <input
-            class="form-input"
+          <wd-input
             v-model="form.nickname"
             placeholder="商户称呼您的方式（选填）"
-            placeholder-class="placeholder"
+            clearable
           />
           <view class="form-tip">例如：老李、隔壁王叔</view>
         </view>
@@ -273,12 +272,11 @@ const handleScanCode = () => {
         </view>
         <view class="form-group">
           <view class="form-label">年龄</view>
-          <input
-            class="form-input"
+          <wd-input
             v-model="form.age"
             type="number"
             placeholder="请输入年龄（选填）"
-            placeholder-class="placeholder"
+            clearable
           />
         </view>
       </view>
@@ -299,12 +297,12 @@ const handleScanCode = () => {
           />
         </view>
         <view class="form-group">
-          <view class="form-label">详细地址 <text class="required">*</text></view>
-          <input
-            class="form-input"
+          <view class="form-label">详细地址</view>
+          <wd-input
             v-model="form.addressDetail"
             placeholder="街道、门牌号等详细地址"
-            placeholder-class="placeholder"
+            required
+            clearable
           />
         </view>
       </view>
@@ -336,11 +334,10 @@ const handleScanCode = () => {
           <view class="divider-line"></view>
         </view>
         <view class="form-group">
-          <input
-            class="form-input"
+          <wd-input
             v-model="form.inviteCode"
             placeholder="请输入商户邀请码"
-            placeholder-class="placeholder"
+            clearable
           />
         </view>
       </view>
@@ -356,6 +353,8 @@ const handleScanCode = () => {
 </template>
 
 <style lang="scss" scoped>
+@import '@/styles/variables.scss';
+
 .register-page {
   height: 100vh;
   display: flex;
@@ -367,7 +366,7 @@ const handleScanCode = () => {
 .register-header {
   flex-shrink: 0;
   background: linear-gradient(135deg, #10B981 0%, #059669 100%);
-  padding: 24rpx 32rpx;
+  padding: $spacing-md $spacing-lg;
   color: #fff;
   text-align: center;
 }
@@ -376,47 +375,47 @@ const handleScanCode = () => {
   width: 80rpx;
   height: 80rpx;
   background: rgba(255, 255, 255, 0.2);
-  border-radius: 50%;
+  border-radius: $border-radius-round;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 16rpx;
+  margin: 0 auto $spacing-sm;
 }
 
 .register-title {
-  font-size: 36rpx;
+  font-size: $font-size-xlarge;
   font-weight: 600;
   margin-bottom: 4rpx;
 }
 
 .register-subtitle {
-  font-size: 26rpx;
+  font-size: $font-size-small;
   opacity: 0.8;
 }
 
 .page-content {
   flex: 1;
   overflow-y: auto;
-  padding: 24rpx;
+  padding: $spacing-md;
 }
 
 .form-section {
   background: #fff;
-  border-radius: 20rpx;
-  padding: 24rpx;
-  margin-bottom: 16rpx;
+  border-radius: $spacing-sm;
+  padding: $spacing-md;
+  margin-bottom: $spacing-sm;
 }
 
 .section-title {
-  font-size: 28rpx;
+  font-size: $font-size-content;
   font-weight: 600;
   color: #333;
-  margin-bottom: 20rpx;
-  padding-bottom: 16rpx;
+  margin-bottom: $spacing-sm;
+  padding-bottom: $spacing-sm;
   border-bottom: 2rpx solid #f5f5f5;
   display: flex;
   align-items: center;
-  gap: 12rpx;
+  gap: $spacing-small;
 }
 
 .wechat-info {
@@ -477,20 +476,17 @@ const handleScanCode = () => {
   color: #EF4444;
 }
 
-.form-input {
+:deep(.wd-input) {
   width: 100%;
   height: 88rpx;
   background: #f9fafb;
   border: 2rpx solid #e5e5e5;
-  border-radius: 16rpx;
-  padding: 0 24rpx;
-  font-size: 30rpx;
-  color: #333;
-  box-sizing: border-box;
-}
-
-.placeholder {
-  color: #999;
+  border-radius: $border-radius-lg;
+  
+  .wd-input__inner {
+    font-size: $font-size-large;
+    padding: 0 $spacing-md;
+  }
 }
 
 .form-tip {
@@ -512,16 +508,16 @@ const handleScanCode = () => {
 
 .gender-selector {
   display: flex;
-  gap: 24rpx;
+  gap: $spacing-md;
 }
 
 .gender-item {
   flex: 1;
-  padding: 24rpx;
+  padding: $spacing-md;
   border: 4rpx solid #e5e5e5;
-  border-radius: 16rpx;
+  border-radius: $border-radius-lg;
   text-align: center;
-  transition: all 0.2s;
+  transition: all $transition-fast;
 
   &.active {
     border-color: #10B981;
@@ -535,9 +531,9 @@ const handleScanCode = () => {
 
   text {
     display: block;
-    font-size: 26rpx;
+    font-size: $font-size-small;
     color: #666;
-    margin-top: 8rpx;
+    margin-top: $spacing-xs;
   }
 
   &.active text {
@@ -633,8 +629,8 @@ const handleScanCode = () => {
 
 .footer-btns {
   flex-shrink: 0;
-  padding: 24rpx 32rpx;
-  padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
+  padding: $spacing-md $spacing-lg;
+  padding-bottom: calc(#{$spacing-md} + env(safe-area-inset-bottom));
   background: #fff;
 }
 
@@ -643,7 +639,7 @@ const handleScanCode = () => {
   height: 96rpx;
   background: #10B981;
   color: #fff;
-  font-size: 32rpx;
+  font-size: $font-size-title;
   font-weight: 500;
   border-radius: 48rpx;
   border: none;

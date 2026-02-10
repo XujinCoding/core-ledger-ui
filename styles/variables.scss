@@ -1,0 +1,80 @@
+/**
+ * 项目统一样式变量
+ * 基于 wot-design-uni 设计规范
+ * @author Core Ledger Team
+ */
+
+// ==================== 引入 wot-design-uni 变量 ====================
+@import '@/uni_modules/wot-design-uni/components/common/abstracts/variable.scss';
+
+// ==================== 字体大小变量 ====================
+// 直接使用 wot-design-uni 变量
+$font-size-big: $-fs-big;           // 24px = 48rpx - 大型标题
+$font-size-important: $-fs-important; // 19px = 38rpx - 重要数据
+$font-size-title: $-fs-title;       // 16px = 32rpx - 标题字号/重要正文
+$font-size-content: $-fs-content;   // 14px = 28rpx - 普通正文
+$font-size-secondary: $-fs-secondary; // 12px = 24rpx - 次要信息
+$font-size-aid: $-fs-aid;           // 10px = 20rpx - 辅助文字
+
+// 项目自定义字体大小（不在 wot-design-uni 标准中）
+$font-size-xlarge: 36rpx;           // 超大标题
+$font-size-large: 30rpx;            // 大标题
+$font-size-small: 26rpx;            // 小字体
+$font-size-xsmall: 22rpx;           // 超小字体
+
+// ==================== 间距变量 ====================
+// 基于 wot-design-uni 的基础间距
+$spacing-base: $-size-side-padding;       // 15px = 30rpx - 基础间距
+$spacing-small: $-size-side-padding-small; // 6px = 12rpx - 小间距
+
+// 项目标准间距体系（8rpx 基准）
+$spacing-xs: 8rpx;    // 极小间距
+$spacing-sm: 16rpx;   // 小间距
+$spacing-md: 24rpx;   // 中等间距
+$spacing-lg: 32rpx;   // 大间距
+$spacing-xl: 48rpx;   // 超大间距
+$spacing-xxl: 64rpx;  // 特大间距
+
+// 常用组合间距
+$spacing-side: $spacing-base;     // 30rpx - 屏幕两边留白
+$spacing-card: $spacing-md;       // 24rpx - 卡片内边距
+$spacing-section: $spacing-lg;    // 32rpx - 区块间距
+
+// ==================== 颜色变量 ====================
+// 直接使用 wot-design-uni 颜色变量
+$color-primary: $-color-theme;
+$color-success: $-color-success;
+$color-warning: $-color-warning;
+$color-danger: $-color-danger;
+$color-info: $-color-info;
+
+// 文字颜色
+$color-text-primary: $-color-title;     // 主要文字
+$color-text-regular: $-color-content;   // 常规文字
+$color-text-secondary: $-color-secondary; // 次要文字
+$color-text-placeholder: $-color-tip;   // 占位文字
+
+// 边框颜色
+$color-border: $-color-border;
+$color-border-light: $-color-border-light;
+
+// 背景颜色
+$color-bg: $-color-bg;
+$color-white: $-color-white;
+
+// ==================== 圆角变量 ====================
+$border-radius-sm: 8rpx;    // 小圆角
+$border-radius-md: 12rpx;   // 中等圆角
+$border-radius-lg: 16rpx;   // 大圆角
+$border-radius-xl: 24rpx;   // 超大圆角
+$border-radius-round: 50%;  // 圆形
+
+// ==================== 阴影变量 ====================
+$box-shadow-sm: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+$box-shadow-md: 0 4rpx 16rpx rgba(0, 0, 0, 0.08);
+$box-shadow-lg: 0 8rpx 24rpx rgba(0, 0, 0, 0.12);
+
+// ==================== 过渡动画 ====================
+$transition-fast: 0.2s;
+$transition-base: 0.3s;
+$transition-slow: 0.5s;

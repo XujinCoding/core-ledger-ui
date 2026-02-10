@@ -273,20 +273,22 @@ onMounted(() => {
 </template>
 
 <style lang="scss" scoped>
+@import '@/styles/variables.scss';
+
 .customer-add-page {
   min-height: 100vh;
   background-color: #f8f8f8;
-  padding: 20rpx 24rpx 120rpx;
+  padding: $spacing-sm $spacing-md 120rpx;
   box-sizing: border-box;
 }
 
 :deep(.wd-cell-group) {
-  margin-bottom: 24rpx;
-  border-radius: 12rpx;
+  margin-bottom: $spacing-md;
+  border-radius: $border-radius-md;
   overflow: hidden;
   
   .wd-cell {
-    padding: 28rpx 30rpx;
+    padding: $font-size-content $spacing-base;
   }
 }
 
@@ -294,7 +296,7 @@ onMounted(() => {
 .gender-field {
   display: flex;
   align-items: center;
-  padding: 15rpx 30rpx;
+  padding: 15rpx $spacing-base;
   background: #fff;
   border-top: 1rpx solid #f0f0f0;
   border-bottom: 1rpx solid #f0f0f0;
@@ -305,18 +307,18 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24rpx 30rpx;
+  padding: $spacing-md $spacing-base;
   background: #fff;
   border-bottom: 1rpx solid #f0f0f0;
 }
 
 .avatar-label {
-  font-size: 14px;
+  font-size: $font-size-content;
   color: rgba(0, 0, 0, 0.85);
 }
 
 .gender-label {
-  font-size: 14px;
+  font-size: $font-size-content;
   color: rgba(0, 0, 0, 0.85);
   width: 100px;
   flex-shrink: 0;
@@ -325,7 +327,7 @@ onMounted(() => {
 .gender-options {
   flex: 1;
   display: flex;
-  gap: 24rpx;
+  gap: $spacing-md;
 }
 
 .gender-option {
@@ -333,19 +335,19 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8rpx;
-  padding: 16rpx 24rpx;
+  gap: $spacing-xs;
+  padding: $spacing-sm $spacing-md;
   background: #f5f5f5;
-  border-radius: 12rpx;
+  border-radius: $border-radius-md;
   border: 2rpx solid transparent;
-  transition: all 0.2s;
+  transition: all $transition-fast;
   
   .gender-icon {
-    font-size: 36rpx;
+    font-size: $font-size-xlarge;
   }
   
   text {
-    font-size: 28rpx;
+    font-size: $font-size-content;
     color: #666;
   }
   
@@ -383,7 +385,7 @@ onMounted(() => {
 
 // 地址选择器样式
 .address-field {
-  padding: 0 30rpx;
+  padding: 0 $spacing-base;
   background: #fff;
   border-bottom: 1rpx solid #f0f0f0;
 }
@@ -393,16 +395,16 @@ onMounted(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  padding: 20rpx 24rpx;
+  padding: $spacing-sm $spacing-md;
   background: #fff;
-  box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.05);
+  box-shadow: $box-shadow-md;
   z-index: 100;
 }
 
 :deep(.wd-button) {
   height: 88rpx;
   border-radius: 44rpx;
-  font-size: 32rpx;
+  font-size: $font-size-title;
   font-weight: 500;
 }
 </style>

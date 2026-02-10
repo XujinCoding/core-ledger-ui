@@ -179,24 +179,27 @@ onMounted(() => {
           <text>基本信息</text>
         </view>
         <view class="form-row">
-          <view class="form-label">姓名 <text class="required">*</text></view>
-          <input
-            class="form-input"
-            v-model="form.name"
-            placeholder="请输入真实姓名"
-            placeholder-class="placeholder"
-            :disabled="loading"
-          />
+          <view class="form-label">姓名</view>
+          <view class="form-value">
+            <wd-input
+              v-model="form.name"
+              placeholder="请输入真实姓名"
+              :disabled="loading"
+              required
+              clearable
+            />
+          </view>
         </view>
         <view class="form-row">
           <view class="form-label">别名</view>
-          <input
-            class="form-input"
-            v-model="form.alias"
-            placeholder="商户称呼您的方式"
-            placeholder-class="placeholder"
-            :disabled="loading"
-          />
+          <view class="form-value">
+            <wd-input
+              v-model="form.alias"
+              placeholder="商户称呼您的方式"
+              :disabled="loading"
+              clearable
+            />
+          </view>
         </view>
         <view class="form-row">
           <view class="form-label">性别</view>
@@ -215,14 +218,15 @@ onMounted(() => {
         </view>
         <view class="form-row">
           <view class="form-label">年龄</view>
-          <input
-            class="form-input"
-            v-model="form.age"
-            type="number"
-            placeholder="选填"
-            placeholder-class="placeholder"
-            :disabled="loading"
-          />
+          <view class="form-value">
+            <wd-input
+              v-model="form.age"
+              type="number"
+              placeholder="选填"
+              :disabled="loading"
+              clearable
+            />
+          </view>
         </view>
       </view>
 
@@ -234,15 +238,16 @@ onMounted(() => {
         </view>
         <view class="form-row">
           <view class="form-label">手机号</view>
-          <input
-            class="form-input"
-            v-model="form.phone"
-            type="number"
-            placeholder="请输入手机号"
-            placeholder-class="placeholder"
-            maxlength="11"
-            :disabled="loading"
-          />
+          <view class="form-value">
+            <wd-input
+              v-model="form.phone"
+              type="number"
+              placeholder="请输入手机号"
+              :maxlength="11"
+              :disabled="loading"
+              clearable
+            />
+          </view>
         </view>
         <view v-if="isPhoneChanged" class="form-row">
           <view class="form-label">验证码 <text class="required">*</text></view>
@@ -272,13 +277,14 @@ onMounted(() => {
         </view>
         <view class="form-row">
           <view class="form-label">详细地址</view>
-          <input
-            class="form-input"
-            v-model="form.addressDetail"
-            placeholder="街道、门牌号等"
-            placeholder-class="placeholder"
-            :disabled="loading"
-          />
+          <view class="form-value">
+            <wd-input
+              v-model="form.addressDetail"
+              placeholder="街道、门牌号等"
+              :disabled="loading"
+              clearable
+            />
+          </view>
         </view>
       </view>
 
@@ -296,6 +302,8 @@ onMounted(() => {
 </template>
 
 <style lang="scss" scoped>
+@import '@/styles/variables.scss';
+
 .profile-page {
   min-height: 100vh;
   display: flex;
@@ -310,7 +318,7 @@ onMounted(() => {
 // 头像卡片
 .avatar-card {
   background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
-  padding: 40rpx 32rpx;
+  padding: 40rpx $spacing-lg;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -318,23 +326,23 @@ onMounted(() => {
 
 .avatar-wrapper {
   background: rgba(255, 255, 255, 0.2);
-  border-radius: 50%;
+  border-radius: $border-radius-round;
   padding: 6rpx;
 }
 
 .avatar-tip {
-  font-size: 22rpx;
+  font-size: $font-size-xsmall;
   color: rgba(255, 255, 255, 0.8);
-  margin-top: 12rpx;
+  margin-top: $spacing-small;
 }
 
 // 信息卡片
 .info-card {
   background: #fff;
-  border-radius: 16rpx;
-  margin: 20rpx 24rpx;
-  padding: 20rpx;
-  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+  border-radius: $border-radius-lg;
+  margin: $spacing-sm $spacing-md;
+  padding: $spacing-sm;
+  box-shadow: $box-shadow-sm;
 
   &:first-of-type {
     margin-top: -30rpx;
@@ -344,22 +352,22 @@ onMounted(() => {
 }
 
 .card-title {
-  font-size: 26rpx;
+  font-size: $font-size-small;
   font-weight: 600;
   color: #333;
-  margin-bottom: 16rpx;
-  padding-bottom: 12rpx;
+  margin-bottom: $spacing-sm;
+  padding-bottom: $spacing-small;
   border-bottom: 2rpx solid #f5f5f5;
   display: flex;
   align-items: center;
-  gap: 8rpx;
+  gap: $spacing-xs;
 }
 
 // 表单行 - 标签和输入框在同一行
 .form-row {
   display: flex;
   align-items: center;
-  padding: 16rpx 0;
+  padding: $spacing-sm 0;
   border-bottom: 1rpx solid #f5f5f5;
 
   &:last-child {
@@ -367,12 +375,12 @@ onMounted(() => {
   }
 
   &.address-row {
-    padding: 8rpx 0;
+    padding: $spacing-xs 0;
   }
 }
 
 .form-label {
-  font-size: 26rpx;
+  font-size: $font-size-small;
   color: #666;
   width: 140rpx;
   flex-shrink: 0;
@@ -382,22 +390,20 @@ onMounted(() => {
   color: #EF4444;
 }
 
-.form-input {
-  flex: 1;
-  height: 64rpx;
-  background: transparent;
-  border: none;
-  font-size: 28rpx;
-  color: #333;
-  text-align: right;
-}
-
 .form-value {
   flex: 1;
-}
-
-.placeholder {
-  color: #bbb;
+  
+  :deep(.wd-input) {
+    background: transparent;
+    border: none;
+    text-align: right;
+    padding: 0;
+    
+    .wd-input__inner {
+      text-align: right;
+      font-size: $font-size-content;
+    }
+  }
 }
 
 // 性别选择器
@@ -405,16 +411,16 @@ onMounted(() => {
   flex: 1;
   display: flex;
   justify-content: flex-end;
-  gap: 16rpx;
+  gap: $spacing-sm;
 }
 
 .gender-btn {
-  padding: 12rpx 24rpx;
-  font-size: 26rpx;
+  padding: $spacing-small $spacing-md;
+  font-size: $font-size-small;
   color: #666;
   background: #f5f5f5;
-  border-radius: 8rpx;
-  transition: all 0.2s;
+  border-radius: $border-radius-sm;
+  transition: all $transition-fast;
 
   &.active {
     background: #EFF6FF;
@@ -429,10 +435,10 @@ onMounted(() => {
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 16rpx 32rpx;
-  padding-bottom: calc(16rpx + env(safe-area-inset-bottom));
+  padding: $spacing-sm $spacing-lg;
+  padding-bottom: calc(#{$spacing-sm} + env(safe-area-inset-bottom));
   background: #fff;
-  box-shadow: 0 -2rpx 10rpx rgba(0, 0, 0, 0.05);
+  box-shadow: $box-shadow-md;
   z-index: 100;
 }
 
@@ -441,7 +447,7 @@ onMounted(() => {
   height: 84rpx;
   background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
   color: #fff;
-  font-size: 30rpx;
+  font-size: $font-size-large;
   font-weight: 500;
   border-radius: 42rpx;
   border: none;
