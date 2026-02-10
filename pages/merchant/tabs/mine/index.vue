@@ -343,7 +343,6 @@ onMounted(() => {
         <view class="menu-item" @tap="handleMenuClick('debt-summary')">
           <view class="menu-icon red"><wd-icon name="money-circle" size="36rpx" /></view>
           <text class="menu-text">欠款汇总</text>
-          <view class="menu-badge">3</view>
           <wd-icon name="arrow-right" size="32rpx" color="#ccc" />
         </view>
       </view>
@@ -621,15 +620,6 @@ onMounted(() => {
   flex: 1;
   font-size: 30rpx;
   color: #333;
-}
-
-.menu-badge {
-  background: #EF4444;
-  color: #fff;
-  font-size: 22rpx;
-  padding: 4rpx 12rpx;
-  border-radius: 20rpx;
-  margin-right: 16rpx;
 }
 
 .logout-btn {

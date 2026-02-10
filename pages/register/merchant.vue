@@ -104,6 +104,10 @@ const validateForm = (): boolean => {
     showToast('请选择所在地区')
     return false
   }
+  if (!form.addressDetail) {
+    showToast('请输入详细地址')
+    return false
+  }
   return true
 }
 
@@ -277,11 +281,11 @@ const handleRegister = async () => {
           />
         </view>
         <view class="form-group">
-          <view class="form-label">详细地址</view>
+          <view class="form-label">详细地址 <text class="required">*</text></view>
           <input
             class="form-input"
             v-model="form.addressDetail"
-            placeholder="街道、门牌号等详细地址（选填）"
+            placeholder="街道、门牌号等详细地址"
             placeholder-class="placeholder"
           />
         </view>

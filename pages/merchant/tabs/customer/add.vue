@@ -45,6 +45,12 @@ const rules = {
       message: '请输入正确的手机号',
       trigger: 'blur'
     }
+  ],
+  addressId: [
+    { required: true, message: '请选择所在地区', trigger: 'change' }
+  ],
+  addressDetail: [
+    { required: true, message: '请输入详细地址', trigger: 'blur' }
   ]
 }
 
@@ -227,6 +233,7 @@ onMounted(() => {
             label="所在地区"
             placeholder="请选择地址"
             :min-level="2"
+            required
             @change="handleAddressChange"
           />
         </view>
@@ -234,8 +241,10 @@ onMounted(() => {
         <wd-input
           v-model="form.addressDetail"
           label="详细地址"
+          prop="addressDetail"
           placeholder="请输入详细地址"
           clearable
+          required
         />
 
         <wd-textarea
