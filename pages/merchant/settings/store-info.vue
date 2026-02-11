@@ -274,7 +274,6 @@ onMounted(() => {
 </template>
 
 <style lang="scss" scoped>
-@import '@/styles/variables.scss';
 
 .store-info-page {
   min-height: 100vh;

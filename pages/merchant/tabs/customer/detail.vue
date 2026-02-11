@@ -343,12 +343,12 @@ onPullDownRefresh(() => {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #f5f5f5;
+  background: $color-bg;
 }
 
 .header {
   background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
-  color: #fff;
+  color: $color-white;
   padding: 40rpx 32rpx 60rpx;
   position: relative;
   z-index: 1;
@@ -379,9 +379,9 @@ onPullDownRefresh(() => {
 }
 
 .avatar-text {
-  font-size: 48rpx;
+  font-size: $font-size-big;
   font-weight: 600;
-  color: #fff;
+  color: $color-white;
 }
 
 .info {
@@ -389,7 +389,7 @@ onPullDownRefresh(() => {
 }
 
 .name {
-  font-size: 40rpx;
+  font-size: $font-size-important;
   font-weight: 600;
   margin-bottom: 8rpx;
   display: flex;
@@ -398,13 +398,13 @@ onPullDownRefresh(() => {
 }
 
 .nickname {
-  font-size: 24rpx;
+  font-size: $font-size-secondary;
   opacity: 0.8;
   font-weight: normal;
 }
 
 .phone {
-  font-size: 28rpx;
+  font-size: $font-size-content;
   opacity: 0.9;
   display: flex;
   align-items: center;
@@ -412,7 +412,7 @@ onPullDownRefresh(() => {
 }
 
 .address {
-  font-size: 26rpx;
+  font-size: $font-size-small;
   opacity: 0.85;
   display: flex;
   align-items: center;
@@ -423,7 +423,7 @@ onPullDownRefresh(() => {
 .actions {
   display: flex;
   justify-content: space-around;
-  background: #fff;
+  background: $color-white;
   border-radius: 20rpx;
   padding: 24rpx 0;
   box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
@@ -441,8 +441,8 @@ onPullDownRefresh(() => {
   width: 25%;
   
   text {
-    font-size: 24rpx;
-    color: #666;
+    font-size: $font-size-secondary;
+    color: $color-text-regular;
   }
 }
 
@@ -462,11 +462,11 @@ onPullDownRefresh(() => {
   align-items: center;
   justify-content: center;
   gap: 20rpx;
-  color: #999;
+  color: $color-text-secondary;
 }
 
 .recent-ledgers {
-  background: #fff;
+  background: $color-white;
   border-radius: 20rpx;
   padding: 32rpx;
   margin-bottom: 24rpx;
@@ -479,14 +479,14 @@ onPullDownRefresh(() => {
   margin-bottom: 24rpx;
   
   .title {
-    font-size: 32rpx;
+    font-size: $font-size-title;
     font-weight: 600;
-    color: #333;
+    color: $color-text-primary;
   }
   
   .more {
-    font-size: 24rpx;
-    color: #999;
+    font-size: $font-size-secondary;
+    color: $color-text-secondary;
     display: flex;
     align-items: center;
     gap: 4rpx;
@@ -500,8 +500,8 @@ onPullDownRefresh(() => {
   align-items: center;
   justify-content: center;
   gap: 20rpx;
-  color: #999;
-  font-size: 28rpx;
+  color: $color-text-secondary;
+  font-size: $font-size-content;
 }
 
 .ledger-list {
@@ -528,8 +528,8 @@ onPullDownRefresh(() => {
 }
 
 .ledger-title {
-  font-size: 28rpx;
-  color: #333;
+  font-size: $font-size-content;
+  color: $color-text-primary;
   margin-bottom: 8rpx;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -537,14 +537,14 @@ onPullDownRefresh(() => {
 }
 
 .ledger-time {
-  font-size: 24rpx;
-  color: #999;
+  font-size: $font-size-secondary;
+  color: $color-text-secondary;
 }
 
 .ledger-amount {
-  font-size: 32rpx;
+  font-size: $font-size-title;
   font-weight: 600;
-  color: #3B82F6;
+  color: $color-primary;
   flex-shrink: 0;
 }
 
@@ -552,8 +552,8 @@ onPullDownRefresh(() => {
 .no-more {
   text-align: center;
   padding: 32rpx 0;
-  color: #999;
-  font-size: 26rpx;
+  color: $color-text-secondary;
+  font-size: $font-size-small;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -566,7 +566,7 @@ onPullDownRefresh(() => {
   right: 0;
   bottom: 0;
   padding: 20rpx 24rpx;
-  background: #fff;
+  background: $color-white;
   box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.05);
   z-index: 100;
   display: flex;
@@ -579,7 +579,7 @@ onPullDownRefresh(() => {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 30rpx;
+    font-size: $font-size-large;
     font-weight: 500;
     border: none;
     
@@ -588,13 +588,13 @@ onPullDownRefresh(() => {
     }
     
     &.btn-primary {
-      background: #3B82F6;
-      color: #fff;
+      background: $color-primary;
+      color: $color-white;
     }
     
     &.btn-outline {
-      background: #fff;
-      color: #3B82F6;
+      background: $color-white;
+      color: $color-primary;
       border: 2rpx solid #3B82F6;
     }
   }

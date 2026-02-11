@@ -377,14 +377,14 @@ onMounted(() => {
 <style lang="scss" scoped>
 .mine-page {
   height: 100%;
-  background: #f5f5f5;
+  background: $color-bg;
 }
 
 .header {
   background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
   padding: 32rpx 32rpx 80rpx;
   // padding-top 由 headerStyle 动态控制
-  color: #fff;
+  color: $color-white;
 }
 
 .user-info {
@@ -424,7 +424,7 @@ onMounted(() => {
 }
 
 .user-name {
-  font-size: 40rpx;
+  font-size: $font-size-important;
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
@@ -435,7 +435,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 8rpx;
-  font-size: 26rpx;
+  font-size: $font-size-small;
   opacity: 0.9;
 }
 
@@ -467,7 +467,7 @@ onMounted(() => {
 
 .stat-card {
   display: flex;
-  background: #fff;
+  background: $color-white;
   margin: 0 32rpx 32rpx;
   border-radius: 24rpx;
   padding: 40rpx 0;
@@ -480,41 +480,41 @@ onMounted(() => {
 }
 
 .stat-value {
-  font-size: 44rpx;
+  font-size: $font-size-big;
   font-weight: 600;
-  color: #333;
+  color: $color-text-primary;
   margin-bottom: 8rpx;
 }
 
 .stat-label {
-  font-size: 24rpx;
-  color: #999;
+  font-size: $font-size-secondary;
+  color: $color-text-secondary;
 }
 
 .switch-section {
-  background: #fff;
+  background: $color-white;
   margin: 0 32rpx 32rpx;
   border-radius: 24rpx;
   padding: 32rpx;
 }
 
 .section-title {
-  font-size: 28rpx;
-  color: #999;
+  font-size: $font-size-content;
+  color: $color-text-secondary;
   margin-bottom: 24rpx;
   display: flex;
   align-items: center;
 }
 
 .section-tip {
-  font-size: 22rpx;
-  color: #999;
+  font-size: $font-size-xsmall;
+  color: $color-text-secondary;
 }
 
 .add-store-btn {
   margin-left: auto;
-  color: #3B82F6;
-  font-size: 26rpx;
+  color: $color-primary;
+  font-size: $font-size-small;
   padding: 8rpx 16rpx;
 }
 
@@ -533,8 +533,8 @@ onMounted(() => {
   gap: 24rpx;
 
   &.active {
-    border-color: #3B82F6;
-    background: #EBF5FF;
+    border-color: $color-primary;
+    background: rgba(59, 130, 246, 0.1);
   }
 }
 
@@ -542,15 +542,15 @@ onMounted(() => {
   width: 80rpx;
   height: 80rpx;
   border-radius: 20rpx;
-  background: #f5f5f5;
+  background: $color-bg;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #666;
+  color: $color-text-regular;
 
   .store-item.active & {
-    background: #3B82F6;
-    color: #fff;
+    background: $color-primary;
+    color: $color-white;
   }
 }
 
@@ -559,23 +559,23 @@ onMounted(() => {
 }
 
 .store-name {
-  font-size: 30rpx;
+  font-size: $font-size-large;
   font-weight: 500;
-  color: #333;
+  color: $color-text-primary;
   margin-bottom: 4rpx;
 
   .store-item.active & {
-    color: #3B82F6;
+    color: $color-primary;
   }
 }
 
 .store-desc {
-  font-size: 24rpx;
-  color: #999;
+  font-size: $font-size-secondary;
+  color: $color-text-secondary;
 }
 
 .menu-section {
-  background: #fff;
+  background: $color-white;
   margin: 0 32rpx 32rpx;
   border-radius: 24rpx;
   overflow: hidden;
@@ -583,8 +583,8 @@ onMounted(() => {
 
 .menu-title {
   padding: 28rpx 32rpx;
-  font-size: 28rpx;
-  color: #999;
+  font-size: $font-size-content;
+  color: $color-text-secondary;
   border-bottom: 2rpx solid #f5f5f5;
 }
 
@@ -608,28 +608,28 @@ onMounted(() => {
   justify-content: center;
   margin-right: 24rpx;
 
-  &.blue { background: #EBF5FF; color: #3B82F6; }
-  &.green { background: #D1FAE5; color: #10B981; }
-  &.orange { background: #FEF3C7; color: #F59E0B; }
-  &.purple { background: #EDE9FE; color: #8B5CF6; }
-  &.red { background: #FEE2E2; color: #EF4444; }
-  &.gray { background: #F3F4F6; color: #6B7280; }
+  &.blue { background: rgba(59, 130, 246, 0.1); color: $color-primary; }
+  &.green { background: rgba(16, 185, 129, 0.1); color: $color-success; }
+  &.orange { background: rgba(245, 158, 11, 0.1); color: $color-warning; }
+  &.purple { background: rgba(139, 92, 246, 0.1); color: $color-primary; }
+  &.red { background: rgba(239, 68, 68, 0.1); color: $color-danger; }
+  &.gray { background: $color-bg; color: $color-text-regular; }
 }
 
 .menu-text {
   flex: 1;
-  font-size: 30rpx;
-  color: #333;
+  font-size: $font-size-large;
+  color: $color-text-primary;
 }
 
 .logout-btn {
   margin: 0 32rpx;
   padding: 28rpx;
-  background: #fff;
+  background: $color-white;
   border-radius: 24rpx;
   text-align: center;
-  color: #EF4444;
-  font-size: 30rpx;
+  color: $color-danger;
+  font-size: $font-size-large;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -637,7 +637,7 @@ onMounted(() => {
 }
 
 .qrcode-popup {
-  background: #fff;
+  background: $color-white;
   border-radius: 24rpx;
   width: 560rpx;
   overflow: hidden;
@@ -652,9 +652,9 @@ onMounted(() => {
 }
 
 .qrcode-title {
-  font-size: 32rpx;
+  font-size: $font-size-title;
   font-weight: 600;
-  color: #333;
+  color: $color-text-primary;
 }
 
 .qrcode-close {
@@ -663,7 +663,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #999;
+  color: $color-text-secondary;
 }
 
 .qrcode-content {
@@ -677,13 +677,13 @@ onMounted(() => {
   width: 400rpx;
   height: 400rpx;
   border-radius: 16rpx;
-  background: #f5f5f5;
+  background: $color-bg;
 }
 
 .qrcode-tip {
   margin-top: 32rpx;
-  font-size: 26rpx;
-  color: #999;
+  font-size: $font-size-small;
+  color: $color-text-secondary;
   text-align: center;
 }
 </style>

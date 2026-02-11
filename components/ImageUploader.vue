@@ -128,7 +128,7 @@ const handleUpload = async (filePath: string) => {
 .image-uploader {
   position: relative;
   overflow: hidden;
-  background: #f5f5f5;
+  background: $color-bg;
   border: 2rpx dashed #ddd;
 
   &.round {
@@ -157,8 +157,8 @@ const handleUpload = async (filePath: string) => {
   gap: 12rpx;
 
   text {
-    font-size: 24rpx;
-    color: #999;
+    font-size: $font-size-secondary;
+    color: $color-text-secondary;
   }
 }
 </style>

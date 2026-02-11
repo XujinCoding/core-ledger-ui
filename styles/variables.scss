@@ -61,6 +61,26 @@ $color-border-light: $-color-border-light;
 // 背景颜色
 $color-bg: $-color-bg;
 $color-white: $-color-white;
+$color-bg-light: #f9f9f9;
+$color-bg-gray: #fafafa;
+
+// 特殊颜色
+$color-wechat: #07C160;  // 微信绿
+$color-gray-dark: #374151;
+$color-gray-darker: #111827;
+$color-gray-light: #9CA3AF;
+
+// 半透明颜色
+$color-overlay: rgba(0, 0, 0, 0.5);
+$color-shadow-light: rgba(0, 0, 0, 0.05);
+$color-shadow-medium: rgba(0, 0, 0, 0.08);
+$color-shadow-dark: rgba(0, 0, 0, 0.12);
+
+// 浅色背景（带透明度）
+$color-primary-light: rgba(59, 130, 246, 0.1);
+$color-success-light: rgba(16, 185, 129, 0.1);
+$color-warning-light: rgba(245, 158, 11, 0.1);
+$color-danger-light: rgba(239, 68, 68, 0.1);
 
 // ==================== 圆角变量 ====================
 $border-radius-sm: 8rpx;    // 小圆角

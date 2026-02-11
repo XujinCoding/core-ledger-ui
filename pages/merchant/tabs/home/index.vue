@@ -288,7 +288,7 @@ onUnmounted(() => {
         <view class="stat-divider"></view>
         <view class="stat-item">
           <view class="stat-value debt">¥{{ stats.pendingAmount.toLocaleString() }}</view>
-          <view class="stat-label">待收款</view>
+          <view class="stat-label">本月赊账金额</view>
         </view>
         <view class="stat-divider"></view>
         <view class="stat-item">
@@ -413,7 +413,7 @@ onUnmounted(() => {
 <style lang="scss" scoped>
 .home-page {
   height: 100%;
-  background: #f5f5f5;
+  background: $color-bg;
 }
 
 .home-header {
@@ -451,9 +451,9 @@ onUnmounted(() => {
 }
 
 .store-name {
-  font-size: 36rpx;
+  font-size: $font-size-xlarge;
   font-weight: 600;
-  color: #fff;
+  color: $color-white;
   margin-bottom: 8rpx;
 }
 
@@ -462,7 +462,7 @@ onUnmounted(() => {
   padding: 4rpx 16rpx;
   background: rgba(255, 255, 255, 0.2);
   border-radius: 20rpx;
-  font-size: 22rpx;
+  font-size: $font-size-xsmall;
   color: rgba(255, 255, 255, 0.9);
 }
 
@@ -483,18 +483,18 @@ onUnmounted(() => {
 }
 
 .stat-value {
-  font-size: 40rpx;
+  font-size: $font-size-important;
   font-weight: 600;
-  color: #fff;
+  color: $color-white;
   margin-bottom: 8rpx;
 
   &.debt {
-    color: #FCA5A5;
+    color: rgba(239, 68, 68, 0.6);
   }
 }
 
 .stat-label {
-  font-size: 24rpx;
+  font-size: $font-size-secondary;
   color: rgba(255, 255, 255, 0.8);
 }
 
@@ -509,7 +509,7 @@ onUnmounted(() => {
 
 .quick-actions {
   display: flex;
-  background: #fff;
+  background: $color-white;
   border-radius: 24rpx;
   padding: 32rpx 16rpx;
   margin-bottom: 24rpx;
@@ -533,12 +533,12 @@ onUnmounted(() => {
 }
 
 .action-label {
-  font-size: 24rpx;
-  color: #666;
+  font-size: $font-size-secondary;
+  color: $color-text-regular;
 }
 
 .section {
-  background: #fff;
+  background: $color-white;
   border-radius: 24rpx;
   padding: 32rpx;
   margin-bottom: 24rpx;
@@ -552,19 +552,19 @@ onUnmounted(() => {
 }
 
 .section-title {
-  font-size: 32rpx;
+  font-size: $font-size-title;
   font-weight: 600;
-  color: #333;
+  color: $color-text-primary;
 }
 
 .section-date {
-  font-size: 24rpx;
-  color: #999;
+  font-size: $font-size-secondary;
+  color: $color-text-secondary;
 }
 
 .section-more {
-  font-size: 26rpx;
-  color: #3B82F6;
+  font-size: $font-size-small;
+  color: $color-primary;
 }
 
 .today-stats {
@@ -577,7 +577,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   padding: 20rpx;
-  background: #f9fafb;
+  background: $color-bg;
   border-radius: 16rpx;
 }
 
@@ -591,23 +591,23 @@ onUnmounted(() => {
   margin-right: 20rpx;
 
   &.blue {
-    background: #EBF5FF;
-    color: #3B82F6;
+    background: rgba(59, 130, 246, 0.1);
+    color: $color-primary;
   }
 
   &.green {
-    background: #D1FAE5;
-    color: #10B981;
+    background: rgba(16, 185, 129, 0.1);
+    color: $color-success;
   }
 
   &.red {
-    background: #FEE2E2;
-    color: #EF4444;
+    background: rgba(239, 68, 68, 0.1);
+    color: $color-danger;
   }
 
   &.purple {
-    background: #EDE9FE;
-    color: #8B5CF6;
+    background: rgba(139, 92, 246, 0.1);
+    color: $color-primary;
   }
 }
 
@@ -616,22 +616,22 @@ onUnmounted(() => {
 }
 
 .today-label {
-  font-size: 24rpx;
-  color: #999;
+  font-size: $font-size-secondary;
+  color: $color-text-secondary;
   margin-bottom: 4rpx;
 }
 
 .today-value {
-  font-size: 32rpx;
+  font-size: $font-size-title;
   font-weight: 600;
-  color: #333;
+  color: $color-text-primary;
 }
 
 .empty-state {
   padding: 60rpx 0;
   text-align: center;
-  color: #999;
-  font-size: 28rpx;
+  color: $color-text-secondary;
+  font-size: $font-size-content;
 
   text {
     display: block;
@@ -646,7 +646,7 @@ onUnmounted(() => {
 }
 
 .ledger-card {
-  background: #f9fafb;
+  background: $color-bg;
   border-radius: 16rpx;
   padding: 24rpx;
 }
@@ -668,11 +668,11 @@ onUnmounted(() => {
   height: 72rpx;
   border-radius: 50%;
   background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
-  color: #fff;
+  color: $color-white;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 28rpx;
+  font-size: $font-size-content;
   font-weight: 600;
   margin-right: 16rpx;
 }
@@ -682,45 +682,45 @@ onUnmounted(() => {
 }
 
 .customer-name {
-  font-size: 28rpx;
+  font-size: $font-size-content;
   font-weight: 500;
-  color: #333;
+  color: $color-text-primary;
 }
 
 .ledger-time {
-  font-size: 22rpx;
-  color: #999;
+  font-size: $font-size-xsmall;
+  color: $color-text-secondary;
   margin-top: 4rpx;
 }
 
 .ledger-status {
   padding: 8rpx 20rpx;
   border-radius: 24rpx;
-  font-size: 22rpx;
+  font-size: $font-size-xsmall;
 
   &.pending {
-    background: #FEF3C7;
-    color: #F59E0B;
+    background: rgba(245, 158, 11, 0.1);
+    color: $color-warning;
   }
 
   &.partial {
-    background: #DBEAFE;
-    color: #3B82F6;
+    background: rgba(59, 130, 246, 0.1);
+    color: $color-primary;
   }
 
   &.debt {
-    background: #FEE2E2;
-    color: #EF4444;
+    background: rgba(239, 68, 68, 0.1);
+    color: $color-danger;
   }
 
   &.paid {
-    background: #D1FAE5;
-    color: #10B981;
+    background: rgba(16, 185, 129, 0.1);
+    color: $color-success;
   }
 
   &.closed {
-    background: #F3F4F6;
-    color: #6B7280;
+    background: $color-bg;
+    color: $color-text-regular;
   }
 }
 
@@ -739,18 +739,18 @@ onUnmounted(() => {
 }
 
 .amount-label {
-  font-size: 24rpx;
-  color: #999;
+  font-size: $font-size-secondary;
+  color: $color-text-secondary;
 }
 
 .amount-value {
-  font-size: 36rpx;
+  font-size: $font-size-xlarge;
   font-weight: 600;
-  color: #333;
+  color: $color-text-primary;
 }
 
 .ledger-paid {
-  font-size: 24rpx;
-  color: #10B981;
+  font-size: $font-size-secondary;
+  color: $color-success;
 }
 </style>

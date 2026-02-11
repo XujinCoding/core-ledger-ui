@@ -214,15 +214,17 @@ onMounted(() => {
 
     <!-- 底部按钮 -->
     <view class="bottom-bar" v-if="!loading">
-      <button
-        class="save-btn"
-        :class="{ disabled: !canSave }"
+      <wd-button
+        type="primary"
         :loading="submitting"
         :disabled="!canSave"
-        @tap="savePricing"
+        @click="savePricing"
+        block
+        size="large"
+        custom-class="save-btn-custom"
       >
         保存定价
-      </button>
+      </wd-button>
     </view>
   </view>
 </template>
@@ -230,7 +232,7 @@ onMounted(() => {
 <style lang="scss" scoped>
 .pricing-page {
   min-height: 100vh;
-  background: #f5f5f5;
+  background: $color-bg;
   padding-bottom: 160rpx;
 }
 
@@ -240,14 +242,14 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   gap: 20rpx;
-  color: #999;
+  color: $color-text-secondary;
 }
 
 .product-header {
   display: flex;
   align-items: center;
   padding: 32rpx;
-  background: #fff;
+  background: $color-white;
   margin-bottom: 24rpx;
 }
 
@@ -255,7 +257,7 @@ onMounted(() => {
   width: 160rpx;
   height: 160rpx;
   border-radius: 16rpx;
-  background: #f5f5f5;
+  background: $color-bg;
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -273,19 +275,19 @@ onMounted(() => {
 }
 
 .product-name {
-  font-size: 34rpx;
+  font-size: $font-size-title;
   font-weight: 600;
-  color: #333;
+  color: $color-text-primary;
   margin-bottom: 12rpx;
 }
 
 .product-category {
-  font-size: 26rpx;
-  color: #999;
+  font-size: $font-size-small;
+  color: $color-text-secondary;
 }
 
 .pricing-section {
-  background: #fff;
+  background: $color-white;
   margin: 0 24rpx 24rpx;
   border-radius: 24rpx;
   padding: 32rpx;
@@ -299,14 +301,14 @@ onMounted(() => {
 }
 
 .section-title {
-  font-size: 32rpx;
+  font-size: $font-size-title;
   font-weight: 600;
-  color: #333;
+  color: $color-text-primary;
 }
 
 .uniform-btn {
-  font-size: 26rpx;
-  color: #3B82F6;
+  font-size: $font-size-small;
+  color: $color-primary;
 }
 
 .sku-list {
@@ -319,13 +321,13 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   padding: 24rpx;
-  background: #f9fafb;
+  background: $color-bg;
   border-radius: 16rpx;
 }
 
 .sku-name {
-  font-size: 30rpx;
-  color: #333;
+  font-size: $font-size-large;
+  color: $color-text-primary;
   font-weight: 500;
   margin-bottom: 16rpx;
 }
@@ -337,25 +339,25 @@ onMounted(() => {
 }
 
 .price-status {
-  font-size: 24rpx;
+  font-size: $font-size-secondary;
   padding: 8rpx 16rpx;
   border-radius: 8rpx;
   
   &.unpriced {
-    background: #FEF2F2;
-    color: #EF4444;
+    background: rgba(239, 68, 68, 0.05);
+    color: $color-danger;
   }
   
   &.priced {
-    background: #F0FDF4;
-    color: #22C55E;
+    background: rgba(16, 185, 129, 0.05);
+    color: $color-success;
   }
 }
 
 .price-input-wrap {
   display: flex;
   align-items: center;
-  background: #fff;
+  background: $color-white;
   border: 2rpx solid #e5e5e5;
   border-radius: 12rpx;
   padding: 16rpx 20rpx;
@@ -363,17 +365,17 @@ onMounted(() => {
 }
 
 .currency {
-  font-size: 32rpx;
+  font-size: $font-size-title;
   font-weight: 600;
-  color: #EF4444;
+  color: $color-danger;
   margin-right: 8rpx;
 }
 
 .price-input {
   flex: 1;
-  font-size: 32rpx;
+  font-size: $font-size-title;
   font-weight: 600;
-  color: #333;
+  color: $color-text-primary;
   text-align: right;
 }
 
@@ -386,8 +388,8 @@ onMounted(() => {
   align-items: center;
   gap: 8rpx;
   margin-bottom: 12rpx;
-  font-size: 24rpx;
-  color: #999;
+  font-size: $font-size-secondary;
+  color: $color-text-secondary;
 }
 
 .bottom-bar {
@@ -396,29 +398,18 @@ onMounted(() => {
   right: 0;
   bottom: 0;
   padding: 24rpx 32rpx;
-  background: #fff;
+  background: $color-white;
   box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.05);
 }
 
-.save-btn {
-  width: 100%;
+:deep(.save-btn-custom) {
   height: 96rpx;
-  background: #3B82F6;
-  color: #fff;
   border-radius: 48rpx;
-  font-size: 32rpx;
+  font-size: $font-size-title;
   font-weight: 500;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-
-  &.disabled {
-    background: #ccc;
-  }
-
-  &::after {
-    border: none;
+  
+  &[disabled] {
+    background: $color-border;
   }
 }
 </style>

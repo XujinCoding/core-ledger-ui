@@ -36,21 +36,17 @@ const pageLoading = ref(false)
 // 表单验证规则
 const rules = {
   name: [
-    { required: true, message: '请输入客户姓名', trigger: 'blur' }
+    { required: true, message: '请输入客户姓名' }
   ],
   phone: [
-    { required: true, message: '请输入手机号', trigger: 'blur' },
-    {
-      pattern: /^1[3-9]\d{9}$/,
-      message: '请输入正确的手机号',
-      trigger: 'blur'
-    }
+    { required: true, message: '请输入手机号' },
+    { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号' }
   ],
   addressId: [
-    { required: true, message: '请选择所在地区', trigger: 'change' }
+    { required: true, message: '请选择所在地区' }
   ],
   addressDetail: [
-    { required: true, message: '请输入详细地址', trigger: 'blur' }
+    { required: true, message: '请输入详细地址' }
   ]
 }
 
@@ -84,9 +80,21 @@ const loadCustomer = async () => {
   }
 }
 
+const formRef = ref()
+
 // 提交表单
 const handleSubmit = async () => {
   try {
+    // 使用 wd-form 的校验机制
+    const { valid, errors } = await formRef.value.validate()
+    if (!valid) {
+      // 显示第一个错误信息
+      if (errors && errors.length > 0) {
+        uni.showToast({ title: errors[0].message, icon: 'none' })
+      }
+      return
+    }
+
     loading.value = true
     if (isEdit.value && customerId.value) {
       // 编辑模式：判断头像是否修改
@@ -273,11 +281,10 @@ onMounted(() => {
 </template>
 
 <style lang="scss" scoped>
-@import '@/styles/variables.scss';
 
 .customer-add-page {
   min-height: 100vh;
-  background-color: #f8f8f8;
+  background-color: $color-bg;
   padding: $spacing-sm $spacing-md 120rpx;
   box-sizing: border-box;
 }
@@ -297,7 +304,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   padding: 15rpx $spacing-base;
-  background: #fff;
+  background: $color-white;
   border-top: 1rpx solid #f0f0f0;
   border-bottom: 1rpx solid #f0f0f0;
 }
@@ -308,7 +315,7 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: $spacing-md $spacing-base;
-  background: #fff;
+  background: $color-white;
   border-bottom: 1rpx solid #f0f0f0;
 }
 
@@ -337,7 +344,7 @@ onMounted(() => {
   justify-content: center;
   gap: $spacing-xs;
   padding: $spacing-sm $spacing-md;
-  background: #f5f5f5;
+  background: $color-bg;
   border-radius: $border-radius-md;
   border: 2rpx solid transparent;
   transition: all $transition-fast;
@@ -348,37 +355,37 @@ onMounted(() => {
   
   text {
     font-size: $font-size-content;
-    color: #666;
+    color: $color-text-regular;
   }
   
   &.male {
     .gender-icon {
-      color: #3B82F6;
+      color: $color-primary;
     }
   }
   
   &.female {
     .gender-icon {
-      color: #EC4899;
+      color: $color-danger;
     }
   }
   
   &.active {
-    border-color: #3B82F6;
+    border-color: $color-primary;
     background: rgba(59, 130, 246, 0.1);
     
     text {
-      color: #3B82F6;
+      color: $color-primary;
       font-weight: 500;
     }
   }
   
   &.female.active {
-    border-color: #EC4899;
+    border-color: $color-danger;
     background: rgba(236, 72, 153, 0.1);
     
     text {
-      color: #EC4899;
+      color: $color-danger;
     }
   }
 }
@@ -386,7 +393,7 @@ onMounted(() => {
 // 地址选择器样式
 .address-field {
   padding: 0 $spacing-base;
-  background: #fff;
+  background: $color-white;
   border-bottom: 1rpx solid #f0f0f0;
 }
 
@@ -396,7 +403,7 @@ onMounted(() => {
   right: 0;
   bottom: 0;
   padding: $spacing-sm $spacing-md;
-  background: #fff;
+  background: $color-white;
   box-shadow: $box-shadow-md;
   z-index: 100;
 }

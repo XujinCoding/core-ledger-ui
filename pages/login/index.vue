@@ -120,9 +120,16 @@
           </wd-checkbox>
         </view>
 
-        <button class="wechat-btn" :loading="loading" @tap="handleLogin">
+        <wd-button 
+          type="success"
+          :loading="loading" 
+          @click="handleLogin"
+          block
+          size="large"
+          custom-class="wechat-btn-custom"
+        >
           <text v-if="!loading">微信一键登录</text>
-        </button>
+        </wd-button>
 
         <view class="login-tip">
           <wd-icon name="info-outline" size="28rpx" />
@@ -148,10 +155,11 @@
 </template>
 
 <style lang="scss" scoped>
+
 .login-page {
   height: 100vh;
   box-sizing: border-box;
-  background: #fff;
+  background: $color-white;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -171,15 +179,15 @@
 }
 
 .login-title {
-  font-size: 40rpx;
+  font-size: $font-size-xlarge;
   font-weight: 600;
-  color: #333;
+  color: $color-text-primary;
   margin-bottom: 8rpx;
 }
 
 .login-subtitle {
-  font-size: 26rpx;
-  color: #999;
+  font-size: $font-size-small;
+  color: $color-text-secondary;
 }
 
 .login-content {
@@ -194,8 +202,8 @@
 }
 
 .identity-title {
-  font-size: 26rpx;
-  color: #666;
+  font-size: $font-size-small;
+  color: $color-text-regular;
   margin-bottom: 20rpx;
   text-align: center;
 }
@@ -214,13 +222,13 @@
   transition: all 0.2s;
 
   &.active {
-    border-color: #3B82F6;
-    background: #EBF5FF;
+    border-color: $color-primary;
+    background: rgba(59, 130, 246, 0.1);
   }
 
   &.active.customer {
-    border-color: #10B981;
-    background: #D1FAE5;
+    border-color: $color-success;
+    background: rgba(16, 185, 129, 0.1);
   }
 }
 
@@ -228,50 +236,50 @@
   width: 72rpx;
   height: 72rpx;
   border-radius: 50%;
-  background: #f5f5f5;
+  background: $color-bg;
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0 auto 12rpx;
-  color: #999;
+  color: $color-text-secondary;
 
   .identity-item.merchant & {
-    color: #3B82F6;
+    color: $color-primary;
   }
 
   .identity-item.customer & {
-    color: #10B981;
+    color: $color-success;
   }
 
   .identity-item.active.merchant & {
-    background: #3B82F6;
-    color: #fff;
+    background: $color-primary;
+    color: $color-white;
   }
 
   .identity-item.active.customer & {
-    background: #10B981;
-    color: #fff;
+    background: $color-success;
+    color: $color-white;
   }
 }
 
 .identity-name {
-  font-size: 28rpx;
+  font-size: $font-size-content;
   font-weight: 500;
-  color: #333;
+  color: $color-text-primary;
   margin-bottom: 4rpx;
 
   .identity-item.active.merchant & {
-    color: #3B82F6;
+    color: $color-primary;
   }
 
   .identity-item.active.customer & {
-    color: #10B981;
+    color: $color-success;
   }
 }
 
 .identity-desc {
-  font-size: 22rpx;
-  color: #999;
+  font-size: $font-size-xsmall;
+  color: $color-text-secondary;
 }
 
 .login-action {
@@ -284,51 +292,41 @@
   padding: 0 8rpx;
 
   .checkbox-label {
-    font-size: 26rpx;
-    color: #666;
+    font-size: $font-size-small;
+    color: $color-text-regular;
     line-height: 1.6;
   }
 
   .link {
-    color: #3B82F6;
+    color: $color-primary;
     text-decoration: none;
   }
 }
 
-.wechat-btn {
-  width: 100%;
+:deep(.wechat-btn-custom) {
   height: 100rpx;
-  background: #07C160;
-  color: #fff;
-  font-size: 34rpx;
-  font-weight: 500;
+  background: $color-wechat;
   border-radius: 50rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-
-  &::after {
-    border: none;
-  }
+  font-size: $font-size-important;
+  font-weight: 500;
 }
 
 .agreement {
   margin-top: 32rpx;
-  font-size: 24rpx;
-  color: #999;
+  font-size: $font-size-secondary;
+  color: $color-text-secondary;
   text-align: center;
 
   .link {
-    color: #3B82F6;
+    color: $color-primary;
   }
 }
 
 .login-tip {
   text-align: center;
   margin-top: 48rpx;
-  font-size: 26rpx;
-  color: #999;
+  font-size: $font-size-small;
+  color: $color-text-secondary;
   display: flex;
   align-items: center;
   justify-content: center;

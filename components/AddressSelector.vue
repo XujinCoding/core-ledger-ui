@@ -437,7 +437,7 @@ function isSelected(item: AddressItem): boolean {
 
 .required-mark {
   font-size: 18px;
-	color: #fa4350;
+	color: $color-danger;
 	margin-left: 4rpx;
 }
 
@@ -472,7 +472,7 @@ function isSelected(item: AddressItem): boolean {
 }
 
 .popup-content {
-	background: #fff;
+	background: $color-white;
 	max-height: 70vh;
 	display: flex;
 	flex-direction: column;
@@ -487,25 +487,25 @@ function isSelected(item: AddressItem): boolean {
 }
 
 .header-cancel {
-	font-size: 28rpx;
-	color: #666;
+	font-size: $font-size-content;
+	color: $color-text-regular;
 	padding: 8rpx 16rpx;
 }
 
 .header-title {
-	font-size: 32rpx;
+	font-size: $font-size-title;
 	font-weight: 600;
-	color: #333;
+	color: $color-text-primary;
 }
 
 .header-confirm {
-	font-size: 28rpx;
-	color: #10B981;
+	font-size: $font-size-content;
+	color: $color-success;
 	font-weight: 500;
 	padding: 8rpx 16rpx;
 	
 	&.disabled {
-		color: #ccc;
+		color: $color-border;
 	}
 }
 
@@ -522,13 +522,13 @@ function isSelected(item: AddressItem): boolean {
 
 .tab-item {
 	padding: 24rpx 32rpx;
-	font-size: 28rpx;
-	color: #666;
+	font-size: $font-size-content;
+	color: $color-text-regular;
 	position: relative;
 	flex-shrink: 0;
 	
 	&.active {
-		color: #10B981;
+		color: $color-success;
 		font-weight: 500;
 		
 		&::after {
@@ -539,7 +539,7 @@ function isSelected(item: AddressItem): boolean {
 			transform: translateX(-50%);
 			width: 48rpx;
 			height: 4rpx;
-			background: #10B981;
+			background: $color-success;
 			border-radius: 2rpx;
 		}
 	}
@@ -557,8 +557,8 @@ function isSelected(item: AddressItem): boolean {
 	align-items: center;
 	justify-content: center;
 	padding: 80rpx 0;
-	color: #999;
-	font-size: 28rpx;
+	color: $color-text-secondary;
+	font-size: $font-size-content;
 }
 
 .address-item {
@@ -569,21 +569,21 @@ function isSelected(item: AddressItem): boolean {
 	border-bottom: 2rpx solid #f5f5f5;
 	
 	&:active {
-		background: #f9f9f9;
+		background: $color-bg-light;
 	}
 	
 	&.selected {
-		background: #f0fdf4;
+		background: rgba(16, 185, 129, 0.05);
 	}
 }
 
 .item-name {
-	font-size: 28rpx;
-	color: #333;
+	font-size: $font-size-content;
+	color: $color-text-primary;
 }
 
 .address-item.selected .item-name {
-	color: #10B981;
+	color: $color-success;
 	font-weight: 500;
 }
 </style>

@@ -405,11 +405,12 @@ onMounted(() => {
 
         <view class="form-item">
           <text class="form-label">描述</text>
-          <textarea
-            class="form-textarea"
+          <wd-textarea
             v-model="form.description"
             placeholder="商品描述（选填）"
             :maxlength="200"
+            :auto-height="true"
+            custom-class="form-textarea-custom"
           />
         </view>
       </view>
@@ -470,7 +471,13 @@ onMounted(() => {
             v-model="newAttrName"
             placeholder="属性名称（如：颜色、规格）"
           />
-          <button class="add-attr-btn" @tap="addAttr">添加属性</button>
+          <wd-button 
+            type="primary"
+            @click="addAttr"
+            custom-class="add-attr-btn-custom"
+          >
+            添加属性
+          </wd-button>
         </view>
       </view>
 
@@ -479,9 +486,16 @@ onMounted(() => {
 
     <!-- 底部按钮 -->
     <view class="bottom-bar">
-      <button class="save-btn" :loading="submitting" @tap="submit">
+      <wd-button 
+        type="primary"
+        :loading="submitting" 
+        @click="submit"
+        block
+        size="large"
+        custom-class="save-btn-custom"
+      >
         {{ isEdit ? '保存修改' : '添加商品' }}
-      </button>
+      </wd-button>
     </view>
 
     <!-- 分类选择弹窗 -->
@@ -529,7 +543,7 @@ onMounted(() => {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #f5f5f5;
+  background: $color-bg;
 }
 
 .content-scroll {
@@ -537,7 +551,7 @@ onMounted(() => {
 }
 
 .form-section {
-  background: #fff;
+  background: $color-white;
   margin: 24rpx;
   border-radius: 24rpx;
   padding: 32rpx;
@@ -551,15 +565,15 @@ onMounted(() => {
 }
 
 .section-title {
-  font-size: 32rpx;
+  font-size: $font-size-title;
   font-weight: 600;
-  color: #333;
+  color: $color-text-primary;
   margin-bottom: 24rpx;
 }
 
 .section-tip {
-  font-size: 24rpx;
-  color: #999;
+  font-size: $font-size-secondary;
+  color: $color-text-secondary;
 }
 
 .form-item {
@@ -572,13 +586,13 @@ onMounted(() => {
 
 .form-label {
   display: block;
-  font-size: 28rpx;
-  color: #666;
+  font-size: $font-size-content;
+  color: $color-text-regular;
   margin-bottom: 16rpx;
 
   &.required::before {
     content: '*';
-    color: #EF4444;
+    color: $color-danger;
     margin-right: 4rpx;
   }
 }
@@ -586,10 +600,10 @@ onMounted(() => {
 .form-input {
   width: 100%;
   height: 88rpx;
-  background: #f5f5f5;
+  background: $color-bg;
   border-radius: 16rpx;
   padding: 0 24rpx;
-  font-size: 28rpx;
+  font-size: $font-size-content;
   box-sizing: border-box;
 }
 
@@ -597,42 +611,54 @@ onMounted(() => {
   display: flex;
   align-items: center;
   height: 88rpx;
-  background: #f5f5f5;
+  background: $color-bg;
   border-radius: 16rpx;
   padding: 0 24rpx;
 }
 
 .price-symbol {
-  font-size: 32rpx;
+  font-size: $font-size-title;
   font-weight: 500;
-  color: #333;
+  color: $color-text-primary;
   margin-right: 8rpx;
 }
 
 .price-input {
   flex: 1;
   height: 100%;
-  font-size: 32rpx;
+  font-size: $font-size-title;
   font-weight: 500;
-  color: #333;
+  color: $color-text-primary;
   background: transparent;
 }
 
 .form-tip {
   display: block;
-  font-size: 24rpx;
-  color: #999;
+  font-size: $font-size-secondary;
+  color: $color-text-secondary;
   margin-top: 12rpx;
 }
 
 .form-textarea {
   width: 100%;
   height: 160rpx;
-  background: #f5f5f5;
+  background: $color-bg;
   border-radius: 16rpx;
   padding: 24rpx;
-  font-size: 28rpx;
+  font-size: $font-size-content;
   box-sizing: border-box;
+}
+
+:deep(.form-textarea-custom) {
+  width: 100%;
+  background: $color-bg;
+  border-radius: 16rpx;
+  
+  .wd-textarea__inner {
+    min-height: 160rpx;
+    font-size: $font-size-content;
+    padding: 24rpx;
+  }
 }
 
 .form-value {
@@ -640,14 +666,14 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   height: 88rpx;
-  background: #f5f5f5;
+  background: $color-bg;
   border-radius: 16rpx;
   padding: 0 24rpx;
-  font-size: 28rpx;
-  color: #333;
+  font-size: $font-size-content;
+  color: $color-text-primary;
 
   .placeholder {
-    color: #999;
+    color: $color-text-secondary;
   }
 }
 
@@ -666,18 +692,18 @@ onMounted(() => {
 .upload-placeholder {
   width: 100%;
   height: 100%;
-  background: #f5f5f5;
+  background: $color-bg;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 12rpx;
-  color: #999;
-  font-size: 24rpx;
+  color: $color-text-secondary;
+  font-size: $font-size-secondary;
 }
 
 .attr-item {
-  background: #f9fafb;
+  background: $color-bg;
   border-radius: 16rpx;
   padding: 24rpx;
   margin-bottom: 20rpx;
@@ -691,9 +717,9 @@ onMounted(() => {
 }
 
 .attr-name {
-  font-size: 28rpx;
+  font-size: $font-size-content;
   font-weight: 500;
-  color: #333;
+  color: $color-text-primary;
 }
 
 .attr-values {
@@ -707,10 +733,10 @@ onMounted(() => {
   align-items: center;
   gap: 8rpx;
   padding: 12rpx 20rpx;
-  background: #fff;
+  background: $color-white;
   border-radius: 8rpx;
-  font-size: 26rpx;
-  color: #333;
+  font-size: $font-size-small;
+  color: $color-text-primary;
   border: 2rpx solid #e5e5e5;
 }
 
@@ -723,16 +749,16 @@ onMounted(() => {
 .value-input {
   width: 160rpx;
   height: 64rpx;
-  background: #fff;
+  background: $color-white;
   border-radius: 8rpx;
   padding: 0 16rpx;
-  font-size: 26rpx;
+  font-size: $font-size-small;
   border: 2rpx solid #3B82F6;
 }
 
 .confirm-btn {
-  color: #3B82F6;
-  font-size: 26rpx;
+  color: $color-primary;
+  font-size: $font-size-small;
 }
 
 .add-value-btn {
@@ -742,8 +768,8 @@ onMounted(() => {
   padding: 12rpx 20rpx;
   border: 2rpx dashed #ccc;
   border-radius: 8rpx;
-  font-size: 26rpx;
-  color: #999;
+  font-size: $font-size-small;
+  color: $color-text-secondary;
 }
 
 .add-attr {
@@ -755,51 +781,30 @@ onMounted(() => {
 .attr-input {
   flex: 1;
   height: 80rpx;
-  background: #f5f5f5;
+  background: $color-bg;
   border-radius: 12rpx;
   padding: 0 24rpx;
-  font-size: 28rpx;
+  font-size: $font-size-content;
 }
 
-.add-attr-btn {
+:deep(.add-attr-btn-custom) {
   width: 180rpx;
   height: 80rpx;
-  background: #3B82F6;
-  color: #fff;
   border-radius: 12rpx;
-  font-size: 28rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-
-  &::after {
-    border: none;
-  }
+  font-size: $font-size-content;
 }
 
 .bottom-bar {
   padding: 24rpx 32rpx;
-  background: #fff;
+  background: $color-white;
   box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.05);
 }
 
-.save-btn {
-  width: 100%;
+:deep(.save-btn-custom) {
   height: 96rpx;
-  background: #3B82F6;
-  color: #fff;
   border-radius: 48rpx;
-  font-size: 32rpx;
+  font-size: $font-size-title;
   font-weight: 500;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-
-  &::after {
-    border: none;
-  }
 }
 
 .category-picker {
@@ -817,9 +822,9 @@ onMounted(() => {
 }
 
 .picker-title {
-  font-size: 34rpx;
+  font-size: $font-size-title;
   font-weight: 600;
-  color: #333;
+  color: $color-text-primary;
 }
 
 .picker-content {
@@ -831,13 +836,13 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 28rpx 32rpx;
-  font-size: 30rpx;
-  color: #333;
-  background: #fff;
+  font-size: $font-size-large;
+  color: $color-text-primary;
+  background: $color-white;
   border-bottom: 2rpx solid #f5f5f5;
 
   &.selected {
-    color: #3B82F6;
+    color: $color-primary;
     font-weight: 500;
   }
 }

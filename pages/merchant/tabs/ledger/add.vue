@@ -499,9 +499,13 @@ onMounted(async () => {
           <view class="cart-count">共 {{ lineItems.length }} 项</view>
           <view class="cart-total">合计 <text>¥{{ totalAmount.toFixed(2) }}</text></view>
         </view>
-        <button class="next-btn" @tap="goConfirm">
+        <wd-button 
+          type="primary"
+          @click="goConfirm"
+          custom-class="next-btn-custom"
+        >
           下一步
-        </button>
+        </wd-button>
       </view>
     </view>
 
@@ -542,11 +546,12 @@ onMounted(async () => {
         <!-- 备注 -->
         <view class="confirm-section">
           <view class="section-title">备注</view>
-          <textarea
-            class="remark-input"
+          <wd-textarea
             v-model="remark"
             placeholder="添加备注（选填）"
             :maxlength="200"
+            :auto-height="true"
+            custom-class="remark-textarea-custom"
           />
         </view>
       </scroll-view>
@@ -557,9 +562,15 @@ onMounted(async () => {
           <text class="total-label">合计</text>
           <text class="total-amount">¥{{ totalAmount.toFixed(2) }}</text>
         </view>
-        <button class="submit-btn" :loading="submitting" :disabled="!canSubmit" @tap="submit">
+        <wd-button 
+          type="primary"
+          :loading="submitting" 
+          :disabled="!canSubmit" 
+          @click="submit"
+          custom-class="submit-btn-custom"
+        >
           创建账单
-        </button>
+        </wd-button>
       </view>
     </view>
 
@@ -567,18 +578,17 @@ onMounted(async () => {
 </template>
 
 <style lang="scss" scoped>
-@import '@/styles/variables.scss';
 
 .ledger-add-page {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #f5f5f5;
+  background: $color-bg;
 }
 
 .steps-header {
   flex-shrink: 0;
-  background: #fff;
+  background: $color-white;
   padding: $spacing-sm 0;
   box-shadow: $box-shadow-sm;
 }
@@ -592,13 +602,13 @@ onMounted(async () => {
 
 .search-bar {
   padding: $spacing-sm $spacing-md;
-  background: #fff;
+  background: $color-white;
 }
 
 .search-input-wrap {
   display: flex;
   align-items: center;
-  background: #f5f5f5;
+  background: $color-bg;
   border-radius: 40rpx;
   padding: $spacing-sm $spacing-md;
   gap: $spacing-small;
@@ -614,19 +624,19 @@ onMounted(async () => {
 
 .search-type-text {
   font-size: $font-size-content;
-  color: #333;
+  color: $color-text-primary;
   font-weight: 500;
 }
 
 .search-divider {
   width: 2rpx;
   height: $font-size-title;
-  background: #ddd;
+  background: $color-border;
   flex-shrink: 0;
 }
 
 .placeholder {
-  color: #999;
+  color: $color-text-secondary;
 }
 
 .search-input-wrap :deep(.wd-input) {
@@ -658,13 +668,13 @@ onMounted(async () => {
 .empty-state {
   padding: 80rpx 0;
   text-align: center;
-  color: #999;
+  color: $color-text-secondary;
 }
 
 .customer-item {
   display: flex;
   align-items: center;
-  background: #fff;
+  background: $color-white;
   border-radius: $border-radius-lg;
   padding: $font-size-content;
   margin-bottom: $spacing-sm;
@@ -675,7 +685,7 @@ onMounted(async () => {
   height: 88rpx;
   border-radius: $border-radius-round;
   background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
-  color: #fff;
+  color: $color-white;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -698,20 +708,20 @@ onMounted(async () => {
 .customer-name {
   font-size: $font-size-large;
   font-weight: 500;
-  color: #333;
+  color: $color-text-primary;
   margin-bottom: 4rpx;
 }
 
 .customer-phone {
   font-size: $font-size-small;
-  color: #999;
+  color: $color-text-secondary;
 }
 
 .selected-customer {
   display: flex;
   align-items: center;
   padding: $spacing-md;
-  background: #EBF5FF;
+  background: rgba(59, 130, 246, 0.1);
   gap: $spacing-small;
 }
 
@@ -720,7 +730,7 @@ onMounted(async () => {
   align-items: center;
   gap: 6rpx;
   font-size: $font-size-small;
-  color: #3B82F6;
+  color: $color-primary;
   padding: $spacing-small $spacing-sm;
   background: rgba(59, 130, 246, 0.1);
   border-radius: $spacing-md;
@@ -730,7 +740,7 @@ onMounted(async () => {
 .product-item {
   display: flex;
   align-items: center;
-  background: #fff;
+  background: $color-white;
   border-radius: $border-radius-lg;
   padding: $spacing-md;
   margin-bottom: $spacing-sm;
@@ -740,7 +750,7 @@ onMounted(async () => {
   width: 120rpx;
   height: 120rpx;
   border-radius: $border-radius-md;
-  background: #f5f5f5;
+  background: $color-bg;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -753,13 +763,13 @@ onMounted(async () => {
 
 .product-name {
   font-size: $font-size-large;
-  color: #333;
+  color: $color-text-primary;
   margin-bottom: $spacing-xs;
 }
 
 .product-price {
   font-size: $font-size-title;
-  color: #EF4444;
+  color: $color-danger;
   font-weight: 600;
 }
 
@@ -780,13 +790,13 @@ onMounted(async () => {
   font-weight: 500;
 
   &.minus {
-    background: #f5f5f5;
-    color: #666;
+    background: $color-bg;
+    color: $color-text-regular;
   }
 
   &.plus {
-    background: #3B82F6;
-    color: #fff;
+    background: $color-primary;
+    color: $color-white;
   }
 }
 
@@ -801,7 +811,7 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   padding: $spacing-md $spacing-lg;
-  background: #fff;
+  background: $color-white;
   box-shadow: $box-shadow-md;
 }
 
@@ -811,44 +821,30 @@ onMounted(async () => {
 
 .cart-count {
   font-size: $font-size-small;
-  color: #999;
+  color: $color-text-secondary;
   margin-bottom: 4rpx;
 }
 
 .cart-total {
   font-size: $font-size-content;
-  color: #333;
+  color: $color-text-primary;
 
   text {
-    font-size: 40rpx;
+    font-size: $font-size-important;
     font-weight: 600;
-    color: #EF4444;
+    color: $color-danger;
   }
 }
 
-.next-btn {
+:deep(.next-btn-custom) {
   width: 240rpx;
   height: 88rpx;
-  background: #3B82F6;
-  color: #fff;
   border-radius: 44rpx;
   font-size: $font-size-large;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-
-  &[disabled] {
-    background: #ccc;
-  }
-
-  &::after {
-    border: none;
-  }
 }
 
 .confirm-section {
-  background: #fff;
+  background: $color-white;
   margin: $spacing-md;
   border-radius: $spacing-md;
   padding: $spacing-lg;
@@ -861,7 +857,7 @@ onMounted(async () => {
 .section-title {
   font-size: $font-size-large;
   font-weight: 600;
-  color: #333;
+  color: $color-text-primary;
   margin-bottom: $spacing-md;
 }
 
@@ -886,7 +882,7 @@ onMounted(async () => {
   
   text {
     font-size: $font-size-small;
-    color: #999;
+    color: $color-text-secondary;
   }
 }
 
@@ -902,36 +898,48 @@ onMounted(async () => {
 
 .cart-item .item-name {
   font-size: $font-size-content;
-  color: #333;
+  color: $color-text-primary;
   margin-bottom: 4rpx;
 }
 
 .cart-item .item-price {
   font-size: $font-size-secondary;
-  color: #999;
+  color: $color-text-secondary;
 }
 
 .cart-item .item-total {
   font-size: $font-size-large;
   font-weight: 500;
-  color: #333;
+  color: $color-text-primary;
 }
 
 .remark-input {
   width: 100%;
   height: 160rpx;
-  background: #f5f5f5;
+  background: $color-bg;
   border-radius: $border-radius-lg;
   padding: $spacing-md;
   font-size: $font-size-content;
   box-sizing: border-box;
 }
 
+:deep(.remark-textarea-custom) {
+  width: 100%;
+  background: $color-bg;
+  border-radius: $border-radius-lg;
+  
+  .wd-textarea__inner {
+    min-height: 160rpx;
+    font-size: $font-size-content;
+    padding: $spacing-md;
+  }
+}
+
 .submit-bar {
   display: flex;
   align-items: center;
   padding: $spacing-md $spacing-lg;
-  background: #fff;
+  background: $color-white;
   box-shadow: $box-shadow-md;
 }
 
@@ -941,35 +949,21 @@ onMounted(async () => {
 
 .total-label {
   font-size: $font-size-content;
-  color: #666;
+  color: $color-text-regular;
 }
 
 .total-amount {
-  font-size: 44rpx;
+  font-size: $font-size-big;
   font-weight: 600;
-  color: #EF4444;
+  color: $color-danger;
 }
 
-.submit-btn {
+:deep(.submit-btn-custom) {
   width: 280rpx;
   height: 96rpx;
-  background: #3B82F6;
-  color: #fff;
   border-radius: 48rpx;
   font-size: $font-size-title;
   font-weight: 500;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-
-  &[disabled] {
-    background: #ccc;
-  }
-
-  &::after {
-    border: none;
-  }
 }
 
 /* 确认提交步骤样式 */
@@ -990,7 +984,7 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   padding: $spacing-md $spacing-lg;
-  background: #fff;
+  background: $color-white;
   box-shadow: $box-shadow-md;
 }
 
@@ -1004,7 +998,7 @@ onMounted(async () => {
 }
 
 .ledger-section {
-  background: #fff;
+  background: $color-white;
   border-radius: 24rpx;
   padding: 24rpx;
   margin-bottom: 24rpx;
@@ -1018,8 +1012,8 @@ onMounted(async () => {
 }
 
 .section-hint {
-  font-size: 22rpx;
-  color: #999;
+  font-size: $font-size-xsmall;
+  color: $color-text-secondary;
 }
 
 /* 表头样式 */
@@ -1028,8 +1022,8 @@ onMounted(async () => {
   align-items: center;
   padding: 16rpx 0;
   border-bottom: 2rpx solid #f0f0f0;
-  font-size: 22rpx;
-  color: #999;
+  font-size: $font-size-xsmall;
+  color: $color-text-secondary;
 }
 
 .line-table-header .col-name { flex: 3; }
@@ -1079,12 +1073,12 @@ onMounted(async () => {
 /* 紧凑输入框 */
 .line-row-item :deep(.wd-input) {
   height: 64rpx;
-  background: #f8f9fa;
+  background: $color-bg;
   border: none;
   border-radius: 8rpx;
   
   .wd-input__inner {
-    font-size: 26rpx;
+    font-size: $font-size-small;
     padding: 0 16rpx;
   }
 }
@@ -1103,8 +1097,8 @@ onMounted(async () => {
 }
 
 .amount-text {
-  font-size: 26rpx;
-  color: #EF4444;
+  font-size: $font-size-small;
+  color: $color-danger;
   font-weight: 500;
 }
 
@@ -1118,7 +1112,7 @@ onMounted(async () => {
   top: 100%;
   left: 0;
   right: 0;
-  background: #fff;
+  background: $color-white;
   border-radius: 12rpx;
   box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.12);
   z-index: 100;
@@ -1143,19 +1137,19 @@ onMounted(async () => {
   }
 
   &:active {
-    background: #f5f5f5;
+    background: $color-bg;
   }
 }
 
 .sku-name {
-  font-size: 26rpx;
-  color: #333;
+  font-size: $font-size-small;
+  color: $color-text-primary;
   flex: 1;
 }
 
 .sku-price {
-  font-size: 26rpx;
-  color: #EF4444;
+  font-size: $font-size-small;
+  color: $color-danger;
   margin-left: 16rpx;
 }
 
@@ -1172,14 +1166,14 @@ onMounted(async () => {
   border-radius: 12rpx;
   
   text {
-    font-size: 26rpx;
-    color: #3B82F6;
+    font-size: $font-size-small;
+    color: $color-primary;
     font-weight: 500;
   }
 }
 
 .ledger-summary {
-  background: #fff;
+  background: $color-white;
   border-radius: 24rpx;
   padding: 32rpx;
 }
@@ -1198,19 +1192,19 @@ onMounted(async () => {
 }
 
 .ledger-summary .summary-label {
-  font-size: 28rpx;
-  color: #666;
+  font-size: $font-size-content;
+  color: $color-text-regular;
 }
 
 .ledger-summary .summary-value {
-  font-size: 28rpx;
-  color: #333;
+  font-size: $font-size-content;
+  color: $color-text-primary;
   font-weight: 500;
 }
 
 .ledger-summary .summary-row.total .summary-value {
-  font-size: 36rpx;
-  color: #EF4444;
+  font-size: $font-size-xlarge;
+  color: $color-danger;
   font-weight: 600;
 }
 

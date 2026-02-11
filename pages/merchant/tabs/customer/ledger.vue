@@ -261,13 +261,13 @@ onUnmounted(() => {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #f5f5f5;
+  background: $color-bg;
 }
 
 .header {
   background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
   padding: 32rpx;
-  color: #fff;
+  color: $color-white;
 }
 
 .customer-info {
@@ -284,7 +284,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 36rpx;
+  font-size: $font-size-xlarge;
   font-weight: 600;
   margin-right: 24rpx;
 }
@@ -294,13 +294,13 @@ onUnmounted(() => {
 }
 
 .customer-name {
-  font-size: 34rpx;
+  font-size: $font-size-title;
   font-weight: 600;
   margin-bottom: 4rpx;
 }
 
 .customer-phone {
-  font-size: 26rpx;
+  font-size: $font-size-small;
   opacity: 0.8;
 }
 
@@ -314,19 +314,19 @@ onUnmounted(() => {
 }
 
 .debt-label {
-  font-size: 28rpx;
+  font-size: $font-size-content;
   opacity: 0.9;
 }
 
 .debt-value {
-  font-size: 40rpx;
+  font-size: $font-size-important;
   font-weight: 600;
 }
 
 .filter-bar {
   display: flex;
   padding: 20rpx 24rpx;
-  background: #fff;
+  background: $color-white;
   gap: 16rpx;
   overflow-x: auto;
 }
@@ -335,13 +335,13 @@ onUnmounted(() => {
   flex-shrink: 0;
   padding: 16rpx 32rpx;
   border-radius: 32rpx;
-  font-size: 26rpx;
-  color: #666;
-  background: #f5f5f5;
+  font-size: $font-size-small;
+  color: $color-text-regular;
+  background: $color-bg;
 
   &.active {
-    background: #3B82F6;
-    color: #fff;
+    background: $color-primary;
+    color: $color-white;
   }
 }
 
@@ -356,8 +356,8 @@ onUnmounted(() => {
 .empty-state {
   padding: 120rpx 0;
   text-align: center;
-  color: #999;
-  font-size: 28rpx;
+  color: $color-text-secondary;
+  font-size: $font-size-content;
 
   text {
     display: block;
@@ -372,7 +372,7 @@ onUnmounted(() => {
 }
 
 .ledger-card {
-  background: #fff;
+  background: $color-white;
   border-radius: 24rpx;
   padding: 28rpx;
 }
@@ -385,33 +385,33 @@ onUnmounted(() => {
 }
 
 .ledger-time {
-  font-size: 26rpx;
-  color: #999;
+  font-size: $font-size-small;
+  color: $color-text-secondary;
 }
 
 .ledger-status {
-  font-size: 24rpx;
+  font-size: $font-size-secondary;
   padding: 8rpx 20rpx;
   border-radius: 20rpx;
 
   &.status-pending {
-    background: #FEF3C7;
-    color: #F59E0B;
+    background: rgba(245, 158, 11, 0.1);
+    color: $color-warning;
   }
 
   &.status-debt {
-    background: #FEE2E2;
-    color: #EF4444;
+    background: rgba(239, 68, 68, 0.1);
+    color: $color-danger;
   }
 
   &.status-paid {
-    background: #D1FAE5;
-    color: #10B981;
+    background: rgba(16, 185, 129, 0.1);
+    color: $color-success;
   }
 
   &.status-closed {
-    background: #F3F4F6;
-    color: #6B7280;
+    background: $color-bg;
+    color: $color-text-regular;
   }
 }
 
@@ -422,15 +422,15 @@ onUnmounted(() => {
 }
 
 .ledger-remark {
-  font-size: 30rpx;
+  font-size: $font-size-large;
   font-weight: 500;
-  color: #333;
+  color: $color-text-primary;
   margin-bottom: 8rpx;
 }
 
 .ledger-items {
-  font-size: 26rpx;
-  color: #999;
+  font-size: $font-size-small;
+  color: $color-text-secondary;
 }
 
 .ledger-footer {
@@ -446,19 +446,19 @@ onUnmounted(() => {
 }
 
 .amount-label {
-  font-size: 26rpx;
-  color: #666;
+  font-size: $font-size-small;
+  color: $color-text-regular;
 }
 
 .amount-value {
-  font-size: 32rpx;
+  font-size: $font-size-title;
   font-weight: 600;
-  color: #333;
+  color: $color-text-primary;
 }
 
 .amount-paid {
-  font-size: 28rpx;
-  color: #10B981;
+  font-size: $font-size-content;
+  color: $color-success;
 }
 
 .loading-more {
@@ -467,15 +467,15 @@ onUnmounted(() => {
   justify-content: center;
   gap: 16rpx;
   padding: 32rpx;
-  color: #999;
-  font-size: 26rpx;
+  color: $color-text-secondary;
+  font-size: $font-size-small;
 }
 
 .no-more {
   text-align: center;
   padding: 32rpx;
-  color: #999;
-  font-size: 26rpx;
+  color: $color-text-secondary;
+  font-size: $font-size-small;
 }
 
 .fab-btn {
@@ -485,7 +485,7 @@ onUnmounted(() => {
   width: 112rpx;
   height: 112rpx;
   border-radius: 50%;
-  background: #3B82F6;
+  background: $color-primary;
   display: flex;
   align-items: center;
   justify-content: center;

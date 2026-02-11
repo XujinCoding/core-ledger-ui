@@ -104,10 +104,10 @@ const handleBind = async () => {
             <wd-icon name="scan" size="80rpx" color="#3B82F6" />
           </view>
           <view class="scan-text">使用微信扫一扫快速绑定</view>
-          <button class="scan-btn" @tap="handleScan">
+          <wd-button class="scan-btn" @click="handleScan" custom-class="scan-btn-custom">
             <wd-icon name="scan" size="32rpx" />
             <text>点击扫码</text>
-          </button>
+          </wd-button>
         </view>
       </view>
 
@@ -139,21 +139,27 @@ const handleBind = async () => {
 
     <!-- 底部按钮 -->
     <view class="footer-btns">
-      <button class="btn-primary" :loading="loading" @tap="handleBind">
+      <wd-button 
+        type="primary" 
+        block 
+        size="large"
+        :loading="loading" 
+        @click="handleBind"
+        custom-class="btn-primary-custom"
+      >
         确认绑定
-      </button>
+      </wd-button>
     </view>
   </view>
 </template>
 
 <style lang="scss" scoped>
-@import '@/styles/variables.scss';
 
 .bind-merchant-page {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #f5f5f5;
+  background: $color-bg;
   overflow: hidden;
   padding: 0;
   margin: 0;
@@ -167,7 +173,7 @@ const handleBind = async () => {
 }
 
 .form-section {
-  background: #fff;
+  background: $color-white;
   border-radius: $border-radius-lg;
   padding: $spacing-sm;
   margin: $spacing-sm $spacing-md;
@@ -176,7 +182,7 @@ const handleBind = async () => {
 .section-title {
   font-size: $font-size-content;
   font-weight: 600;
-  color: #333;
+  color: $color-text-primary;
   margin-bottom: $spacing-sm;
   padding-bottom: $spacing-small;
   border-bottom: 2rpx solid #f5f5f5;
@@ -195,7 +201,7 @@ const handleBind = async () => {
 .scan-icon-large {
   width: 140rpx;
   height: 140rpx;
-  background: #EFF6FF;
+  background: $color-primary-light;
   border-radius: $border-radius-round;
   display: flex;
   align-items: center;
@@ -205,26 +211,25 @@ const handleBind = async () => {
 
 .scan-text {
   font-size: $font-size-small;
-  color: #666;
+  color: $color-text-regular;
   margin-bottom: $spacing-md;
 }
 
 .scan-btn {
   width: 100%;
   height: 80rpx;
-  background: #fff;
-  border: 2rpx solid #3B82F6;
+  background: $color-white !important;
+  border: 2rpx solid #3B82F6 !important;
   border-radius: $border-radius-md;
-  color: #3B82F6;
+  color: $color-primary !important;
   font-size: $font-size-content;
+}
+
+:deep(.scan-btn-custom) {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: $spacing-small;
-
-  &::after {
-    border: none;
-  }
 }
 
 .divider {
@@ -236,13 +241,13 @@ const handleBind = async () => {
 .divider-line {
   flex: 1;
   height: 2rpx;
-  background: #e5e5e5;
+  background: $color-border;
 }
 
 .divider-text {
   padding: 0 $spacing-md;
   font-size: $font-size-secondary;
-  color: #999;
+  color: $color-text-secondary;
 }
 
 .form-group {
@@ -252,7 +257,7 @@ const handleBind = async () => {
 :deep(.wd-input) {
   width: 100%;
   height: 80rpx;
-  background: #f9fafb;
+  background: $color-bg;
   border: 2rpx solid #e5e5e5;
   border-radius: $border-radius-md;
   
@@ -269,25 +274,14 @@ const handleBind = async () => {
   right: 0;
   padding: $spacing-sm $spacing-lg;
   padding-bottom: calc(#{$spacing-sm} + env(safe-area-inset-bottom));
-  background: #fff;
+  background: $color-white;
   box-shadow: $box-shadow-md;
 }
 
-.btn-primary {
-  width: 100%;
+:deep(.btn-primary-custom) {
   height: 88rpx;
-  background: #3B82F6;
-  color: #fff;
+  border-radius: 44rpx;
   font-size: $font-size-large;
   font-weight: 500;
-  border-radius: 44rpx;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  &::after {
-    border: none;
-  }
 }
 </style>

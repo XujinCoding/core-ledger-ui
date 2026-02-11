@@ -159,11 +159,10 @@ onMounted(() => {
 </template>
 
 <style lang="scss" scoped>
-@import '@/styles/variables.scss';
 
 .switch-merchant-page {
   min-height: 100vh;
-  background: #f5f5f5;
+  background: $color-bg;
   display: flex;
   flex-direction: column;
   padding: 0;
@@ -189,7 +188,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   padding: $spacing-md;
-  background: #fff;
+  background: $color-white;
   border-radius: $border-radius-lg;
   box-shadow: $box-shadow-sm;
   gap: $spacing-sm;
@@ -197,17 +196,17 @@ onMounted(() => {
 
   &:active {
     transform: scale(0.98);
-    background: #f9f9f9;
+    background: $color-bg-light;
   }
 
   &.selected {
     border: 4rpx solid #3B82F6;
-    background: #EBF5FF;
+    background: $color-primary-light;
   }
 
   &.current {
     border: 4rpx solid #10B981;
-    background: #F0FDF4;
+    background: $color-success-light;
   }
 }
 
@@ -219,7 +218,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  color: $color-white;
   flex-shrink: 0;
 }
 
@@ -231,7 +230,7 @@ onMounted(() => {
 .merchant-name {
   font-size: $font-size-large;
   font-weight: 600;
-  color: #333;
+  color: $color-text-primary;
   margin-bottom: $spacing-xs;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -244,8 +243,8 @@ onMounted(() => {
 .current-badge {
   display: inline-block;
   padding: 4rpx $spacing-small;
-  background: #10B981;
-  color: #fff;
+  background: $color-success;
+  color: $color-white;
   font-size: $font-size-aid;
   border-radius: $border-radius-sm;
   font-weight: 500;
@@ -265,13 +264,13 @@ onMounted(() => {
 
 .detail-label {
   font-size: $font-size-secondary;
-  color: #999;
+  color: $color-text-secondary;
   width: 70rpx;
 }
 
 .detail-value {
   font-size: $font-size-secondary;
-  color: #666;
+  color: $color-text-regular;
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -293,20 +292,20 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   padding: 100rpx $spacing-lg;
-  background: #fff;
+  background: $color-white;
   border-radius: $border-radius-lg;
   margin: $spacing-sm $spacing-md 0;
 }
 
 .empty-text {
   font-size: $font-size-large;
-  color: #666;
+  color: $color-text-regular;
   margin-top: $spacing-md;
 }
 
 .empty-tip {
   font-size: $font-size-small;
-  color: #999;
+  color: $color-text-secondary;
   margin-top: $spacing-xs;
 }
 
@@ -317,7 +316,7 @@ onMounted(() => {
   justify-content: center;
   gap: $spacing-xs;
   font-size: $font-size-secondary;
-  color: #999;
+  color: $color-text-secondary;
   padding: $spacing-lg $spacing-md;
 }
 </style>

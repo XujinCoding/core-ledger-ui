@@ -313,11 +313,11 @@ onMounted(() => {
 <style lang="scss" scoped>
 .debt-page {
   height: 100vh;
-  background: #f5f5f5;
+  background: $color-bg;
 }
 
 .tab-section {
-  background: #fff;
+  background: $color-white;
   margin: 24rpx 32rpx;
   border-radius: 24rpx;
   padding: 24rpx;
@@ -335,17 +335,17 @@ onMounted(() => {
   padding: 20rpx;
   border: 2rpx solid #E5E7EB;
   border-radius: 16rpx;
-  background: #fff;
-  font-size: 28rpx;
+  background: $color-white;
+  font-size: $font-size-content;
   text-align: center;
   font-weight: 500;
-  color: #374151;
+  color: $color-gray-dark;
   transition: all 0.3s;
 
   &.active {
     background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
-    color: #fff;
-    border-color: #EF4444;
+    color: $color-white;
+    border-color: $color-danger;
   }
 }
 
@@ -358,14 +358,14 @@ onMounted(() => {
   padding: 24rpx;
   border: 2rpx solid #E5E7EB;
   border-radius: 16rpx;
-  font-size: 28rpx;
-  color: #111827;
-  background: #F9FAFB;
+  font-size: $font-size-content;
+  color: $color-gray-darker;
+  background: $color-bg;
   text-align: center;
 }
 
 .debt-overview {
-  background: #fff;
+  background: $color-white;
   margin: 0 32rpx 24rpx;
   border-radius: 24rpx;
   padding: 32rpx;
@@ -383,21 +383,21 @@ onMounted(() => {
 }
 
 .overview-label {
-  font-size: 26rpx;
-  color: #6B7280;
+  font-size: $font-size-small;
+  color: $color-text-regular;
   margin-bottom: 16rpx;
 }
 
 .overview-value {
-  font-size: 48rpx;
+  font-size: $font-size-big;
   font-weight: 700;
 
-  &.danger { color: #EF4444; }
-  &.warning { color: #F59E0B; }
+  &.danger { color: $color-danger; }
+  &.warning { color: $color-warning; }
 }
 
 .chart-section {
-  background: #fff;
+  background: $color-white;
   margin: 0 32rpx 24rpx;
   border-radius: 24rpx;
   padding: 28rpx;
@@ -405,9 +405,9 @@ onMounted(() => {
 }
 
 .section-title {
-  font-size: 32rpx;
+  font-size: $font-size-title;
   font-weight: 600;
-  color: #111827;
+  color: $color-gray-darker;
   margin-bottom: 24rpx;
 }
 
@@ -428,8 +428,8 @@ onMounted(() => {
 }
 
 .trend-label {
-  font-size: 24rpx;
-  color: #374151;
+  font-size: $font-size-secondary;
+  color: $color-gray-dark;
   font-weight: 500;
 }
 
@@ -447,15 +447,15 @@ onMounted(() => {
 
 .trend-bar-label {
   width: 60rpx;
-  font-size: 22rpx;
-  color: #6B7280;
+  font-size: $font-size-xsmall;
+  color: $color-text-regular;
   flex-shrink: 0;
 }
 
 .trend-bar-wrapper {
   flex: 1;
   height: 24rpx;
-  background: #F3F4F6;
+  background: $color-bg;
   border-radius: 12rpx;
   overflow: hidden;
 }
@@ -477,8 +477,8 @@ onMounted(() => {
 
 .trend-bar-value {
   width: 100rpx;
-  font-size: 22rpx;
-  color: #111827;
+  font-size: $font-size-xsmall;
+  color: $color-gray-darker;
   text-align: right;
   flex-shrink: 0;
 }
@@ -505,8 +505,8 @@ onMounted(() => {
   width: 40rpx;
   height: 40rpx;
   border-radius: 50%;
-  color: #fff;
-  font-size: 22rpx;
+  color: $color-white;
+  font-size: $font-size-xsmall;
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -516,8 +516,8 @@ onMounted(() => {
 
 .address-name {
   flex: 1;
-  font-size: 28rpx;
-  color: #374151;
+  font-size: $font-size-content;
+  color: $color-gray-dark;
   font-weight: 500;
   line-height: 1.4;
 }
@@ -528,7 +528,7 @@ onMounted(() => {
 
 .address-bar-wrapper {
   height: 28rpx;
-  background: #F3F4F6;
+  background: $color-bg;
   border-radius: 14rpx;
   overflow: hidden;
   margin-bottom: 8rpx;
@@ -548,20 +548,20 @@ onMounted(() => {
 }
 
 .address-amount {
-  font-size: 28rpx;
-  color: #EF4444;
+  font-size: $font-size-content;
+  color: $color-danger;
   font-weight: 600;
 }
 
 .address-count {
-  font-size: 24rpx;
-  color: #6B7280;
+  font-size: $font-size-secondary;
+  color: $color-text-regular;
 }
 
 .empty-chart {
   padding: 60rpx;
   text-align: center;
-  color: #9CA3AF;
-  font-size: 28rpx;
+  color: $color-gray-light;
+  font-size: $font-size-content;
 }
 </style>

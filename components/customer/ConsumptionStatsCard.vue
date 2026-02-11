@@ -28,16 +28,16 @@ defineProps<{
 
 <style lang="scss" scoped>
 .stats-card {
-  background: #fff;
+  background: $color-white;
   border-radius: 20rpx;
   padding: 32rpx;
   margin-bottom: 24rpx;
 }
 
 .section-title {
-  font-size: 32rpx;
+  font-size: $font-size-title;
   font-weight: 600;
-  color: #333;
+  color: $color-text-primary;
   margin-bottom: 24rpx;
 }
 
@@ -53,14 +53,14 @@ defineProps<{
 }
 
 .stat-value {
-  font-size: 36rpx;
+  font-size: $font-size-xlarge;
   font-weight: 600;
-  color: #3B82F6;
+  color: $color-primary;
   margin-bottom: 8rpx;
 }
 
 .stat-label {
-  font-size: 24rpx;
-  color: #999;
+  font-size: $font-size-secondary;
+  color: $color-text-secondary;
 }
 </style>

@@ -91,11 +91,12 @@ onMounted(() => {
 </template>
 
 <style lang="scss" scoped>
+
 .guest-container {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #f5f5f5;
+  background: $color-bg;
   overflow: hidden;
 }
 
@@ -108,7 +109,7 @@ onMounted(() => {
 // 底部导航栏
 .tabbar {
   flex-shrink: 0;
-  background: #fff;
+  background: $color-white;
   border-top: 2rpx solid #f0f0f0;
   padding-bottom: env(safe-area-inset-bottom);
 }
@@ -125,16 +126,16 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   padding: 8rpx 16rpx;
-  color: #999;
+  color: $color-text-secondary;
   transition: color 0.2s;
 
   &.active {
-    color: #667eea;
+    color: $color-primary;
   }
 }
 
 .tab-label {
-  font-size: 22rpx;
+  font-size: $font-size-xsmall;
   margin-top: 4rpx;
 }
 </style>

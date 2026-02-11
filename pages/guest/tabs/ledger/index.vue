@@ -208,17 +208,18 @@ const createLedger = () => {
 </template>
 
 <style lang="scss" scoped>
+
 .ledger-page {
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: #f5f5f5;
+  background: $color-bg;
   overflow: hidden;
 }
 
 .fixed-header {
   flex-shrink: 0;
-  background: #fff;
+  background: $color-white;
   position: relative;
   z-index: 10;
 }
@@ -230,7 +231,7 @@ const createLedger = () => {
 .search-input-wrap {
   display: flex;
   align-items: center;
-  background: #f5f5f5;
+  background: $color-bg;
   border-radius: 40rpx;
   padding: 16rpx 24rpx;
   gap: 16rpx;
@@ -238,18 +239,18 @@ const createLedger = () => {
 
 .search-input {
   flex: 1;
-  font-size: 28rpx;
-  color: #333;
+  font-size: $font-size-content;
+  color: $color-text-primary;
 }
 
 .placeholder {
-  color: #999;
+  color: $color-text-secondary;
 }
 
 /* 状态筛选栏 */
 .status-filter-bar {
   white-space: nowrap;
-  background: #fff;
+  background: $color-white;
 }
 
 .status-options {
@@ -262,20 +263,20 @@ const createLedger = () => {
   flex-shrink: 0;
   padding: 10rpx 24rpx;
   border-radius: 24rpx;
-  font-size: 24rpx;
-  color: #666;
-  background: #f5f5f5;
+  font-size: $font-size-secondary;
+  color: $color-text-regular;
+  background: $color-bg;
 
   &.active {
-    background: #3B82F6;
-    color: #fff;
+    background: $color-primary;
+    color: $color-white;
   }
 }
 
 /* 统计卡片 */
 .stats-card {
   display: flex;
-  background: #fff;
+  background: $color-white;
   margin: 16rpx 24rpx;
   border-radius: 20rpx;
   padding: 24rpx 0;
@@ -296,23 +297,23 @@ const createLedger = () => {
   transform: translateY(-50%);
   width: 2rpx;
   height: 40rpx;
-  background: #f0f0f0;
+  background: $color-bg;
 }
 
 .stat-value {
-  font-size: 36rpx;
+  font-size: $font-size-xlarge;
   font-weight: 600;
-  color: #333;
+  color: $color-text-primary;
   margin-bottom: 8rpx;
 
   &.debt {
-    color: #ef4444;
+    color: $color-danger;
   }
 }
 
 .stat-label {
-  font-size: 24rpx;
-  color: #999;
+  font-size: $font-size-secondary;
+  color: $color-text-secondary;
 }
 
 /* 账单列表 */
@@ -326,8 +327,8 @@ const createLedger = () => {
 .empty-state {
   padding: 120rpx 0;
   text-align: center;
-  color: #999;
-  font-size: 28rpx;
+  color: $color-text-secondary;
+  font-size: $font-size-content;
 
   text {
     display: block;
@@ -349,7 +350,7 @@ const createLedger = () => {
   width: 112rpx;
   height: 112rpx;
   border-radius: 50%;
-  background: #10B981;
+  background: $color-success;
   display: flex;
   align-items: center;
   justify-content: center;

@@ -370,10 +370,30 @@ onPullDownRefresh(() => { onRefresh() })
       </scroll-view>
 
       <view class="action-bar">
-        <button class="btn btn-outline" @tap="handleEdit"><wd-icon name="edit" size="28rpx" /> 编辑</button>
-        <button class="btn btn-warning" @tap="handleRecord"><wd-icon name="list" size="28rpx" /> 记账</button>
-        <button class="btn btn-success" @tap="handlePayment"><wd-icon name="money-circle" size="28rpx" /> 收款</button>
-        <button class="btn btn-primary" @tap="handleSettle"><wd-icon name="check-circle" size="28rpx" /> 结账</button>
+        <wd-button 
+          custom-class="btn btn-outline" 
+          @click="handleEdit"
+        >
+          <wd-icon name="edit" size="28rpx" /> 编辑
+        </wd-button>
+        <wd-button 
+          custom-class="btn btn-warning" 
+          @click="handleRecord"
+        >
+          <wd-icon name="list" size="28rpx" /> 记账
+        </wd-button>
+        <wd-button 
+          custom-class="btn btn-success" 
+          @click="handlePayment"
+        >
+          <wd-icon name="money-circle" size="28rpx" /> 收款
+        </wd-button>
+        <wd-button 
+          custom-class="btn btn-primary" 
+          @click="handleSettle"
+        >
+          <wd-icon name="check-circle" size="28rpx" /> 结账
+        </wd-button>
       </view>
     </template>
 
@@ -407,7 +427,16 @@ onPullDownRefresh(() => { onRefresh() })
             </view>
           </view>
           <view class="popup-footer">
-            <button class="confirm-btn" :loading="paymentLoading" @tap="confirmPayment">{{ confirmBtnText }}</button>
+            <wd-button 
+              type="primary"
+              :loading="paymentLoading" 
+              @click="confirmPayment"
+              block
+              size="large"
+              custom-class="confirm-btn-custom"
+            >
+              {{ confirmBtnText }}
+            </wd-button>
           </view>
         </view>
       </view>
@@ -426,11 +455,26 @@ onPullDownRefresh(() => { onRefresh() })
           <view class="popup-content">
             <view class="form-group">
               <text class="form-label">备注内容</text>
-              <textarea v-model="editMemo" placeholder="请输入备注" class="form-textarea" :maxlength="255" />
+              <wd-textarea 
+                v-model="editMemo" 
+                placeholder="请输入备注" 
+                :maxlength="255"
+                :auto-height="true"
+                custom-class="form-textarea-custom"
+              />
             </view>
           </view>
           <view class="popup-footer">
-            <button class="confirm-btn" :loading="memoLoading" @tap="saveMemo">确认修改</button>
+            <wd-button 
+              type="primary"
+              :loading="memoLoading" 
+              @click="saveMemo"
+              block
+              size="large"
+              custom-class="confirm-btn-custom"
+            >
+              确认修改
+            </wd-button>
           </view>
         </view>
       </view>
@@ -463,8 +507,20 @@ onPullDownRefresh(() => { onRefresh() })
             剩余 ¥{{ formatAmount(settleConfirmData.discountAmount) }} 未缴费将作为优惠处理
           </view>
           <view class="settle-confirm-btns">
-            <button class="settle-cancel-btn" @tap="cancelSettleConfirm">取消</button>
-            <button class="settle-ok-btn" :loading="paymentLoading" @tap="doSettleConfirm">确认结账</button>
+            <wd-button 
+              custom-class="settle-cancel-btn-custom" 
+              @click="cancelSettleConfirm"
+            >
+              取消
+            </wd-button>
+            <wd-button 
+              type="primary"
+              :loading="paymentLoading" 
+              @click="doSettleConfirm"
+              custom-class="settle-ok-btn-custom"
+            >
+              确认结账
+            </wd-button>
           </view>
         </view>
       </view>
@@ -478,7 +534,7 @@ onPullDownRefresh(() => { onRefresh() })
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #f5f5f5;
+  background: $color-bg;
 }
 
 .loading-state {
@@ -488,13 +544,13 @@ onPullDownRefresh(() => { onRefresh() })
   align-items: center;
   justify-content: center;
   gap: 20rpx;
-  color: #999;
+  color: $color-text-secondary;
 }
 
 .header {
   background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
   padding: 32rpx;
-  color: #fff;
+  color: $color-white;
 }
 
 .customer-contact {
@@ -505,7 +561,7 @@ onPullDownRefresh(() => { onRefresh() })
   display: flex;
   align-items: center;
   gap: 12rpx;
-  font-size: 26rpx;
+  font-size: $font-size-small;
   opacity: 0.9;
   margin-bottom: 8rpx;
   &:last-child { margin-bottom: 0; }
@@ -531,37 +587,37 @@ onPullDownRefresh(() => { onRefresh() })
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 36rpx;
+  font-size: $font-size-xlarge;
   font-weight: 600;
   margin-right: 24rpx;
 }
 
 .customer-name {
-  font-size: 34rpx;
+  font-size: $font-size-title;
   font-weight: 600;
 }
 
 .status-tag {
   padding: 8rpx 20rpx;
   border-radius: 8rpx;
-  font-size: 24rpx;
+  font-size: $font-size-secondary;
   font-weight: 500;
   
   &.status-progress {
     background: rgba(255, 255, 255, 0.25);
-    color: #fff;
+    color: $color-white;
   }
   &.status-partial {
-    background: #F59E0B;
-    color: #fff;
+    background: $color-warning;
+    color: $color-white;
   }
   &.status-cleared {
-    background: #10B981;
-    color: #fff;
+    background: $color-success;
+    color: $color-white;
   }
   &.status-credit {
-    background: #EF4444;
-    color: #fff;
+    background: $color-danger;
+    color: $color-white;
   }
   &.status-closed {
     background: rgba(255, 255, 255, 0.15);
@@ -569,7 +625,7 @@ onPullDownRefresh(() => { onRefresh() })
   }
   &.status-default {
     background: rgba(255, 255, 255, 0.2);
-    color: #fff;
+    color: $color-white;
   }
 }
 
@@ -586,24 +642,24 @@ onPullDownRefresh(() => { onRefresh() })
 }
 
 .amount-label {
-  font-size: 24rpx;
+  font-size: $font-size-secondary;
   opacity: 0.8;
   margin-bottom: 8rpx;
 }
 
 .amount-value {
-  font-size: 40rpx;
+  font-size: $font-size-important;
   font-weight: 600;
   
   &.highlight {
-    color: #FBBF24;
+    color: $color-warning;
     text-shadow: 0 2rpx 8rpx rgba(251, 191, 36, 0.3);
   }
 }
 
 .amount-item.pending {
   .amount-label {
-    color: #FBBF24;
+    color: $color-warning;
   }
 }
 
@@ -616,7 +672,7 @@ onPullDownRefresh(() => { onRefresh() })
 }
 
 .section {
-  background: #fff;
+  background: $color-white;
   border-radius: 24rpx;
   margin-bottom: 24rpx;
   overflow: hidden;
@@ -631,21 +687,21 @@ onPullDownRefresh(() => { onRefresh() })
 }
 
 .section-title {
-  font-size: 30rpx;
+  font-size: $font-size-large;
   font-weight: 600;
-  color: #333;
+  color: $color-text-primary;
 }
 
 .section-count {
-  font-size: 26rpx;
-  color: #999;
+  font-size: $font-size-small;
+  color: $color-text-secondary;
 }
 
 .empty-items, .empty-payments {
   padding: 60rpx 0;
   text-align: center;
-  color: #999;
-  font-size: 28rpx;
+  color: $color-text-secondary;
+  font-size: $font-size-content;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -668,7 +724,7 @@ onPullDownRefresh(() => { onRefresh() })
   width: 96rpx;
   height: 96rpx;
   border-radius: 16rpx;
-  background: #f5f5f5;
+  background: $color-bg;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -680,14 +736,14 @@ onPullDownRefresh(() => { onRefresh() })
 }
 
 .item-name {
-  font-size: 30rpx;
-  color: #333;
+  font-size: $font-size-large;
+  color: $color-text-primary;
   margin-bottom: 8rpx;
 }
 
 .item-spec {
-  font-size: 24rpx;
-  color: #999;
+  font-size: $font-size-secondary;
+  color: $color-text-secondary;
 }
 
 .item-right {
@@ -695,32 +751,32 @@ onPullDownRefresh(() => { onRefresh() })
 }
 
 .item-price {
-  font-size: 30rpx;
+  font-size: $font-size-large;
   font-weight: 500;
-  color: #333;
+  color: $color-text-primary;
   margin-bottom: 4rpx;
 }
 
 .item-qty {
-  font-size: 24rpx;
-  color: #999;
+  font-size: $font-size-secondary;
+  color: $color-text-secondary;
 }
 
 .summary-row {
   display: flex;
   justify-content: space-between;
   padding: 24rpx 32rpx;
-  font-size: 28rpx;
+  font-size: $font-size-content;
   &.total {
     border-top: 2rpx solid #f5f5f5;
     padding-top: 28rpx;
-    .summary-label { font-weight: 600; color: #333; }
-    .summary-value { font-size: 36rpx; font-weight: 600; color: #EF4444; }
+    .summary-label { font-weight: 600; color: $color-text-primary; }
+    .summary-value { font-size: $font-size-xlarge; font-weight: 600; color: $color-danger; }
   }
 }
 
-.summary-label { color: #666; }
-.summary-value { color: #333; &.discount { color: #10B981; } }
+.summary-label { color: $color-text-regular; }
+.summary-value { color: $color-text-primary; &.discount { color: $color-success; } }
 
 .payment-list {
   padding: 0 32rpx;
@@ -738,8 +794,8 @@ onPullDownRefresh(() => { onRefresh() })
   width: 72rpx;
   height: 72rpx;
   border-radius: 50%;
-  background: #D1FAE5;
-  color: #10B981;
+  background: rgba(16, 185, 129, 0.1);
+  color: $color-success;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -751,26 +807,26 @@ onPullDownRefresh(() => { onRefresh() })
 }
 
 .payment-type {
-  font-size: 28rpx;
-  color: #333;
+  font-size: $font-size-content;
+  color: $color-text-primary;
   margin-bottom: 4rpx;
 }
 
 .payment-time {
-  font-size: 24rpx;
-  color: #999;
+  font-size: $font-size-secondary;
+  color: $color-text-secondary;
 }
 
 .payment-memo {
-  font-size: 24rpx;
-  color: #666;
+  font-size: $font-size-secondary;
+  color: $color-text-regular;
   margin-top: 4rpx;
 }
 
 .payment-amount {
-  font-size: 32rpx;
+  font-size: $font-size-title;
   font-weight: 600;
-  color: #10B981;
+  color: $color-success;
 }
 
 .info-row {
@@ -784,13 +840,13 @@ onPullDownRefresh(() => { onRefresh() })
 }
 
 .info-label {
-  font-size: 28rpx;
-  color: #666;
+  font-size: $font-size-content;
+  color: $color-text-regular;
 }
 
 .info-value {
-  font-size: 28rpx;
-  color: #333;
+  font-size: $font-size-content;
+  color: $color-text-primary;
 }
 
 .info-value-wrap {
@@ -806,29 +862,55 @@ onPullDownRefresh(() => { onRefresh() })
   bottom: 0;
   padding: 24rpx 32rpx;
   padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
-  background: #fff;
+  background: $color-white;
   display: flex;
-  gap: 16rpx;
+  gap: 12rpx;
   box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.05);
   z-index: 100;
 }
 
-.btn {
+:deep(.btn) {
   flex: 1;
-  height: 80rpx;
+  height: 80rpx !important;
+  min-height: 80rpx !important;
+  max-height: 80rpx !important;
   border-radius: 40rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8rpx;
-  font-size: 26rpx;
+  font-size: $font-size-small;
   font-weight: 500;
-  border: none;
-  &::after { border: none; }
-  &.btn-outline { background: #fff; color: #666; border: 2rpx solid #e5e5e5; }
-  &.btn-warning { background: #F59E0B; color: #fff; }
-  &.btn-success { background: #10B981; color: #fff; }
-  &.btn-primary { background: #3B82F6; color: #fff; }
+  padding: 0 8rpx !important;
+  line-height: 1 !important;
+  min-width: 0 !important;
+  width: auto !important;
+  
+  &.btn-outline { 
+    background: $color-white !important; 
+    color: $color-text-regular !important; 
+    border: 2rpx solid #e5e5e5 !important; 
+  }
+  &.btn-warning { 
+    background: $color-warning !important; 
+    color: $color-white !important; 
+    border: none !important;
+  }
+  &.btn-success { 
+    background: $color-success !important; 
+    color: $color-white !important; 
+    border: none !important;
+  }
+  &.btn-primary { 
+    background: $color-primary !important; 
+    color: $color-white !important; 
+    border: none !important;
+  }
+  
+  // 确保图标和文字在同一行，紧凑显示
+  .wd-button__content {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 4rpx !important;
+    white-space: nowrap !important;
+  }
 }
 
 /* 弹窗样式 - 从底部滑出，圆角，四周留空 */
@@ -864,7 +946,7 @@ onPullDownRefresh(() => { onRefresh() })
 }
 
 .popup-panel {
-  background: #fff;
+  background: $color-white;
   border-radius: 32rpx;
   overflow: hidden;
   box-shadow: 0 -8rpx 40rpx rgba(0, 0, 0, 0.15);
@@ -879,9 +961,9 @@ onPullDownRefresh(() => { onRefresh() })
 }
 
 .popup-title {
-  font-size: 34rpx;
+  font-size: $font-size-title;
   font-weight: 600;
-  color: #333;
+  color: $color-text-primary;
 }
 
 .popup-close {
@@ -903,51 +985,63 @@ onPullDownRefresh(() => { onRefresh() })
 
 .form-label {
   display: block;
-  font-size: 28rpx;
-  color: #666;
+  font-size: $font-size-content;
+  color: $color-text-regular;
   margin-bottom: 16rpx;
 }
 
 .amount-input {
   display: flex;
   align-items: center;
-  background: #f5f5f5;
+  background: $color-bg;
   border-radius: 16rpx;
   padding: 24rpx;
 }
 
 .currency {
-  font-size: 40rpx;
+  font-size: $font-size-important;
   font-weight: 600;
-  color: #333;
+  color: $color-text-primary;
   margin-right: 8rpx;
 }
 
 .amount-input .input {
   flex: 1;
-  font-size: 40rpx;
+  font-size: $font-size-important;
   font-weight: 600;
-  color: #333;
+  color: $color-text-primary;
 }
 
 .form-input {
   width: 100%;
   height: 88rpx;
-  background: #f5f5f5;
+  background: $color-bg;
   border-radius: 16rpx;
   padding: 0 24rpx;
-  font-size: 28rpx;
+  font-size: $font-size-content;
   box-sizing: border-box;
 }
 
 .form-textarea {
   width: 100%;
   height: 200rpx;
-  background: #f5f5f5;
+  background: $color-bg;
   border-radius: 16rpx;
   padding: 24rpx;
-  font-size: 28rpx;
+  font-size: $font-size-content;
   box-sizing: border-box;
+}
+
+:deep(.form-textarea-custom) {
+  width: 100%;
+  background: $color-bg;
+  border-radius: 16rpx;
+  
+  .wd-textarea__inner {
+    min-height: 200rpx;
+    font-size: $font-size-content;
+    padding: 24rpx;
+  }
 }
 
 .payment-methods {
@@ -958,22 +1052,22 @@ onPullDownRefresh(() => { onRefresh() })
 
 .method-item {
   padding: 16rpx 32rpx;
-  background: #f5f5f5;
+  background: $color-bg;
   border-radius: 32rpx;
-  font-size: 26rpx;
-  color: #666;
+  font-size: $font-size-small;
+  color: $color-text-regular;
   border: 2rpx solid transparent;
   transition: all 0.2s;
   &.active {
-    background: #EBF5FF;
-    color: #3B82F6;
-    border-color: #3B82F6;
+    background: rgba(59, 130, 246, 0.1);
+    color: $color-primary;
+    border-color: $color-primary;
   }
 }
 
 .memo-tip {
-  font-size: 24rpx;
-  color: #999;
+  font-size: $font-size-secondary;
+  color: $color-text-secondary;
   margin-top: 16rpx;
 }
 
@@ -982,19 +1076,14 @@ onPullDownRefresh(() => { onRefresh() })
   padding-bottom: 32rpx;
 }
 
-.confirm-btn {
-  width: 100%;
-  height: 96rpx;
-  background: #3B82F6;
-  color: #fff;
+:deep(.confirm-btn-custom) {
+  height: 96rpx !important;
+  min-height: 96rpx !important;
   border-radius: 48rpx;
-  font-size: 32rpx;
+  font-size: $font-size-title;
   font-weight: 500;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  &::after { border: none; }
+  padding: 0 !important;
+  line-height: 1 !important;
 }
 
 /* 结账二次确认弹窗 */
@@ -1019,7 +1108,7 @@ onPullDownRefresh(() => { onRefresh() })
 .settle-confirm-panel {
   width: 100%;
   max-width: 600rpx;
-  background: #fff;
+  background: $color-white;
   border-radius: 32rpx;
   padding: 48rpx 40rpx 40rpx;
   text-align: center;
@@ -1031,20 +1120,20 @@ onPullDownRefresh(() => { onRefresh() })
 }
 
 .settle-confirm-title {
-  font-size: 36rpx;
+  font-size: $font-size-xlarge;
   font-weight: 600;
-  color: #333;
+  color: $color-text-primary;
   margin-bottom: 16rpx;
 }
 
 .settle-confirm-desc {
-  font-size: 26rpx;
-  color: #999;
+  font-size: $font-size-small;
+  color: $color-text-secondary;
   margin-bottom: 32rpx;
 }
 
 .settle-confirm-info {
-  background: #F9FAFB;
+  background: $color-bg;
   border-radius: 16rpx;
   padding: 24rpx;
   margin-bottom: 24rpx;
@@ -1063,24 +1152,24 @@ onPullDownRefresh(() => { onRefresh() })
 }
 
 .settle-info-label {
-  font-size: 28rpx;
-  color: #666;
+  font-size: $font-size-content;
+  color: $color-text-regular;
 }
 
 .settle-info-value {
-  font-size: 28rpx;
+  font-size: $font-size-content;
   font-weight: 600;
-  color: #333;
+  color: $color-text-primary;
   &.discount-value {
-    color: #EF4444;
-    font-size: 32rpx;
+    color: $color-danger;
+    font-size: $font-size-title;
   }
 }
 
 .settle-confirm-tip {
-  background: #FEF3C7;
-  color: #92400E;
-  font-size: 26rpx;
+  background: rgba(245, 158, 11, 0.1);
+  color: $color-warning;
+  font-size: $font-size-small;
   padding: 16rpx 24rpx;
   border-radius: 12rpx;
   margin-bottom: 32rpx;
@@ -1092,33 +1181,28 @@ onPullDownRefresh(() => { onRefresh() })
   gap: 24rpx;
 }
 
-.settle-cancel-btn {
+:deep(.settle-cancel-btn-custom) {
   flex: 1;
-  height: 88rpx;
-  background: #F3F4F6;
-  color: #666;
+  height: 88rpx !important;
+  min-height: 88rpx !important;
+  background: $color-bg !important;
+  color: $color-text-regular !important;
   border-radius: 44rpx;
-  font-size: 30rpx;
+  font-size: $font-size-large;
   font-weight: 500;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  &::after { border: none; }
+  padding: 0 !important;
+  line-height: 1 !important;
+  border: none !important;
 }
 
-.settle-ok-btn {
+:deep(.settle-ok-btn-custom) {
   flex: 1;
-  height: 88rpx;
-  background: #3B82F6;
-  color: #fff;
+  height: 88rpx !important;
+  min-height: 88rpx !important;
   border-radius: 44rpx;
-  font-size: 30rpx;
+  font-size: $font-size-large;
   font-weight: 500;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  &::after { border: none; }
+  padding: 0 !important;
+  line-height: 1 !important;
 }
 </style>

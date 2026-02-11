@@ -294,21 +294,28 @@ onMounted(() => {
 
     <!-- 底部按钮 -->
     <view class="footer-btns">
-      <button class="btn-primary" :loading="submitting" :disabled="loading" @tap="handleSubmit">
+      <wd-button 
+        type="primary" 
+        block 
+        size="large"
+        :loading="submitting" 
+        :disabled="loading" 
+        @click="handleSubmit"
+        custom-class="btn-primary-custom"
+      >
         保存修改
-      </button>
+      </wd-button>
     </view>
   </view>
 </template>
 
 <style lang="scss" scoped>
-@import '@/styles/variables.scss';
 
 .profile-page {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #f5f5f5;
+  background: $color-bg;
 }
 
 .page-content {
@@ -338,7 +345,7 @@ onMounted(() => {
 
 // 信息卡片
 .info-card {
-  background: #fff;
+  background: $color-white;
   border-radius: $border-radius-lg;
   margin: $spacing-sm $spacing-md;
   padding: $spacing-sm;
@@ -354,7 +361,7 @@ onMounted(() => {
 .card-title {
   font-size: $font-size-small;
   font-weight: 600;
-  color: #333;
+  color: $color-text-primary;
   margin-bottom: $spacing-sm;
   padding-bottom: $spacing-small;
   border-bottom: 2rpx solid #f5f5f5;
@@ -381,13 +388,13 @@ onMounted(() => {
 
 .form-label {
   font-size: $font-size-small;
-  color: #666;
+  color: $color-text-regular;
   width: 140rpx;
   flex-shrink: 0;
 }
 
 .required {
-  color: #EF4444;
+  color: $color-danger;
 }
 
 .form-value {
@@ -417,14 +424,14 @@ onMounted(() => {
 .gender-btn {
   padding: $spacing-small $spacing-md;
   font-size: $font-size-small;
-  color: #666;
-  background: #f5f5f5;
+  color: $color-text-regular;
+  background: $color-bg;
   border-radius: $border-radius-sm;
   transition: all $transition-fast;
 
   &.active {
-    background: #EFF6FF;
-    color: #3B82F6;
+    background: $color-primary-light;
+    color: $color-primary;
     font-weight: 500;
   }
 }
@@ -437,30 +444,16 @@ onMounted(() => {
   right: 0;
   padding: $spacing-sm $spacing-lg;
   padding-bottom: calc(#{$spacing-sm} + env(safe-area-inset-bottom));
-  background: #fff;
+  background: $color-white;
   box-shadow: $box-shadow-md;
   z-index: 100;
 }
 
-.btn-primary {
-  width: 100%;
+:deep(.btn-primary-custom) {
   height: 84rpx;
-  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
-  color: #fff;
+  border-radius: 42rpx;
   font-size: $font-size-large;
   font-weight: 500;
-  border-radius: 42rpx;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  &::after {
-    border: none;
-  }
-
-  &:active {
-    opacity: 0.9;
-  }
+  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
 }
 </style>

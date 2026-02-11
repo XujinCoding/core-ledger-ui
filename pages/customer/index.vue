@@ -178,11 +178,10 @@ const goToSwitchMerchant = () => {
 </template>
 
 <style lang="scss" scoped>
-@import '@/styles/variables.scss';
 
 .customer-page {
   height: 100vh;
-  background: #f5f5f5;
+  background: $color-bg;
 }
 
 .tab-scroll {
@@ -196,7 +195,7 @@ const goToSwitchMerchant = () => {
 // 用户信息卡片
 .user-card {
   position: relative;
-  background: #fff;
+  background: $color-white;
   border-radius: $spacing-md;
   overflow: hidden;
   box-shadow: $box-shadow-md;
@@ -246,7 +245,7 @@ const goToSwitchMerchant = () => {
 .user-name {
   font-size: $font-size-xlarge;
   font-weight: 600;
-  color: #fff;
+  color: $color-white;
   margin-bottom: $spacing-xs;
 }
 
@@ -268,7 +267,7 @@ const goToSwitchMerchant = () => {
 
 .info-text {
   font-size: $font-size-content;
-  color: #666;
+  color: $color-text-regular;
 }
 
 // 商户切换卡片 - 独立突出显示
@@ -276,7 +275,7 @@ const goToSwitchMerchant = () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #fff;
+  background: $color-white;
   border-radius: $spacing-sm;
   padding: $font-size-content $spacing-md;
   margin-bottom: $spacing-md;
@@ -284,7 +283,7 @@ const goToSwitchMerchant = () => {
 
   &:active {
     transform: scale(0.98);
-    background: #fafafa;
+    background: $color-bg-gray;
   }
 }
 
@@ -314,14 +313,14 @@ const goToSwitchMerchant = () => {
 
 .merchant-label {
   font-size: $font-size-secondary;
-  color: #999;
+  color: $color-text-secondary;
   margin-bottom: 4rpx;
 }
 
 .merchant-name {
   font-size: $font-size-large;
   font-weight: 600;
-  color: #333;
+  color: $color-text-primary;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -336,7 +335,7 @@ const goToSwitchMerchant = () => {
 
 .switch-text {
   font-size: $font-size-small;
-  color: #3B82F6;
+  color: $color-primary;
   font-weight: 500;
 }
 
@@ -360,11 +359,11 @@ const goToSwitchMerchant = () => {
   margin-right: $spacing-md;
 
   &.blue {
-    background: #EFF6FF;
+    background: $color-primary-light;
   }
 
   &.green {
-    background: #ECFDF5;
+    background: $color-success-light;
   }
 }
 </style>
