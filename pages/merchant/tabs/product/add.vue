@@ -116,6 +116,9 @@ const dialogAttrName = ref('')
 const dialogAttrValues = ref<AttrValueItem[]>([])
 const dialogValueInput = ref('')
 
+// 用于检测数据是否变化
+const originalDialogData = ref<{ name: string; values: AttrValueItem[] } | null>(null)
+
 // ==================== 方法 ====================
 
 /**
@@ -271,25 +274,73 @@ const removeAttr = (index: number) => {
  */
 const openAttrDialog = (index?: number) => {
   if (index !== undefined && index >= 0) {
-    // 编辑模式
+    // 编辑模式 - 保存原始数据用于检测变化
     editingAttrIndex.value = index
     dialogAttrName.value = attrs.value[index].name
     dialogAttrValues.value = [...attrs.value[index].values]
+    // 保存原始数据
+    originalDialogData.value = {
+      name: attrs.value[index].name,
+      values: JSON.stringify(attrs.value[index].values)
+    }
   } else {
     // 新增模式
     editingAttrIndex.value = -1
     dialogAttrName.value = ''
     dialogAttrValues.value = []
+    originalDialogData.value = null
   }
   dialogValueInput.value = ''
   showAttrDialog.value = true
 }
 
 /**
- * 关闭属性编辑弹窗
+ * 检测弹窗数据是否有变化
  */
-const closeAttrDialog = () => {
-  showAttrDialog.value = false
+const hasDialogDataChanged = () => {
+  if (!originalDialogData.value) {
+    // 新增模式：检查是否有输入内容
+    return dialogAttrName.value.trim() !== '' || dialogAttrValues.value.length > 0
+  }
+  // 编辑模式：对比数据
+  return dialogAttrName.value !== originalDialogData.value.name ||
+         JSON.stringify(dialogAttrValues.value) !== originalDialogData.value.values
+}
+
+/**
+ * 关闭属性编辑弹窗（带数据变化检测）
+ * @param force 是否强制关闭（不检查数据变化）
+ */
+const closeAttrDialog = (force = false) => {
+  if (!force && hasDialogDataChanged()) {
+    uni.showModal({
+      title: '提示',
+      content: '关闭将丢失未保存的数据，确定要关闭吗？',
+      success: (res) => {
+        if (res.confirm) {
+          showAttrDialog.value = false
+        }
+      }
+    })
+  } else {
+    showAttrDialog.value = false
+  }
+}
+
+/**
+ * 确认删除属性（从列表中）
+ */
+const confirmDeleteAttr = (index: number) => {
+  uni.showModal({
+    title: '确认删除',
+    content: `确定要删除属性"${attrs.value[index].name}"吗？`,
+    success: (res) => {
+      if (res.confirm) {
+        attrs.value.splice(index, 1)
+        uni.showToast({ title: '删除成功', icon: 'success', duration: 1500 })
+      }
+    }
+  })
 }
 
 /**
@@ -516,15 +567,6 @@ onMounted(() => {
               align="right"
             />
             
-            <wd-cell
-              title="商品分类"
-              title-width="160rpx"
-              :value="form.categoryName || '请选择分类'"
-              :value-class="form.categoryName ? '' : 'placeholder-text'"
-              is-link
-              required
-              @click="showCategoryPicker = true"
-            />
             
             <wd-input
               v-model="form.unit"
@@ -534,6 +576,16 @@ onMounted(() => {
               clearable
               required
               align="right"
+            />
+
+            <wd-cell
+                title="商品分类"
+                title-width="160rpx"
+                :value="form.categoryName || '请选择分类'"
+                :custom-value-class="form.categoryName ? 'value-left' : 'value-left placeholder-text'"
+                is-link
+                required
+                @click="showCategoryPicker = true"
             />
             
             <wd-cell 
@@ -606,17 +658,21 @@ onMounted(() => {
               v-for="(attr, index) in attrs" 
               :key="index" 
               class="attr-list-item"
-              @tap="openAttrDialog(index)"
             >
               <view class="attr-item-content">
-                <view class="attr-item-left">
+                <view class="attr-item-left" @tap="openAttrDialog(index)">
                   <text class="attr-item-name">{{ attr.name }}</text>
                   <text class="attr-item-values">
                     {{ attr.values.length > 0 ? attr.values.map(v => v.name).join('、') : '暂无属性值' }}
                   </text>
                 </view>
                 <view class="attr-item-actions">
-                  <wd-icon name="edit" size="36rpx" color="#3B82F6" />
+                  <view class="action-btn" @tap.stop="openAttrDialog(index)">
+                    <wd-icon name="edit" size="36rpx" color="#3B82F6" />
+                  </view>
+                  <view class="action-btn" @tap.stop="confirmDeleteAttr(index)">
+                    <wd-icon name="delete" size="36rpx" color="#EF4444" />
+                  </view>
                 </view>
               </view>
             </view>
@@ -687,14 +743,14 @@ onMounted(() => {
       v-model="showAttrDialog" 
       position="bottom" 
       :safe-area-inset-bottom="true"
+      :close-on-click-overlay="false"
       custom-style="height: 70%; border-radius: 24rpx 24rpx 0 0;"
     >
       <view class="attr-dialog">
         <view class="dialog-header">
           <text class="dialog-title">{{ editingAttrIndex === -1 ? '添加属性' : '编辑属性' }}</text>
-          <view class="dialog-actions">
-            <text class="dialog-action cancel" @tap="closeAttrDialog">取消</text>
-            <text class="dialog-action confirm" @tap="saveAttr">保存</text>
+          <view class="dialog-close" @tap="closeAttrDialog">
+            <wd-icon name="close" size="40rpx" color="#666" />
           </view>
         </view>
 
@@ -748,19 +804,18 @@ onMounted(() => {
               </wd-button>
             </view>
           </view>
+        </view>
 
-          <!-- 删除按钮（仅编辑模式） -->
-          <view v-if="editingAttrIndex !== -1" class="dialog-delete-section">
-            <wd-button
-              type="error"
-              plain
-              block
-              @click="deleteAttr"
-            >
-              <wd-icon name="delete" size="32rpx" />
-              删除此属性
-            </wd-button>
-          </view>
+        <!-- 底部保存按钮 -->
+        <view class="dialog-footer">
+          <wd-button
+            type="primary"
+            block
+            size="large"
+            @click="saveAttr"
+          >
+            保存
+          </wd-button>
         </view>
       </view>
     </wd-popup>
@@ -826,12 +881,15 @@ onMounted(() => {
   font-size: $font-size-title;
   font-weight: 500;
   color: $color-text-primary;
-  text-align: right;
+  text-align: left;
 }
 
 // 占位符文本样式
 :deep(.placeholder-text) {
   color: $color-text-placeholder !important;
+}
+:deep(.value-left) {
+  text-align: left !important;
 }
 
 // Textarea 自定义样式
@@ -892,11 +950,6 @@ onMounted(() => {
   border-radius: 16rpx;
   margin: 0 $spacing-lg 16rpx;
   overflow: hidden;
-  transition: all $transition-fast;
-  
-  &:active {
-    background: #f0f0f0;
-  }
 }
 
 .attr-item-content {
@@ -904,11 +957,16 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 24rpx;
+  gap: 16rpx;
 }
 
 .attr-item-left {
   flex: 1;
   min-width: 0;
+  
+  &:active {
+    opacity: 0.6;
+  }
 }
 
 .attr-item-name {
@@ -929,8 +987,22 @@ onMounted(() => {
 }
 
 .attr-item-actions {
-  margin-left: 16rpx;
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
   flex-shrink: 0;
+}
+
+.action-btn {
+  width: 64rpx;
+  height: 64rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  &:active {
+    opacity: 0.6;
+  }
 }
 
 .attrs-empty {
@@ -970,21 +1042,16 @@ onMounted(() => {
   color: $color-text-primary;
 }
 
-.dialog-actions {
+.dialog-close {
+  width: 64rpx;
+  height: 64rpx;
   display: flex;
-  gap: $spacing-lg;
-}
-
-.dialog-action {
-  font-size: $font-size-content;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
   
-  &.cancel {
-    color: $color-text-regular;
-  }
-  
-  &.confirm {
-    color: $color-primary;
-    font-weight: 500;
+  &:active {
+    opacity: 0.6;
   }
 }
 
@@ -1065,10 +1132,11 @@ onMounted(() => {
   }
 }
 
-.dialog-delete-section {
-  margin-top: 48rpx;
-  padding-top: $spacing-lg;
+.dialog-footer {
+  padding: $spacing-lg;
   border-top: 2rpx solid #f0f0f0;
+  flex-shrink: 0;
+  background: $color-white;
 }
 
 // 底部按钮
