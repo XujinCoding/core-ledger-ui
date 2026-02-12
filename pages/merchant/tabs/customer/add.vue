@@ -94,6 +94,12 @@ const handleSubmit = async () => {
       }
       return
     }
+    
+    // 手动校验地址选择器（因为它不在 wd-form 的校验体系中）
+    if (!form.value.addressId) {
+      uni.showToast({ title: '请选择所在地区', icon: 'none' })
+      return
+    }
 
     loading.value = true
     if (isEdit.value && customerId.value) {

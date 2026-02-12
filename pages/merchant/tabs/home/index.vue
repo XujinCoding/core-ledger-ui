@@ -489,7 +489,7 @@ onUnmounted(() => {
   margin-bottom: 8rpx;
 
   &.debt {
-    color: rgba(239, 68, 68, 0.6);
+    color: #EF4444;
   }
 }
 

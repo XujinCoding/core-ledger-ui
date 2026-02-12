@@ -93,6 +93,19 @@ const canConfirm = computed(() => {
 	return tempSelectedItems.value.length >= props.minLevel
 })
 
+// 验证是否已选择（用于表单提交前验证）
+const validate = () => {
+	if (props.required && !props.modelValue) {
+		return false
+	}
+	return true
+}
+
+// 暴露验证方法给父组件
+defineExpose({
+	validate
+})
+
 // 初始化加载
 onMounted(async () => {
 	if (props.modelValue) {

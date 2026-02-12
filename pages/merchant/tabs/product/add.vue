@@ -108,9 +108,13 @@ interface AttrItem {
   values: AttrValueItem[]
 }
 const attrs = ref<AttrItem[]>([])
-const newAttrName = ref('')
-const newAttrValue = ref('')
-const editingAttrIndex = ref(-1)
+
+// 属性编辑弹窗状态
+const showAttrDialog = ref(false)
+const editingAttrIndex = ref(-1)  // -1 表示新增，>=0 表示编辑
+const dialogAttrName = ref('')
+const dialogAttrValues = ref<AttrValueItem[]>([])
+const dialogValueInput = ref('')
 
 // ==================== 方法 ====================
 
@@ -195,21 +199,42 @@ const addAttr = () => {
     uni.showToast({ title: '请输入属性名', icon: 'none' })
     return
   }
+  
+  // 检查是否已存在同名属性
+  if (attrs.value.some(attr => attr.name === newAttrName.value.trim())) {
+    uni.showToast({ title: '该属性已存在', icon: 'none' })
+    return
+  }
+  
+  const newIndex = attrs.value.length
   attrs.value.push({
     name: newAttrName.value.trim(),
     values: []
   })
+  
+  // 初始化该属性的输入框值
+  attrValueInputs.value[newIndex] = ''
   newAttrName.value = ''
-  editingAttrIndex.value = attrs.value.length - 1
 }
 
 /**
  * 添加属性值
  */
 const addAttrValue = (index: number) => {
-  if (!newAttrValue.value.trim()) return
-  attrs.value[index].values.push({ name: newAttrValue.value.trim() })
-  newAttrValue.value = ''
+  const inputValue = attrValueInputs.value[index]
+  if (!inputValue || !inputValue.trim()) {
+    uni.showToast({ title: '请输入属性值', icon: 'none' })
+    return
+  }
+  
+  // 检查是否已存在同名属性值
+  if (attrs.value[index].values.some(v => v.name === inputValue.trim())) {
+    uni.showToast({ title: '该属性值已存在', icon: 'none' })
+    return
+  }
+  
+  attrs.value[index].values.push({ name: inputValue.trim() })
+  attrValueInputs.value[index] = ''
 }
 
 /**
@@ -223,7 +248,126 @@ const removeAttrValue = (attrIndex: number, valueIndex: number) => {
  * 删除属性
  */
 const removeAttr = (index: number) => {
-  attrs.value.splice(index, 1)
+  uni.showModal({
+    title: '确认删除',
+    content: `确定要删除属性"${attrs.value[index].name}"吗？`,
+    success: (res) => {
+      if (res.confirm) {
+        attrs.value.splice(index, 1)
+        delete attrValueInputs.value[index]
+        // 重新索引
+        const newInputs: Record<number, string> = {}
+        attrs.value.forEach((_, i) => {
+          newInputs[i] = attrValueInputs.value[i] || ''
+        })
+        attrValueInputs.value = newInputs
+      }
+    }
+  })
+}
+
+/**
+ * 打开属性编辑弹窗
+ */
+const openAttrDialog = (index?: number) => {
+  if (index !== undefined && index >= 0) {
+    // 编辑模式
+    editingAttrIndex.value = index
+    dialogAttrName.value = attrs.value[index].name
+    dialogAttrValues.value = [...attrs.value[index].values]
+  } else {
+    // 新增模式
+    editingAttrIndex.value = -1
+    dialogAttrName.value = ''
+    dialogAttrValues.value = []
+  }
+  dialogValueInput.value = ''
+  showAttrDialog.value = true
+}
+
+/**
+ * 关闭属性编辑弹窗
+ */
+const closeAttrDialog = () => {
+  showAttrDialog.value = false
+}
+
+/**
+ * 添加弹窗中的属性值
+ */
+const addDialogValue = () => {
+  if (!dialogValueInput.value.trim()) {
+    uni.showToast({ title: '请输入属性值', icon: 'none' })
+    return
+  }
+  
+  // 检查是否已存在
+  if (dialogAttrValues.value.some(v => v.name === dialogValueInput.value.trim())) {
+    uni.showToast({ title: '该属性值已存在', icon: 'none' })
+    return
+  }
+  
+  dialogAttrValues.value.push({ name: dialogValueInput.value.trim() })
+  dialogValueInput.value = ''
+}
+
+/**
+ * 删除弹窗中的属性值
+ */
+const removeDialogValue = (index: number) => {
+  dialogAttrValues.value.splice(index, 1)
+}
+
+/**
+ * 保存属性
+ */
+const saveAttr = () => {
+  if (!dialogAttrName.value.trim()) {
+    uni.showToast({ title: '请输入属性名称', icon: 'none' })
+    return
+  }
+  
+  if (dialogAttrValues.value.length === 0) {
+    uni.showToast({ title: '请至少添加一个属性值', icon: 'none' })
+    return
+  }
+  
+  if (editingAttrIndex.value === -1) {
+    // 新增
+    // 检查是否已存在同名属性
+    if (attrs.value.some(attr => attr.name === dialogAttrName.value.trim())) {
+      uni.showToast({ title: '该属性已存在', icon: 'none' })
+      return
+    }
+    
+    attrs.value.push({
+      name: dialogAttrName.value.trim(),
+      values: [...dialogAttrValues.value]
+    })
+  } else {
+    // 编辑
+    attrs.value[editingAttrIndex.value].values = [...dialogAttrValues.value]
+  }
+  
+  closeAttrDialog()
+}
+
+/**
+ * 删除属性（从弹窗中）
+ */
+const deleteAttr = () => {
+  if (editingAttrIndex.value === -1) return
+  
+  uni.showModal({
+    title: '确认删除',
+    content: `确定要删除属性"${attrs.value[editingAttrIndex.value].name}"吗？`,
+    success: (res) => {
+      if (res.confirm) {
+        attrs.value.splice(editingAttrIndex.value, 1)
+        closeAttrDialog()
+      }
+    }
+  })
 }
 
 /**
@@ -355,133 +499,136 @@ onMounted(() => {
 <template>
   <view class="product-add-page">
     <scroll-view class="content-scroll" scroll-y>
-      <!-- 基本信息 -->
-      <view class="form-section">
-        <view class="section-title">基本信息</view>
-        
-        <view class="form-item">
-          <text class="form-label required">商品名称</text>
-          <input
-            class="form-input"
-            v-model="form.name"
-            placeholder="请输入商品名称"
-            :maxlength="50"
-          />
-        </view>
-
-        <view class="form-item" @tap="showCategoryPicker = true">
-          <text class="form-label required">商品分类</text>
-          <view class="form-value">
-            <text :class="{ placeholder: !form.categoryName }">
-              {{ form.categoryName || '请选择分类' }}
-            </text>
-            <wd-icon name="arrow-right" size="32rpx" color="#ccc" />
-          </view>
-        </view>
-
-        <view class="form-item">
-          <text class="form-label required">标准价格</text>
-          <view class="price-input-wrap">
-            <text class="price-symbol">¥</text>
-            <input
-              class="price-input"
-              type="digit"
-              v-model="form.price"
-              placeholder="0"
-              :maxlength="6"
+      <view class="page-content">
+        <!-- 基本信息 -->
+        <view class="form-section">
+          <view class="section-title">基本信息</view>
+          
+          <wd-cell-group border custom-class="product-form-group">
+            <wd-input
+              v-model="form.name"
+              label="商品名称"
+              label-width="160rpx"
+              placeholder="请输入商品名称"
+              clearable
+              required
+              :maxlength="50"
+              align="right"
             />
-          </view>
-          <text class="form-tip">价格范围：0 - 999999</text>
-        </view>
-
-        <view class="form-item">
-          <text class="form-label required">单位</text>
-          <input
-            class="form-input"
-            v-model="form.unit"
-            placeholder="请输入单位"
-          />
-        </view>
-
-        <view class="form-item">
-          <text class="form-label">描述</text>
-          <wd-textarea
-            v-model="form.description"
-            placeholder="商品描述（选填）"
-            :maxlength="200"
-            :auto-height="true"
-            custom-class="form-textarea-custom"
-          />
-        </view>
-      </view>
-
-      <!-- 商品图片 -->
-      <view class="form-section">
-        <view class="section-title">商品图片</view>
-        <view class="image-upload" @tap="chooseImage">
-          <image v-if="form.imagePreviewUrl" :src="form.imagePreviewUrl" mode="aspectFill" class="preview-img" />
-          <view v-else class="upload-placeholder">
-            <wd-icon name="add" size="56rpx" color="#999" />
-            <text>添加图片</text>
-          </view>
-        </view>
-      </view>
-
-      <!-- 商品属性 -->
-      <view class="form-section">
-        <view class="section-header">
-          <text class="section-title">商品属性</text>
-          <text class="section-tip">添加属性后可自动生成SKU</text>
-        </view>
-
-        <!-- 已添加属性 -->
-        <view v-for="(attr, index) in attrs" :key="index" class="attr-item">
-          <view class="attr-header">
-            <text class="attr-name">{{ attr.name }}</text>
-            <wd-icon name="close" size="32rpx" color="#999" @click="removeAttr(index)" />
-          </view>
-          <view class="attr-values">
-            <view
-              v-for="(val, vIndex) in attr.values"
-              :key="vIndex"
-              class="value-tag"
+            
+            <wd-cell
+              title="商品分类"
+              title-width="160rpx"
+              :value="form.categoryName || '请选择分类'"
+              :value-class="form.categoryName ? '' : 'placeholder-text'"
+              is-link
+              required
+              @click="showCategoryPicker = true"
+            />
+            
+            <wd-input
+              v-model="form.unit"
+              label="单位"
+              label-width="160rpx"
+              placeholder="请输入单位（如：件、个、箱）"
+              clearable
+              required
+              align="right"
+            />
+            
+            <wd-cell 
+              title="标准价格" 
+              title-width="160rpx"
+              required
             >
-              {{ val.name }}
-              <wd-icon name="close" size="24rpx" @click="removeAttrValue(index, vIndex)" />
-            </view>
-            <view class="add-value" v-if="editingAttrIndex === index">
-              <input
-                class="value-input"
-                v-model="newAttrValue"
-                placeholder="输入值"
-                @confirm="addAttrValue(index)"
+              <view class="price-input-wrapper">
+                <text class="price-symbol">¥</text>
+                <input
+                  class="price-input"
+                  type="digit"
+                  v-model="form.price"
+                  placeholder="0.00"
+                  :maxlength="8"
+                />
+              </view>
+            </wd-cell>
+            
+            <wd-cell 
+              title="描述"
+              title-width="160rpx"
+            >
+              <wd-textarea
+                v-model="form.description"
+                placeholder="商品描述（选填）"
+                :maxlength="200"
+                :auto-height="true"
+                custom-class="form-textarea-custom"
               />
-              <text class="confirm-btn" @tap="addAttrValue(index)">添加</text>
-            </view>
-            <view v-else class="add-value-btn" @tap="editingAttrIndex = index">
-              <wd-icon name="add" size="24rpx" /> 添加值
+            </wd-cell>
+          </wd-cell-group>
+        </view>
+
+        <!-- 商品图片 -->
+        <view class="form-section">
+          <view class="section-title">商品图片</view>
+          <view class="image-upload-wrapper">
+            <view class="image-upload" @tap="chooseImage">
+              <image v-if="form.imagePreviewUrl" :src="form.imagePreviewUrl" mode="aspectFill" class="preview-img" />
+              <view v-else class="upload-placeholder">
+                <wd-icon name="add" size="56rpx" color="#999" />
+                <text>添加图片</text>
+              </view>
             </view>
           </view>
         </view>
 
-        <!-- 添加新属性 -->
-        <view class="add-attr">
-          <input
-            class="attr-input"
-            v-model="newAttrName"
-            placeholder="属性名称（如：颜色、规格）"
-          />
-          <wd-button 
-            type="primary"
-            @click="addAttr"
-            custom-class="add-attr-btn-custom"
+        <!-- 商品属性 -->
+        <view class="form-section">
+          <view class="section-header-with-action">
+            <view class="section-title">商品属性（选填）</view>
+            <wd-button 
+              type="primary"
+              size="small"
+              @click="openAttrDialog()"
+            >
+              <wd-icon name="add" size="28rpx" />
+              添加
+            </wd-button>
+          </view>
+
+          <!-- 属性列表 - 限制高度可滚动 -->
+          <scroll-view 
+            v-if="attrs.length > 0" 
+            class="attrs-scroll-list" 
+            scroll-y
           >
-            添加属性
-          </wd-button>
+            <view 
+              v-for="(attr, index) in attrs" 
+              :key="index" 
+              class="attr-list-item"
+              @tap="openAttrDialog(index)"
+            >
+              <view class="attr-item-content">
+                <view class="attr-item-left">
+                  <text class="attr-item-name">{{ attr.name }}</text>
+                  <text class="attr-item-values">
+                    {{ attr.values.length > 0 ? attr.values.map(v => v.name).join('、') : '暂无属性值' }}
+                  </text>
+                </view>
+                <view class="attr-item-actions">
+                  <wd-icon name="edit" size="36rpx" color="#3B82F6" />
+                </view>
+              </view>
+            </view>
+          </scroll-view>
+
+          <!-- 空状态 -->
+          <view v-else class="attrs-empty">
+            <wd-icon name="inbox" size="80rpx" color="#ddd" />
+            <text>暂无属性，点击右上角添加</text>
+          </view>
         </view>
       </view>
-
-      <view style="height: 180rpx;"></view>
     </scroll-view>
 
     <!-- 底部按钮 -->
@@ -492,14 +639,13 @@ onMounted(() => {
         @click="submit"
         block
         size="large"
-        custom-class="save-btn-custom"
       >
         {{ isEdit ? '保存修改' : '添加商品' }}
       </wd-button>
     </view>
 
     <!-- 分类选择弹窗 -->
-    <wd-popup v-model="showCategoryPicker" position="bottom" custom-style="height: 60%;">
+    <wd-popup v-model="showCategoryPicker" position="bottom" custom-style="height: 60%; border-radius: 24rpx 24rpx 0 0;">
       <view class="category-picker">
         <view class="picker-header">
           <text class="picker-title">选择分类</text>
@@ -535,6 +681,89 @@ onMounted(() => {
         </scroll-view>
       </view>
     </wd-popup>
+
+    <!-- 属性编辑弹窗 -->
+    <wd-popup 
+      v-model="showAttrDialog" 
+      position="bottom" 
+      :safe-area-inset-bottom="true"
+      custom-style="height: 70%; border-radius: 24rpx 24rpx 0 0;"
+    >
+      <view class="attr-dialog">
+        <view class="dialog-header">
+          <text class="dialog-title">{{ editingAttrIndex === -1 ? '添加属性' : '编辑属性' }}</text>
+          <view class="dialog-actions">
+            <text class="dialog-action cancel" @tap="closeAttrDialog">取消</text>
+            <text class="dialog-action confirm" @tap="saveAttr">保存</text>
+          </view>
+        </view>
+
+        <view class="dialog-content">
+          <!-- 属性名称 -->
+          <view class="dialog-field">
+            <text class="field-label">属性名称</text>
+            <input
+              class="field-input"
+              v-model="dialogAttrName"
+              placeholder="如：颜色、尺寸、规格"
+              :disabled="editingAttrIndex !== -1"
+            />
+          </view>
+
+          <!-- 属性值列表 -->
+          <view class="dialog-field">
+            <text class="field-label">属性值</text>
+            
+            <!-- 已添加的属性值 -->
+            <view v-if="dialogAttrValues.length > 0" class="dialog-values-list">
+              <view
+                v-for="(val, vIndex) in dialogAttrValues"
+                :key="vIndex"
+                class="dialog-value-chip"
+              >
+                <text>{{ val.name }}</text>
+                <wd-icon 
+                  name="close" 
+                  size="28rpx" 
+                  color="#666" 
+                  @click="removeDialogValue(vIndex)" 
+                />
+              </view>
+            </view>
+
+            <!-- 添加属性值 -->
+            <view class="dialog-add-value">
+              <input
+                class="dialog-value-input"
+                v-model="dialogValueInput"
+                placeholder="输入属性值后按回车"
+                @confirm="addDialogValue"
+              />
+              <wd-button
+                type="success"
+                size="small"
+                @click="addDialogValue"
+              >
+                添加
+              </wd-button>
+            </view>
+          </view>
+
+          <!-- 删除按钮（仅编辑模式） -->
+          <view v-if="editingAttrIndex !== -1" class="dialog-delete-section">
+            <wd-button
+              type="error"
+              plain
+              block
+              @click="deleteAttr"
+            >
+              <wd-icon name="delete" size="32rpx" />
+              删除此属性
+            </wd-button>
+          </view>
+        </view>
+      </view>
+    </wd-popup>
   </view>
 </template>
 
@@ -550,131 +779,74 @@ onMounted(() => {
   flex: 1;
 }
 
-.form-section {
-  background: $color-white;
-  margin: 24rpx;
-  border-radius: 24rpx;
-  padding: 32rpx;
+.page-content {
+  padding: $spacing-sm $spacing-md 120rpx;
 }
 
-.section-header {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  margin-bottom: 24rpx;
+.form-section {
+  background: $color-white;
+  margin-bottom: $spacing-md;
+  border-radius: $border-radius-xl;
+  overflow: hidden;
 }
 
 .section-title {
   font-size: $font-size-title;
   font-weight: 600;
   color: $color-text-primary;
-  margin-bottom: 24rpx;
+  padding: $spacing-lg $spacing-lg $spacing-md;
+}
+
+// 当 section-title 在 section-header-with-action 内部时，不需要 padding
+.section-header-with-action .section-title {
+  padding: 0;
 }
 
 .section-tip {
   font-size: $font-size-secondary;
   color: $color-text-secondary;
+  margin-left: 8rpx;
 }
 
-.form-item {
-  margin-bottom: 28rpx;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
-}
-
-.form-label {
-  display: block;
-  font-size: $font-size-content;
-  color: $color-text-regular;
-  margin-bottom: 16rpx;
-
-  &.required::before {
-    content: '*';
-    color: $color-danger;
-    margin-right: 4rpx;
-  }
-}
-
-.form-input {
-  width: 100%;
-  height: 88rpx;
-  background: $color-bg;
-  border-radius: 16rpx;
-  padding: 0 24rpx;
-  font-size: $font-size-content;
-  box-sizing: border-box;
-}
-
-.price-input-wrap {
+// 价格输入样式
+.price-input-wrapper {
   display: flex;
   align-items: center;
-  height: 88rpx;
-  background: $color-bg;
-  border-radius: 16rpx;
-  padding: 0 24rpx;
+  gap: 8rpx;
 }
 
 .price-symbol {
   font-size: $font-size-title;
   font-weight: 500;
   color: $color-text-primary;
-  margin-right: 8rpx;
 }
 
 .price-input {
   flex: 1;
-  height: 100%;
   font-size: $font-size-title;
   font-weight: 500;
   color: $color-text-primary;
-  background: transparent;
+  text-align: right;
 }
 
-.form-tip {
-  display: block;
-  font-size: $font-size-secondary;
-  color: $color-text-secondary;
-  margin-top: 12rpx;
+// 占位符文本样式
+:deep(.placeholder-text) {
+  color: $color-text-placeholder !important;
 }
 
-.form-textarea {
-  width: 100%;
-  height: 160rpx;
-  background: $color-bg;
-  border-radius: 16rpx;
-  padding: 24rpx;
-  font-size: $font-size-content;
-  box-sizing: border-box;
-}
-
+// Textarea 自定义样式
 :deep(.form-textarea-custom) {
   width: 100%;
-  background: $color-bg;
-  border-radius: 16rpx;
   
   .wd-textarea__inner {
-    min-height: 160rpx;
+    min-height: 120rpx;
     font-size: $font-size-content;
-    padding: 24rpx;
   }
 }
 
-.form-value {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 88rpx;
-  background: $color-bg;
-  border-radius: 16rpx;
-  padding: 0 24rpx;
-  font-size: $font-size-content;
-  color: $color-text-primary;
-
-  .placeholder {
-    color: $color-text-secondary;
-  }
+// 图片上传区域
+.image-upload-wrapper {
+  padding: 0 $spacing-lg $spacing-lg;
 }
 
 .image-upload {
@@ -702,111 +874,211 @@ onMounted(() => {
   font-size: $font-size-secondary;
 }
 
-.attr-item {
-  background: $color-bg;
-  border-radius: 16rpx;
-  padding: 24rpx;
-  margin-bottom: 20rpx;
-}
-
-.attr-header {
+// 属性部分样式
+.section-header-with-action {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16rpx;
+  padding: $spacing-lg $spacing-lg $spacing-md;
 }
 
-.attr-name {
+.attrs-scroll-list {
+  max-height: 400rpx;
+  padding: 0 0 $spacing-md 0;
+}
+
+.attr-list-item {
+  background: $color-bg;
+  border-radius: 16rpx;
+  margin: 0 $spacing-lg 16rpx;
+  overflow: hidden;
+  transition: all $transition-fast;
+  
+  &:active {
+    background: #f0f0f0;
+  }
+}
+
+.attr-item-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24rpx;
+}
+
+.attr-item-left {
+  flex: 1;
+  min-width: 0;
+}
+
+.attr-item-name {
+  display: block;
   font-size: $font-size-content;
   font-weight: 500;
   color: $color-text-primary;
+  margin-bottom: 8rpx;
 }
 
-.attr-values {
+.attr-item-values {
+  display: block;
+  font-size: $font-size-secondary;
+  color: $color-text-secondary;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.attr-item-actions {
+  margin-left: 16rpx;
+  flex-shrink: 0;
+}
+
+.attrs-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80rpx $spacing-lg;
+  color: $color-text-secondary;
+  font-size: $font-size-content;
+  
+  text {
+    margin-top: 16rpx;
+  }
+}
+
+// 属性编辑弹窗
+.attr-dialog {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: $color-white;
+}
+
+.dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-lg;
+  border-bottom: 2rpx solid #f0f0f0;
+  flex-shrink: 0;
+}
+
+.dialog-title {
+  font-size: $font-size-title;
+  font-weight: 600;
+  color: $color-text-primary;
+}
+
+.dialog-actions {
+  display: flex;
+  gap: $spacing-lg;
+}
+
+.dialog-action {
+  font-size: $font-size-content;
+  
+  &.cancel {
+    color: $color-text-regular;
+  }
+  
+  &.confirm {
+    color: $color-primary;
+    font-weight: 500;
+  }
+}
+
+.dialog-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: $spacing-lg;
+}
+
+.dialog-field {
+  margin-bottom: $spacing-lg;
+}
+
+.field-label {
+  display: block;
+  font-size: $font-size-content;
+  color: $color-text-primary;
+  font-weight: 500;
+  margin-bottom: 16rpx;
+}
+
+.field-input {
+  width: 100%;
+  height: 88rpx;
+  background: $color-bg;
+  border-radius: 16rpx;
+  padding: 0 24rpx;
+  font-size: $font-size-content;
+  border: 2rpx solid #e5e5e5;
+  
+  &:focus {
+    border-color: $color-primary;
+  }
+  
+  &:disabled {
+    color: $color-text-secondary;
+    background: #f5f5f5;
+  }
+}
+
+.dialog-values-list {
   display: flex;
   flex-wrap: wrap;
   gap: 16rpx;
+  margin-bottom: 16rpx;
+  min-height: 80rpx;
 }
 
-.value-tag {
-  display: flex;
+.dialog-value-chip {
+  display: inline-flex;
   align-items: center;
   gap: 8rpx;
   padding: 12rpx 20rpx;
-  background: $color-white;
-  border-radius: 8rpx;
+  background: $color-primary-light;
+  border-radius: 24rpx;
   font-size: $font-size-small;
-  color: $color-text-primary;
-  border: 2rpx solid #e5e5e5;
-}
-
-.add-value {
-  display: flex;
-  align-items: center;
-  gap: 12rpx;
-}
-
-.value-input {
-  width: 160rpx;
-  height: 64rpx;
-  background: $color-white;
-  border-radius: 8rpx;
-  padding: 0 16rpx;
-  font-size: $font-size-small;
-  border: 2rpx solid #3B82F6;
-}
-
-.confirm-btn {
   color: $color-primary;
-  font-size: $font-size-small;
+  border: 2rpx solid $color-primary;
 }
 
-.add-value-btn {
+.dialog-add-value {
   display: flex;
   align-items: center;
-  gap: 4rpx;
-  padding: 12rpx 20rpx;
-  border: 2rpx dashed #ccc;
-  border-radius: 8rpx;
-  font-size: $font-size-small;
-  color: $color-text-secondary;
-}
-
-.add-attr {
-  display: flex;
   gap: 16rpx;
-  margin-top: 24rpx;
 }
 
-.attr-input {
+.dialog-value-input {
   flex: 1;
-  height: 80rpx;
+  height: 72rpx;
   background: $color-bg;
-  border-radius: 12rpx;
+  border-radius: 36rpx;
   padding: 0 24rpx;
   font-size: $font-size-content;
+  border: 2rpx solid #e5e5e5;
+  
+  &:focus {
+    border-color: $color-success;
+  }
 }
 
-:deep(.add-attr-btn-custom) {
-  width: 180rpx;
-  height: 80rpx;
-  border-radius: 12rpx;
-  font-size: $font-size-content;
+.dialog-delete-section {
+  margin-top: 48rpx;
+  padding-top: $spacing-lg;
+  border-top: 2rpx solid #f0f0f0;
 }
 
+// 底部按钮
 .bottom-bar {
-  padding: 24rpx 32rpx;
+  padding: $spacing-md;
   background: $color-white;
   box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.05);
 }
 
-:deep(.save-btn-custom) {
-  height: 96rpx;
-  border-radius: 48rpx;
-  font-size: $font-size-title;
-  font-weight: 500;
-}
-
+// 分类选择器
 .category-picker {
   height: 100%;
   display: flex;
@@ -817,7 +1089,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 32rpx;
+  padding: $spacing-lg;
   border-bottom: 2rpx solid #f0f0f0;
 }
 
@@ -835,8 +1107,8 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 28rpx 32rpx;
-  font-size: $font-size-large;
+  padding: 28rpx $spacing-lg;
+  font-size: $font-size-content;
   color: $color-text-primary;
   background: $color-white;
   border-bottom: 2rpx solid #f5f5f5;
@@ -844,6 +1116,7 @@ onMounted(() => {
   &.selected {
     color: $color-primary;
     font-weight: 500;
+    background: rgba(59, 130, 246, 0.05);
   }
 }
 
