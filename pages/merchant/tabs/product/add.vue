@@ -194,80 +194,7 @@ const selectCategory = (cat: FlattenedCategory | CategoryTreeVO) => {
   showCategoryPicker.value = false
 }
 
-/**
- * 添加属性
- */
-const addAttr = () => {
-  if (!newAttrName.value.trim()) {
-    uni.showToast({ title: '请输入属性名', icon: 'none' })
-    return
-  }
-  
-  // 检查是否已存在同名属性
-  if (attrs.value.some(attr => attr.name === newAttrName.value.trim())) {
-    uni.showToast({ title: '该属性已存在', icon: 'none' })
-    return
-  }
-  
-  const newIndex = attrs.value.length
-  attrs.value.push({
-    name: newAttrName.value.trim(),
-    values: []
-  })
-  
-  // 初始化该属性的输入框值
-  attrValueInputs.value[newIndex] = ''
-  newAttrName.value = ''
-}
 
-/**
- * 添加属性值
- */
-const addAttrValue = (index: number) => {
-  const inputValue = attrValueInputs.value[index]
-  if (!inputValue || !inputValue.trim()) {
-    uni.showToast({ title: '请输入属性值', icon: 'none' })
-    return
-  }
-  
-  // 检查是否已存在同名属性值
-  if (attrs.value[index].values.some(v => v.name === inputValue.trim())) {
-    uni.showToast({ title: '该属性值已存在', icon: 'none' })
-    return
-  }
-  
-  attrs.value[index].values.push({ name: inputValue.trim() })
-  attrValueInputs.value[index] = ''
-}
-
-/**
- * 删除属性值
- */
-const removeAttrValue = (attrIndex: number, valueIndex: number) => {
-  attrs.value[attrIndex].values.splice(valueIndex, 1)
-}
-
-/**
- * 删除属性
- */
-const removeAttr = (index: number) => {
-  uni.showModal({
-    title: '确认删除',
-    content: `确定要删除属性"${attrs.value[index].name}"吗？`,
-    success: (res) => {
-      if (res.confirm) {
-        attrs.value.splice(index, 1)
-        delete attrValueInputs.value[index]
-        // 重新索引
-        const newInputs: Record<number, string> = {}
-        attrs.value.forEach((_, i) => {
-          newInputs[i] = attrValueInputs.value[i] || ''
-        })
-        attrValueInputs.value = newInputs
-      }
-    }
-  })
-}
 
 /**
  * 打开属性编辑弹窗
@@ -627,7 +554,7 @@ onMounted(() => {
             <view class="image-upload" @tap="chooseImage">
               <image v-if="form.imagePreviewUrl" :src="form.imagePreviewUrl" mode="aspectFill" class="preview-img" />
               <view v-else class="upload-placeholder">
-                <wd-icon name="add" size="56rpx" color="#999" />
+                <wd-icon name="add" size="56rpx" custom-class="placeholder-icon" />
                 <text>添加图片</text>
               </view>
             </view>
@@ -668,10 +595,10 @@ onMounted(() => {
                 </view>
                 <view class="attr-item-actions">
                   <view class="action-btn" @tap.stop="openAttrDialog(index)">
-                    <wd-icon name="edit" size="36rpx" color="#3B82F6" />
+                    <wd-icon name="edit" size="36rpx" custom-class="edit-icon" />
                   </view>
                   <view class="action-btn" @tap.stop="confirmDeleteAttr(index)">
-                    <wd-icon name="delete" size="36rpx" color="#EF4444" />
+                    <wd-icon name="delete" size="36rpx" custom-class="delete-icon" />
                   </view>
                 </view>
               </view>
@@ -680,7 +607,7 @@ onMounted(() => {
 
           <!-- 空状态 -->
           <view v-else class="attrs-empty">
-            <wd-icon name="inbox" size="80rpx" color="#ddd" />
+            <wd-icon name="inbox" size="80rpx" custom-class="empty-icon" />
             <text>暂无属性，点击右上角添加</text>
           </view>
         </view>
@@ -725,13 +652,13 @@ onMounted(() => {
                   <wd-icon
                     :name="expandedCategories.includes(cat.id) ? 'arrow-down' : 'arrow-right'"
                     size="28rpx"
-                    color="#999"
+                    custom-class="expand-icon"
                   />
                 </view>
                 <view v-else class="icon-placeholder"></view>
                 <text @tap="selectCategory(cat)">{{ cat.name }}</text>
               </view>
-              <wd-icon v-if="form.categoryId === cat.id" name="check" size="32rpx" color="#3B82F6" />
+              <wd-icon v-if="form.categoryId === cat.id" name="check" size="32rpx" custom-class="check-icon" />
             </view>
           </template>
         </scroll-view>
@@ -750,7 +677,7 @@ onMounted(() => {
         <view class="dialog-header">
           <text class="dialog-title">{{ editingAttrIndex === -1 ? '添加属性' : '编辑属性' }}</text>
           <view class="dialog-close" @tap="closeAttrDialog">
-            <wd-icon name="close" size="40rpx" color="#666" />
+            <wd-icon name="close" size="40rpx" custom-class="close-icon" />
           </view>
         </view>
 
@@ -781,7 +708,7 @@ onMounted(() => {
                 <wd-icon 
                   name="close" 
                   size="28rpx" 
-                  color="#666" 
+                  custom-class="chip-close-icon" 
                   @click="removeDialogValue(vIndex)" 
                 />
               </view>
@@ -1032,7 +959,7 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: $spacing-lg;
-  border-bottom: 2rpx solid #f0f0f0;
+  border-bottom: 2rpx solid $color-border;
   flex-shrink: 0;
 }
 
@@ -1080,7 +1007,7 @@ onMounted(() => {
   border-radius: 16rpx;
   padding: 0 24rpx;
   font-size: $font-size-content;
-  border: 2rpx solid #e5e5e5;
+  border: 2rpx solid $color-border-light;
   
   &:focus {
     border-color: $color-primary;
@@ -1088,7 +1015,7 @@ onMounted(() => {
   
   &:disabled {
     color: $color-text-secondary;
-    background: #f5f5f5;
+    background: $color-bg-gray;
   }
 }
 
@@ -1125,7 +1052,7 @@ onMounted(() => {
   border-radius: 36rpx;
   padding: 0 24rpx;
   font-size: $font-size-content;
-  border: 2rpx solid #e5e5e5;
+  border: 2rpx solid $color-border-light;
   
   &:focus {
     border-color: $color-success;
@@ -1134,7 +1061,7 @@ onMounted(() => {
 
 .dialog-footer {
   padding: $spacing-lg;
-  border-top: 2rpx solid #f0f0f0;
+  border-top: 2rpx solid $color-border;
   flex-shrink: 0;
   background: $color-white;
 }
@@ -1143,7 +1070,7 @@ onMounted(() => {
 .bottom-bar {
   padding: $spacing-md;
   background: $color-white;
-  box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.05);
+  box-shadow: $box-shadow-sm;
 }
 
 // 分类选择器
@@ -1158,7 +1085,7 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: $spacing-lg;
-  border-bottom: 2rpx solid #f0f0f0;
+  border-bottom: 2rpx solid $color-border;
 }
 
 .picker-title {
@@ -1179,12 +1106,12 @@ onMounted(() => {
   font-size: $font-size-content;
   color: $color-text-primary;
   background: $color-white;
-  border-bottom: 2rpx solid #f5f5f5;
+  border-bottom: 2rpx solid $color-bg;
 
   &.selected {
     color: $color-primary;
     font-weight: 500;
-    background: rgba(59, 130, 246, 0.05);
+    background: $color-primary-light;
   }
 }
 
@@ -1205,5 +1132,38 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   margin-left: -10rpx;
+}
+
+// 图标自定义样式
+:deep(.check-icon) {
+  color: $color-primary;
+}
+
+:deep(.empty-icon) {
+  color: $color-border;
+}
+
+:deep(.edit-icon) {
+  color: $color-primary;
+}
+
+:deep(.delete-icon) {
+  color: $color-danger;
+}
+
+:deep(.close-icon) {
+  color: $color-text-secondary;
+}
+
+:deep(.placeholder-icon) {
+  color: $color-text-placeholder;
+}
+
+:deep(.chip-close-icon) {
+  color: $color-text-secondary;
+}
+
+:deep(.expand-icon) {
+  color: $color-text-placeholder;
 }
 </style>

@@ -27,6 +27,16 @@ const popupType = ref<'record' | 'payment' | 'settle'>('payment')
 const showSettleConfirm = ref(false)
 const settleConfirmData = ref({ settleAmount: 0, discountAmount: 0 })
 
+// 记账确认弹窗
+const showRecordConfirm = ref(false)
+const recordConfirmData = ref({ 
+  totalAmount: 0, 
+  paymentAmount: 0, 
+  recordAmount: 0,
+  signatureImage: ''
+})
+const signatureRef = ref<any>(null)
+
 // 备注编辑弹窗
 const showMemoPopup = ref(false)
 const editMemo = ref('')
@@ -122,7 +132,8 @@ const handlePayment = () => { popupType.value = 'payment'; openPaymentPopup() }
 const handleSettle = () => { popupType.value = 'settle'; openPaymentPopup() }
 
 const openPaymentPopup = () => {
-  paymentAmount.value = pendingAmount.value.toString()
+  // 记账时金额默认为0，其他操作默认为待收款金额
+  paymentAmount.value = popupType.value === 'record' ? '0' : String(pendingAmount.value)
   paymentMemo.value = ''
   paymentMethod.value = PaymentMethod.CASH
   showPaymentPopup.value = true
@@ -138,6 +149,19 @@ const confirmPayment = async () => {
   }
   if (popupType.value === 'payment' && amount <= 0) {
     uni.showToast({ title: '收款金额必须大于0', icon: 'none' })
+    return
+  }
+
+  // 记账操作：先弹出确认弹窗
+  if (popupType.value === 'record') {
+    recordConfirmData.value = {
+      totalAmount: ledger.value?.totalAmount || 0,
+      paymentAmount: amount,
+      recordAmount: ledger.value?.totalAmount || 0,
+      signatureImage: ''
+    }
+    showPaymentPopup.value = false  // 关闭输入弹窗
+    showRecordConfirm.value = true  // 打开确认弹窗
     return
   }
 
@@ -164,14 +188,64 @@ const cancelSettleConfirm = () => {
   showSettleConfirm.value = false
 }
 
-const doSubmit = async (amount: number) => {
+// 记账确认相关方法
+const doRecordConfirm = async () => {
+  // 检查是否有签名
+  if (!recordConfirmData.value.signatureImage) {
+    uni.showToast({ title: '请先签字', icon: 'none' })
+    return
+  }
+  
+  await doSubmit(recordConfirmData.value.paymentAmount, recordConfirmData.value.signatureImage)
+  showRecordConfirm.value = false
+  clearSignature()
+}
+
+const cancelRecordConfirm = () => {
+  showRecordConfirm.value = false
+  clearSignature()
+}
+
+// 签字板相关方法
+const handleSignatureConfirm = (result: any) => {
+  if (result.success && result.tempFilePath) {
+    recordConfirmData.value.signatureImage = result.tempFilePath
+    console.log('签名已保存:', result.tempFilePath)
+  } else {
+    uni.showToast({ title: '签名保存失败', icon: 'none' })
+  }
+}
+
+const clearSignature = () => {
+  if (signatureRef.value) {
+    signatureRef.value.clear()
+  }
+  recordConfirmData.value.signatureImage = ''
+}
+
+const doSubmit = async (amount: number, signatureImage?: string) => {
   try {
     paymentLoading.value = true
     if (popupType.value === 'record') {
+      // 如果有签名图片，转换为base64
+      let signatureBase64 = signatureImage
+      if (signatureImage) {
+        try {
+          const fs = uni.getFileSystemManager()
+          const base64 = fs.readFileSync(signatureImage, 'base64')
+          signatureBase64 = 'data:image/png;base64,' + base64
+        } catch (error) {
+          console.error('读取签名图片失败:', error)
+          uni.showToast({ title: '读取签名失败', icon: 'none' })
+          return
+        }
+      }
+      
       const dto: RecordLedgerDTO = {
         paymentAmount: amount,
         paymentMethod: amount > 0 ? paymentMethod.value : undefined,
-        memo: paymentMemo.value || undefined
+        memo: paymentMemo.value || undefined,
+        signatureImage: signatureBase64
       }
       await recordLedger(ledgerId.value, dto)
       uni.showToast({ title: '记账成功', icon: 'success' })
@@ -364,6 +438,10 @@ onPullDownRefresh(() => { onRefresh() })
                 <wd-icon name="arrow-right" size="28rpx" color="#999" />
               </view>
             </view>
+            <view v-if="ledger.signatureImageUrl" class="info-row signature-row">
+              <text class="info-label">客户签字</text>
+              <image :src="ledger.signatureImageUrl" class="signature-image" mode="aspectFit" />
+            </view>
           </view>
           <view style="height: 180rpx;"></view>
         </view>
@@ -520,6 +598,78 @@ onPullDownRefresh(() => { onRefresh() })
               custom-class="settle-ok-btn-custom"
             >
               确认结账
+            </wd-button>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 记账确认弹窗 -->
+    <view v-if="showRecordConfirm" class="popup-mask" @tap="cancelRecordConfirm">
+      <view class="record-confirm-container" @tap.stop>
+        <view class="record-confirm-panel">
+          <view class="record-confirm-header">
+            <text class="record-confirm-title">确认记账</text>
+            <view class="record-close" @tap="cancelRecordConfirm">
+              <wd-icon name="close" size="40rpx" color="#999" />
+            </view>
+          </view>
+          
+          <view class="record-confirm-info">
+            <view class="record-info-row">
+              <text class="record-info-label">总金额</text>
+              <text class="record-info-value">¥{{ formatAmount(recordConfirmData.totalAmount) }}</text>
+            </view>
+            <view class="record-info-row">
+              <text class="record-info-label">本次缴费</text>
+              <text class="record-info-value highlight">¥{{ formatAmount(recordConfirmData.paymentAmount) }}</text>
+            </view>
+            <view class="record-info-row">
+              <text class="record-info-label">记账金额</text>
+              <text class="record-info-value">¥{{ formatAmount(recordConfirmData.recordAmount) }}</text>
+            </view>
+          </view>
+
+          <view class="signature-section">
+            <view class="signature-header">
+              <text class="signature-label">客户签字</text>
+            </view>
+            <wd-signature
+              ref="signatureRef"
+              :pen-color="'#000000'"
+              :line-width="3"
+              :custom-style="{ height: '300rpx', background: '#fafafa', borderRadius: '16rpx', border: '2rpx dashed #d1d5db' }"
+              @confirm="handleSignatureConfirm"
+            >
+              <template #footer="{ clear, confirm }">
+                <view class="signature-footer">
+                  <wd-button size="small" plain @click="clear">
+                    <wd-icon name="delete" size="24rpx" />
+                    清除
+                  </wd-button>
+                  <wd-button size="small" type="primary" @click="confirm">
+                    <wd-icon name="check" size="24rpx" />
+                    完成签字
+                  </wd-button>
+                </view>
+              </template>
+            </wd-signature>
+          </view>
+
+          <view class="record-confirm-btns">
+            <wd-button 
+              custom-class="record-cancel-btn-custom" 
+              @click="cancelRecordConfirm"
+            >
+              取消
+            </wd-button>
+            <wd-button 
+              type="primary"
+              :loading="paymentLoading" 
+              @click="doRecordConfirm"
+              custom-class="record-ok-btn-custom"
+            >
+              确认记账
             </wd-button>
           </view>
         </view>
@@ -1204,5 +1354,151 @@ onPullDownRefresh(() => { onRefresh() })
   font-weight: 500;
   padding: 0 !important;
   line-height: 1 !important;
+}
+
+/* 记账确认弹窗 */
+.record-confirm-container {
+  width: 100%;
+  padding: 24rpx;
+  animation: slideUp 0.3s ease;
+}
+
+.record-confirm-panel {
+  width: 100%;
+  background: $color-white;
+  border-radius: 32rpx;
+  overflow: hidden;
+  box-shadow: 0 8rpx 60rpx rgba(0, 0, 0, 0.15);
+}
+
+.record-confirm-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 32rpx;
+  border-bottom: 2rpx solid #f5f5f5;
+}
+
+.record-confirm-title {
+  font-size: $font-size-title;
+  font-weight: 600;
+  color: $color-text-primary;
+}
+
+.record-close {
+  width: 60rpx;
+  height: 60rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.record-confirm-info {
+  padding: 32rpx;
+  background: $color-bg;
+}
+
+.record-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16rpx 0;
+  
+  &:not(:last-child) {
+    border-bottom: 2rpx dashed #E5E7EB;
+  }
+}
+
+.record-info-label {
+  font-size: $font-size-content;
+  color: $color-text-regular;
+}
+
+.record-info-value {
+  font-size: $font-size-large;
+  font-weight: 600;
+  color: $color-text-primary;
+  
+  &.highlight {
+    color: $color-primary;
+    font-size: $font-size-xlarge;
+  }
+}
+
+.signature-section {
+  padding: 32rpx;
+}
+
+.signature-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16rpx;
+}
+
+.signature-label {
+  font-size: $font-size-content;
+  font-weight: 500;
+  color: $color-text-primary;
+}
+
+.signature-footer {
+  display: flex;
+  gap: 16rpx;
+  padding: 16rpx 0 0;
+  justify-content: flex-end;
+  
+  :deep(.wd-button) {
+    flex: 0 0 auto;
+    min-width: 120rpx;
+  }
+}
+
+.record-confirm-btns {
+  display: flex;
+  gap: 24rpx;
+  padding: 24rpx 32rpx;
+  padding-bottom: 32rpx;
+}
+
+:deep(.record-cancel-btn-custom) {
+  flex: 1;
+  height: 88rpx !important;
+  min-height: 88rpx !important;
+  background: $color-bg !important;
+  color: $color-text-regular !important;
+  border-radius: 44rpx;
+  font-size: $font-size-large;
+  font-weight: 500;
+  padding: 0 !important;
+  line-height: 1 !important;
+  border: none !important;
+}
+
+:deep(.record-ok-btn-custom) {
+  flex: 1;
+  height: 88rpx !important;
+  min-height: 88rpx !important;
+  border-radius: 44rpx;
+  font-size: $font-size-large;
+  font-weight: 500;
+  padding: 0 !important;
+  line-height: 1 !important;
+}
+
+/* 签名图片显示 */
+.signature-row {
+  flex-direction: column;
+  align-items: flex-start !important;
+  padding: 24rpx 32rpx !important;
+}
+
+.signature-image {
+  width: 100%;
+  max-height: 300rpx;
+  margin-top: 16rpx;
+  border: 2rpx solid #e5e5e5;
+  border-radius: 12rpx;
+  background: #fafafa;
 }
 </style>
