@@ -229,28 +229,29 @@ const goCategoryManage = () => {
 </template>
 
 <style lang="scss" scoped>
+
 .product-page {
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: #f5f5f5;
+  background: $color-bg;
   overflow: hidden;
 }
 
 .fixed-header {
   flex-shrink: 0;
-  background: #fff;
+  background: $color-white;
 }
 
 .search-section {
   padding: 20rpx 24rpx;
-  background: #fff;
+  background: $color-white;
 }
 
 .search-input-wrap {
   display: flex;
   align-items: center;
-  background: #f5f5f5;
+  background: $color-bg;
   border-radius: 40rpx;
   padding: 16rpx 24rpx;
   gap: 16rpx;
@@ -258,12 +259,12 @@ const goCategoryManage = () => {
 
 .search-input {
   flex: 1;
-  font-size: 28rpx;
-  color: #333;
+  font-size: $font-size-content;
+  color: $color-text-primary;
 }
 
 .placeholder {
-  color: #999;
+  color: $color-text-secondary;
 }
 
 .main-layout {
@@ -274,30 +275,30 @@ const goCategoryManage = () => {
 
 .category-sidebar {
   width: 170rpx;
-  background: #f5f5f5;
+  background: $color-bg;
   flex-shrink: 0;
 }
 
 .category-item {
   padding: 28rpx 16rpx;
-  font-size: 26rpx;
-  color: #666;
+  font-size: $font-size-small;
+  color: $color-text-regular;
   text-align: center;
   border-left: 6rpx solid transparent;
   word-break: break-all;
   line-height: 1.4;
 
   &.active {
-    background: #fff;
-    color: #3B82F6;
-    border-left-color: #3B82F6;
+    background: $color-white;
+    color: $color-primary;
+    border-left-color: $color-primary;
     font-weight: 500;
   }
 }
 
 .product-main {
   flex: 1;
-  background: #fff;
+  background: $color-white;
   padding: 24rpx;
 }
 
@@ -309,14 +310,14 @@ const goCategoryManage = () => {
 }
 
 .category-title {
-  font-size: 30rpx;
+  font-size: $font-size-large;
   font-weight: 600;
-  color: #333;
+  color: $color-text-primary;
 }
 
 .category-manage {
-  font-size: 26rpx;
-  color: #3B82F6;
+  font-size: $font-size-small;
+  color: $color-primary;
 }
 
 .empty-state {
@@ -327,9 +328,9 @@ const goCategoryManage = () => {
   justify-content: center;
   padding: 100rpx 0;
   text-align: center;
-  color: #999;
-  font-size: 28rpx;
-  background: #fff;
+  color: $color-text-secondary;
+  font-size: $font-size-content;
+  background: $color-white;
   min-height: 400rpx;
 
   text {
@@ -346,7 +347,7 @@ const goCategoryManage = () => {
 }
 
 .product-card {
-  background: #f9fafb;
+  background: $color-bg;
   border-radius: 16rpx;
   overflow: hidden;
   position: relative;
@@ -355,7 +356,7 @@ const goCategoryManage = () => {
 .product-img {
   width: 100%;
   height: 200rpx;
-  background: #e5e7eb;
+  background: $color-border;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -371,8 +372,8 @@ const goCategoryManage = () => {
 }
 
 .product-name {
-  font-size: 28rpx;
-  color: #333;
+  font-size: $font-size-content;
+  color: $color-text-primary;
   margin-bottom: 12rpx;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -380,13 +381,13 @@ const goCategoryManage = () => {
 }
 
 .product-price {
-  font-size: 32rpx;
-  color: #EF4444;
+  font-size: $font-size-title;
+  color: $color-danger;
   font-weight: 600;
   margin-bottom: 16rpx;
 
   text {
-    font-size: 24rpx;
+    font-size: $font-size-secondary;
   }
 }
 
@@ -403,16 +404,16 @@ const goCategoryManage = () => {
   gap: 6rpx;
   padding: 12rpx 0;
   border-radius: 8rpx;
-  font-size: 22rpx;
+  font-size: $font-size-xsmall;
 
   &.edit {
-    background: #EBF5FF;
-    color: #3B82F6;
+    background: $color-primary-light;
+    color: $color-primary;
   }
 
   &.price {
-    background: #FEF3C7;
-    color: #F59E0B;
+    background: $color-warning-light;
+    color: $color-warning;
   }
 }
 
@@ -423,7 +424,7 @@ const goCategoryManage = () => {
   width: 112rpx;
   height: 112rpx;
   border-radius: 50%;
-  background: #3B82F6;
+  background: $color-primary;
   display: flex;
   align-items: center;
   justify-content: center;

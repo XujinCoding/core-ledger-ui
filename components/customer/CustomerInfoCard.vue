@@ -30,16 +30,16 @@ const genderText = (gender?: number) => {
 
 <style lang="scss" scoped>
 .info-card {
-  background: #fff;
+  background: $color-white;
   border-radius: 20rpx;
   padding: 32rpx;
   margin-bottom: 24rpx;
 }
 
 .section-title {
-  font-size: 32rpx;
+  font-size: $font-size-title;
   font-weight: 600;
-  color: #333;
+  color: $color-text-primary;
   margin-bottom: 24rpx;
 }
 
@@ -57,14 +57,14 @@ const genderText = (gender?: number) => {
 
 .info-label {
   display: block;
-  font-size: 24rpx;
-  color: #999;
+  font-size: $font-size-secondary;
+  color: $color-text-secondary;
   margin-bottom: 8rpx;
 }
 
 .info-value {
-  font-size: 28rpx;
-  color: #333;
+  font-size: $font-size-content;
+  color: $color-text-primary;
   word-break: break-all;
 }
 </style>

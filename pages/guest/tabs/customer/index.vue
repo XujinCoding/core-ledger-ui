@@ -155,13 +155,13 @@ const addCustomer = () => {
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: #f5f5f5;
+  background: $color-bg;
   overflow: hidden;
 }
 
 .fixed-header {
   flex-shrink: 0;
-  background: #fff;
+  background: $color-white;
 }
 
 .search-bar {
@@ -171,7 +171,7 @@ const addCustomer = () => {
 .search-input-wrap {
   display: flex;
   align-items: center;
-  background: #f5f5f5;
+  background: $color-bg;
   border-radius: 40rpx;
   padding: 16rpx 24rpx;
   gap: 16rpx;
@@ -179,17 +179,17 @@ const addCustomer = () => {
 
 .search-input {
   flex: 1;
-  font-size: 28rpx;
-  color: #333;
+  font-size: $font-size-content;
+  color: $color-text-primary;
 }
 
 .placeholder {
-  color: #999;
+  color: $color-text-secondary;
 }
 
 .stats-card {
   display: flex;
-  background: #fff;
+  background: $color-white;
   margin: 24rpx;
   border-radius: 20rpx;
   padding: 32rpx 0;
@@ -207,15 +207,15 @@ const addCustomer = () => {
 }
 
 .stat-value {
-  font-size: 40rpx;
+  font-size: $font-size-important;
   font-weight: 600;
-  color: #333;
+  color: $color-text-primary;
   margin-bottom: 8rpx;
 }
 
 .stat-label {
-  font-size: 24rpx;
-  color: #999;
+  font-size: $font-size-secondary;
+  color: $color-text-secondary;
 }
 
 .customer-scroll {
@@ -230,8 +230,8 @@ const addCustomer = () => {
 .empty-state {
   padding: 120rpx 0;
   text-align: center;
-  color: #999;
-  font-size: 28rpx;
+  color: $color-text-secondary;
+  font-size: $font-size-content;
 
   text {
     display: block;
@@ -253,7 +253,7 @@ const addCustomer = () => {
   width: 112rpx;
   height: 112rpx;
   border-radius: 50%;
-  background: #3B82F6;
+  background: $color-primary;
   display: flex;
   align-items: center;
   justify-content: center;

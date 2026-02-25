@@ -126,7 +126,7 @@ watch(() => countdown.value, () => {}, { immediate: true })
   display: flex;
   align-items: center;
   height: 88rpx;
-  background: #f9fafb;
+  background: $color-bg;
   border: 2rpx solid #e5e5e5;
   border-radius: 16rpx;
   overflow: hidden;
@@ -136,12 +136,12 @@ watch(() => countdown.value, () => {}, { immediate: true })
   flex: 1;
   height: 100%;
   padding: 0 24rpx;
-  font-size: 30rpx;
-  color: #333;
+  font-size: $font-size-large;
+  color: $color-text-primary;
 }
 
 .placeholder {
-  color: #999;
+  color: $color-text-secondary;
 }
 
 .send-btn {
@@ -151,14 +151,14 @@ watch(() => countdown.value, () => {}, { immediate: true })
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 26rpx;
-  color: #3B82F6;
+  font-size: $font-size-small;
+  color: $color-primary;
   border-left: 2rpx solid #e5e5e5;
-  background: #fff;
+  background: $color-white;
 
   &.disabled {
-    color: #999;
-    background: #f5f5f5;
+    color: $color-text-secondary;
+    background: $color-bg;
   }
 }
 </style>

@@ -30,15 +30,36 @@ const safeArea = ref<NavbarSafeArea | null>(null)
  * 初始化安全区域信息
  */
 function initSafeArea(): NavbarSafeArea {
-  const systemInfo = uni.getSystemInfoSync()
-  const statusBarHeight = systemInfo.statusBarHeight || 0
+  let statusBarHeight = 0
+  let windowWidth = 375
+  
+  // 使用新的 API 替代已弃用的 getSystemInfoSync
+  // #ifdef MP-WEIXIN
+  try {
+    const windowInfo = uni.getWindowInfo()
+    statusBarHeight = windowInfo.statusBarHeight || 0
+    windowWidth = windowInfo.windowWidth || 375
+  } catch (e) {
+    console.warn('获取窗口信息失败，使用默认值:', e)
+  }
+  // #endif
+  
+  // #ifndef MP-WEIXIN
+  try {
+    const systemInfo = uni.getSystemInfoSync()
+    statusBarHeight = systemInfo.statusBarHeight || 0
+    windowWidth = systemInfo.windowWidth || 375
+  } catch (e) {
+    console.warn('获取系统信息失败，使用默认值:', e)
+  }
+  // #endif
 
   // 默认值（用于非微信小程序环境）
   let menuButton = {
     top: statusBarHeight + 4,
     right: 7,
     bottom: statusBarHeight + 36,
-    left: systemInfo.windowWidth - 87,
+    left: windowWidth - 87,
     width: 80,
     height: 32
   }
@@ -49,7 +70,7 @@ function initSafeArea(): NavbarSafeArea {
     if (rect && rect.width) {
       menuButton = {
         top: rect.top,
-        right: systemInfo.windowWidth - rect.right,
+        right: windowWidth - rect.right,
         bottom: rect.bottom,
         left: rect.left,
         width: rect.width,

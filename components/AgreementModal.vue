@@ -74,7 +74,7 @@ const handleMaskClick = () => {
   display: flex;
   flex-direction: column;
   max-height: 80vh;
-  background-color: #fff;
+  background-color: $color-white;
 }
 
 .modal-header {
@@ -88,9 +88,9 @@ const handleMaskClick = () => {
 }
 
 .modal-title {
-  font-size: 36rpx;
+  font-size: $font-size-xlarge;
   font-weight: 600;
-  color: #333;
+  color: $color-text-primary;
 }
 
 .close-btn {
@@ -124,14 +124,14 @@ const handleMaskClick = () => {
 
 // 协议内容样式
 :deep(.agreement-content) {
-  font-size: 28rpx;
+  font-size: $font-size-content;
   line-height: 1.8;
-  color: #333;
+  color: $color-text-primary;
 
   h2 {
-    font-size: 32rpx;
+    font-size: $font-size-title;
     font-weight: 600;
-    color: #333;
+    color: $color-text-primary;
     margin: 32rpx 0 16rpx;
     padding-bottom: 12rpx;
     border-bottom: 2rpx solid #e0e0e0;
@@ -142,23 +142,23 @@ const handleMaskClick = () => {
   }
 
   h3 {
-    font-size: 30rpx;
+    font-size: $font-size-large;
     font-weight: 600;
-    color: #333;
+    color: $color-text-primary;
     margin: 24rpx 0 12rpx;
   }
 
   h4 {
-    font-size: 28rpx;
+    font-size: $font-size-content;
     font-weight: 600;
-    color: #333;
+    color: $color-text-primary;
     margin: 16rpx 0 8rpx;
   }
 
   p {
     margin: 12rpx 0;
     text-align: justify;
-    color: #666;
+    color: $color-text-regular;
   }
 
   ul {
@@ -168,14 +168,14 @@ const handleMaskClick = () => {
 
   li {
     margin: 8rpx 0;
-    color: #666;
+    color: $color-text-regular;
     list-style: disc;
     line-height: 1.8;
   }
 
   strong {
     font-weight: 600;
-    color: #333;
+    color: $color-text-primary;
   }
 
   .agreement-footer {
@@ -183,8 +183,8 @@ const handleMaskClick = () => {
     padding-top: 24rpx;
     border-top: 1rpx solid #e0e0e0;
     text-align: center;
-    color: #999;
-    font-size: 26rpx;
+    color: $color-text-secondary;
+    font-size: $font-size-small;
   }
 }
 </style>

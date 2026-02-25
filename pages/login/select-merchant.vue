@@ -167,9 +167,10 @@ const goBack = () => {
 </template>
 
 <style lang="scss" scoped>
+
 .select-merchant-page {
   min-height: 100vh;
-  background: #f5f5f5;
+  background: $color-bg;
   display: flex;
   flex-direction: column;
 }
@@ -198,9 +199,9 @@ const goBack = () => {
 }
 
 .navbar-title {
-  font-size: 34rpx;
+  font-size: $font-size-important;
   font-weight: 600;
-  color: #fff;
+  color: $color-white;
 }
 
 // 头部区域
@@ -229,19 +230,19 @@ const goBack = () => {
 
 .header-text {
   text-align: center;
-  color: #fff;
+  color: $color-white;
 }
 
 .title {
   display: block;
-  font-size: 40rpx;
+  font-size: $font-size-xlarge;
   font-weight: 600;
   margin-bottom: 12rpx;
 }
 
 .subtitle {
   display: block;
-  font-size: 26rpx;
+  font-size: $font-size-small;
   opacity: 0.9;
 }
 
@@ -264,7 +265,7 @@ const goBack = () => {
   display: flex;
   align-items: center;
   padding: 32rpx;
-  background: #fff;
+  background: $color-white;
   border-radius: 24rpx;
   box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.05);
   gap: 24rpx;
@@ -272,12 +273,12 @@ const goBack = () => {
 
   &:active {
     transform: scale(0.98);
-    background: #f9f9f9;
+    background: $color-bg-light;
   }
 
   &.selected {
     border: 4rpx solid #3B82F6;
-    background: #EBF5FF;
+    background: rgba(59, 130, 246, 0.1);
   }
 }
 
@@ -289,7 +290,7 @@ const goBack = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  color: $color-white;
   flex-shrink: 0;
 }
 
@@ -299,9 +300,9 @@ const goBack = () => {
 }
 
 .merchant-name {
-  font-size: 32rpx;
+  font-size: $font-size-title;
   font-weight: 600;
-  color: #333;
+  color: $color-text-primary;
   margin-bottom: 8rpx;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -321,14 +322,14 @@ const goBack = () => {
 }
 
 .detail-label {
-  font-size: 24rpx;
-  color: #999;
+  font-size: $font-size-secondary;
+  color: $color-text-secondary;
   width: 60rpx;
 }
 
 .detail-value {
-  font-size: 24rpx;
-  color: #666;
+  font-size: $font-size-secondary;
+  color: $color-text-regular;
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -350,19 +351,19 @@ const goBack = () => {
   align-items: center;
   justify-content: center;
   padding: 120rpx 32rpx;
-  background: #fff;
+  background: $color-white;
   border-radius: 24rpx;
 }
 
 .empty-text {
-  font-size: 32rpx;
-  color: #666;
+  font-size: $font-size-title;
+  color: $color-text-regular;
   margin-top: 32rpx;
 }
 
 .empty-tip {
-  font-size: 26rpx;
-  color: #999;
+  font-size: $font-size-small;
+  color: $color-text-secondary;
   margin-top: 12rpx;
 }
 
@@ -377,7 +378,7 @@ const goBack = () => {
   align-items: center;
   justify-content: center;
   gap: 8rpx;
-  font-size: 24rpx;
-  color: #999;
+  font-size: $font-size-secondary;
+  color: $color-text-secondary;
 }
 </style>

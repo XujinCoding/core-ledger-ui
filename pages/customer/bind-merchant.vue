@@ -104,10 +104,10 @@ const handleBind = async () => {
             <wd-icon name="scan" size="80rpx" color="#3B82F6" />
           </view>
           <view class="scan-text">使用微信扫一扫快速绑定</view>
-          <button class="scan-btn" @tap="handleScan">
+          <wd-button class="scan-btn" @click="handleScan" custom-class="scan-btn-custom">
             <wd-icon name="scan" size="32rpx" />
             <text>点击扫码</text>
-          </button>
+          </wd-button>
         </view>
       </view>
 
@@ -125,11 +125,10 @@ const handleBind = async () => {
           <text>手动输入邀请码</text>
         </view>
         <view class="form-group">
-          <input
-            class="form-input"
+          <wd-input
             v-model="inviteCode"
             placeholder="请输入商户邀请码"
-            placeholder-class="placeholder"
+            clearable
           />
         </view>
       </view>
@@ -140,19 +139,27 @@ const handleBind = async () => {
 
     <!-- 底部按钮 -->
     <view class="footer-btns">
-      <button class="btn-primary" :loading="loading" @tap="handleBind">
+      <wd-button 
+        type="primary" 
+        block 
+        size="large"
+        :loading="loading" 
+        @click="handleBind"
+        custom-class="btn-primary-custom"
+      >
         确认绑定
-      </button>
+      </wd-button>
     </view>
   </view>
 </template>
 
 <style lang="scss" scoped>
+
 .bind-merchant-page {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #f5f5f5;
+  background: $color-bg;
   overflow: hidden;
   padding: 0;
   margin: 0;
@@ -166,102 +173,98 @@ const handleBind = async () => {
 }
 
 .form-section {
-  background: #fff;
-  border-radius: 16rpx;
-  padding: 20rpx;
-  margin: 16rpx 24rpx;
+  background: $color-white;
+  border-radius: $border-radius-lg;
+  padding: $spacing-sm;
+  margin: $spacing-sm $spacing-md;
 }
 
 .section-title {
-  font-size: 28rpx;
+  font-size: $font-size-content;
   font-weight: 600;
-  color: #333;
-  margin-bottom: 16rpx;
-  padding-bottom: 12rpx;
+  color: $color-text-primary;
+  margin-bottom: $spacing-sm;
+  padding-bottom: $spacing-small;
   border-bottom: 2rpx solid #f5f5f5;
   display: flex;
   align-items: center;
-  gap: 12rpx;
+  gap: $spacing-small;
 }
 
 .scan-box {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 32rpx 24rpx;
+  padding: $spacing-lg $spacing-md;
 }
 
 .scan-icon-large {
   width: 140rpx;
   height: 140rpx;
-  background: #EFF6FF;
-  border-radius: 50%;
+  background: $color-primary-light;
+  border-radius: $border-radius-round;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 20rpx;
+  margin-bottom: $spacing-sm;
 }
 
 .scan-text {
-  font-size: 26rpx;
-  color: #666;
-  margin-bottom: 24rpx;
+  font-size: $font-size-small;
+  color: $color-text-regular;
+  margin-bottom: $spacing-md;
 }
 
 .scan-btn {
   width: 100%;
   height: 80rpx;
-  background: #fff;
-  border: 2rpx solid #3B82F6;
-  border-radius: 12rpx;
-  color: #3B82F6;
-  font-size: 28rpx;
+  background: $color-white !important;
+  border: 2rpx solid #3B82F6 !important;
+  border-radius: $border-radius-md;
+  color: $color-primary !important;
+  font-size: $font-size-content;
+}
+
+:deep(.scan-btn-custom) {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12rpx;
-
-  &::after {
-    border: none;
-  }
+  gap: $spacing-small;
 }
 
 .divider {
   display: flex;
   align-items: center;
-  margin: 24rpx 24rpx 16rpx;
+  margin: $spacing-md $spacing-md $spacing-sm;
 }
 
 .divider-line {
   flex: 1;
   height: 2rpx;
-  background: #e5e5e5;
+  background: $color-border;
 }
 
 .divider-text {
-  padding: 0 24rpx;
-  font-size: 24rpx;
-  color: #999;
+  padding: 0 $spacing-md;
+  font-size: $font-size-secondary;
+  color: $color-text-secondary;
 }
 
 .form-group {
   margin-bottom: 0;
 }
 
-.form-input {
+:deep(.wd-input) {
   width: 100%;
   height: 80rpx;
-  background: #f9fafb;
+  background: $color-bg;
   border: 2rpx solid #e5e5e5;
-  border-radius: 12rpx;
-  padding: 0 20rpx;
-  font-size: 28rpx;
-  color: #333;
-  box-sizing: border-box;
-}
-
-.placeholder {
-  color: #999;
+  border-radius: $border-radius-md;
+  
+  .wd-input__inner {
+    font-size: $font-size-content;
+    padding: 0 $spacing-sm;
+  }
 }
 
 .footer-btns {
@@ -269,27 +272,16 @@ const handleBind = async () => {
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 20rpx 32rpx;
-  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
-  background: #fff;
-  box-shadow: 0 -2rpx 10rpx rgba(0, 0, 0, 0.05);
+  padding: $spacing-sm $spacing-lg;
+  padding-bottom: calc(#{$spacing-sm} + env(safe-area-inset-bottom));
+  background: $color-white;
+  box-shadow: $box-shadow-md;
 }
 
-.btn-primary {
-  width: 100%;
+:deep(.btn-primary-custom) {
   height: 88rpx;
-  background: #3B82F6;
-  color: #fff;
-  font-size: 30rpx;
-  font-weight: 500;
   border-radius: 44rpx;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  &::after {
-    border: none;
-  }
+  font-size: $font-size-large;
+  font-weight: 500;
 }
 </style>

@@ -72,7 +72,7 @@ const getCustomerTypeText = (type: number) => {
   display: flex;
   align-items: center;
   padding: 24rpx 32rpx;
-  background-color: #fff;
+  background-color: $color-white;
   border-radius: 16rpx;
   box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.05);
 }
@@ -97,9 +97,9 @@ const getCustomerTypeText = (type: number) => {
 }
 
 .avatar-text {
-  font-size: 32rpx;
+  font-size: $font-size-title;
   font-weight: 600;
-  color: #fff;
+  color: $color-white;
 }
 
 .customer-info {
@@ -108,9 +108,9 @@ const getCustomerTypeText = (type: number) => {
 }
 
 .customer-name {
-  font-size: 32rpx;
+  font-size: $font-size-title;
   font-weight: 500;
-  color: #333;
+  color: $color-text-primary;
   margin-bottom: 8rpx;
   display: flex;
   align-items: center;
@@ -118,15 +118,15 @@ const getCustomerTypeText = (type: number) => {
 }
 
 .customer-alias {
-  font-size: 26rpx;
-  color: #999;
+  font-size: $font-size-small;
+  color: $color-text-secondary;
   font-weight: 400;
 }
 
 .customer-phone,
 .customer-address {
-  font-size: 26rpx;
-  color: #666;
+  font-size: $font-size-small;
+  color: $color-text-regular;
   margin-top: 8rpx;
   display: flex;
   align-items: center;

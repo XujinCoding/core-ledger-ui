@@ -324,15 +324,19 @@ onMounted(async () => {
           </view>
           <view class="search-divider"></view>
           <!-- 搜索输入框 -->
-          <input
-            class="search-input"
+          <wd-input
             v-model="customerKeyword"
             :placeholder="searchType === 'name' ? '请输入客户姓名' : '请输入手机号'"
-            placeholder-class="placeholder"
             confirm-type="search"
             :type="searchType === 'phone' ? 'number' : 'text'"
             @confirm="searchCustomerList"
-          />
+            clearable
+            use-suffix-slot
+          >
+            <template #suffix>
+              <wd-icon name="search" size="36rpx" color="#999" />
+            </template>
+          </wd-input>
           <wd-icon
             v-if="customerKeyword"
             name="close-fill"
@@ -416,12 +420,12 @@ onMounted(async () => {
               <view v-for="(item, index) in lineItems" :key="item.id" class="line-row-item">
                 <!-- 商品名称输入（支持搜索） -->
                 <view class="col-name" @tap.stop>
-                  <input 
-                    class="compact-input name-input" 
-                    :value="item.productName"
-                    @input="(e: any) => handleProductNameInput(index, e.detail.value)"
+                  <wd-input
+                    :model-value="item.productName"
+                    @update:model-value="(val: string) => handleProductNameInput(index, val)"
                     @focus="activeLineIndex = index"
                     placeholder="搜索商品"
+                    clearable
                   />
                   <!-- SKU搜索结果下拉 -->
                   <view v-if="activeLineIndex === index && skuSearchResults.length > 0" class="sku-dropdown" @tap.stop>
@@ -441,19 +445,17 @@ onMounted(async () => {
                 </view>
                 <!-- 数量 -->
                 <view class="col-qty">
-                  <input 
-                    class="compact-input qty-input" 
+                  <wd-input
+                    v-model.number="item.quantity"
                     type="number"
-                    v-model.number="item.quantity" 
                     placeholder="1"
                   />
                 </view>
                 <!-- 单价 -->
                 <view class="col-price">
-                  <input 
-                    class="compact-input price-input" 
+                  <wd-input
+                    v-model.number="item.price"
                     type="digit"
-                    v-model.number="item.price" 
                     placeholder="0"
                   />
                 </view>
@@ -497,9 +499,13 @@ onMounted(async () => {
           <view class="cart-count">共 {{ lineItems.length }} 项</view>
           <view class="cart-total">合计 <text>¥{{ totalAmount.toFixed(2) }}</text></view>
         </view>
-        <button class="next-btn" @tap="goConfirm">
+        <wd-button 
+          type="primary"
+          @click="goConfirm"
+          custom-class="next-btn-custom"
+        >
           下一步
-        </button>
+        </wd-button>
       </view>
     </view>
 
@@ -540,11 +546,12 @@ onMounted(async () => {
         <!-- 备注 -->
         <view class="confirm-section">
           <view class="section-title">备注</view>
-          <textarea
-            class="remark-input"
+          <wd-textarea
             v-model="remark"
             placeholder="添加备注（选填）"
             :maxlength="200"
+            :auto-height="true"
+            custom-class="remark-textarea-custom"
           />
         </view>
       </scroll-view>
@@ -555,9 +562,15 @@ onMounted(async () => {
           <text class="total-label">合计</text>
           <text class="total-amount">¥{{ totalAmount.toFixed(2) }}</text>
         </view>
-        <button class="submit-btn" :loading="submitting" :disabled="!canSubmit" @tap="submit">
+        <wd-button 
+          type="primary"
+          :loading="submitting" 
+          :disabled="!canSubmit" 
+          @click="submit"
+          custom-class="submit-btn-custom"
+        >
           创建账单
-        </button>
+        </wd-button>
       </view>
     </view>
 
@@ -565,18 +578,19 @@ onMounted(async () => {
 </template>
 
 <style lang="scss" scoped>
+
 .ledger-add-page {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #f5f5f5;
+  background: $color-bg;
 }
 
 .steps-header {
   flex-shrink: 0;
-  background: #fff;
-  padding: 20rpx 0;
-  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.05);
+  background: $color-white;
+  padding: $spacing-sm 0;
+  box-shadow: $box-shadow-sm;
 }
 
 .step-content {
@@ -587,47 +601,53 @@ onMounted(async () => {
 }
 
 .search-bar {
-  padding: 20rpx 24rpx;
-  background: #fff;
+  padding: $spacing-sm $spacing-md;
+  background: $color-white;
 }
 
 .search-input-wrap {
   display: flex;
   align-items: center;
-  background: #f5f5f5;
+  background: $color-bg;
   border-radius: 40rpx;
-  padding: 16rpx 24rpx;
-  gap: 12rpx;
+  padding: $spacing-sm $spacing-md;
+  gap: $spacing-small;
 }
 
 .search-type-select {
   display: flex;
   align-items: center;
   gap: 4rpx;
-  padding-right: 12rpx;
+  padding-right: $spacing-small;
   flex-shrink: 0;
 }
 
 .search-type-text {
-  font-size: 28rpx;
-  color: #333;
+  font-size: $font-size-content;
+  color: $color-text-primary;
   font-weight: 500;
 }
 
 .search-divider {
   width: 2rpx;
-  height: 32rpx;
-  background: #ddd;
+  height: $font-size-title;
+  background: $color-border;
   flex-shrink: 0;
 }
 
 .placeholder {
-  color: #999;
+  color: $color-text-secondary;
 }
 
-.search-input {
+.search-input-wrap :deep(.wd-input) {
   flex: 1;
-  font-size: 28rpx;
+  background: transparent;
+  border: none;
+  padding: 0;
+  
+  .wd-input__inner {
+    font-size: $font-size-content;
+  }
 }
 
 .customer-list {
@@ -641,43 +661,43 @@ onMounted(async () => {
 
 .customer-list-inner,
 .product-list-inner {
-  padding: 24rpx;
+  padding: $spacing-md;
 }
 
 .loading-state,
 .empty-state {
   padding: 80rpx 0;
   text-align: center;
-  color: #999;
+  color: $color-text-secondary;
 }
 
 .customer-item {
   display: flex;
   align-items: center;
-  background: #fff;
-  border-radius: 16rpx;
-  padding: 28rpx;
-  margin-bottom: 16rpx;
+  background: $color-white;
+  border-radius: $border-radius-lg;
+  padding: $font-size-content;
+  margin-bottom: $spacing-sm;
 }
 
 .customer-avatar {
   width: 88rpx;
   height: 88rpx;
-  border-radius: 50%;
+  border-radius: $border-radius-round;
   background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
-  color: #fff;
+  color: $color-white;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 36rpx;
+  font-size: $font-size-xlarge;
   font-weight: 600;
-  margin-right: 24rpx;
+  margin-right: $spacing-md;
 
   &.small {
     width: 64rpx;
     height: 64rpx;
-    font-size: 28rpx;
-    margin-right: 16rpx;
+    font-size: $font-size-content;
+    margin-right: $spacing-sm;
   }
 }
 
@@ -686,55 +706,55 @@ onMounted(async () => {
 }
 
 .customer-name {
-  font-size: 30rpx;
+  font-size: $font-size-large;
   font-weight: 500;
-  color: #333;
+  color: $color-text-primary;
   margin-bottom: 4rpx;
 }
 
 .customer-phone {
-  font-size: 26rpx;
-  color: #999;
+  font-size: $font-size-small;
+  color: $color-text-secondary;
 }
 
 .selected-customer {
   display: flex;
   align-items: center;
-  padding: 24rpx;
-  background: #EBF5FF;
-  gap: 12rpx;
+  padding: $spacing-md;
+  background: rgba(59, 130, 246, 0.1);
+  gap: $spacing-small;
 }
 
 .change-btn {
   display: flex;
   align-items: center;
   gap: 6rpx;
-  font-size: 26rpx;
-  color: #3B82F6;
-  padding: 12rpx 20rpx;
+  font-size: $font-size-small;
+  color: $color-primary;
+  padding: $spacing-small $spacing-sm;
   background: rgba(59, 130, 246, 0.1);
-  border-radius: 24rpx;
+  border-radius: $spacing-md;
   margin-left: auto;
 }
 
 .product-item {
   display: flex;
   align-items: center;
-  background: #fff;
-  border-radius: 16rpx;
-  padding: 24rpx;
-  margin-bottom: 16rpx;
+  background: $color-white;
+  border-radius: $border-radius-lg;
+  padding: $spacing-md;
+  margin-bottom: $spacing-sm;
 }
 
 .product-img {
   width: 120rpx;
   height: 120rpx;
-  border-radius: 12rpx;
-  background: #f5f5f5;
+  border-radius: $border-radius-md;
+  background: $color-bg;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 24rpx;
+  margin-right: $spacing-md;
 }
 
 .product-info {
@@ -742,46 +762,46 @@ onMounted(async () => {
 }
 
 .product-name {
-  font-size: 30rpx;
-  color: #333;
-  margin-bottom: 8rpx;
+  font-size: $font-size-large;
+  color: $color-text-primary;
+  margin-bottom: $spacing-xs;
 }
 
 .product-price {
-  font-size: 32rpx;
-  color: #EF4444;
+  font-size: $font-size-title;
+  color: $color-danger;
   font-weight: 600;
 }
 
 .quantity-control {
   display: flex;
   align-items: center;
-  gap: 16rpx;
+  gap: $spacing-sm;
 }
 
 .qty-btn {
   width: 56rpx;
   height: 56rpx;
-  border-radius: 50%;
+  border-radius: $border-radius-round;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 36rpx;
+  font-size: $font-size-xlarge;
   font-weight: 500;
 
   &.minus {
-    background: #f5f5f5;
-    color: #666;
+    background: $color-bg;
+    color: $color-text-regular;
   }
 
   &.plus {
-    background: #3B82F6;
-    color: #fff;
+    background: $color-primary;
+    color: $color-white;
   }
 }
 
 .qty-num {
-  font-size: 32rpx;
+  font-size: $font-size-title;
   font-weight: 500;
   min-width: 48rpx;
   text-align: center;
@@ -790,9 +810,9 @@ onMounted(async () => {
 .cart-bar {
   display: flex;
   align-items: center;
-  padding: 24rpx 32rpx;
-  background: #fff;
-  box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.05);
+  padding: $spacing-md $spacing-lg;
+  background: $color-white;
+  box-shadow: $box-shadow-md;
 }
 
 .cart-info {
@@ -800,48 +820,34 @@ onMounted(async () => {
 }
 
 .cart-count {
-  font-size: 26rpx;
-  color: #999;
+  font-size: $font-size-small;
+  color: $color-text-secondary;
   margin-bottom: 4rpx;
 }
 
 .cart-total {
-  font-size: 28rpx;
-  color: #333;
+  font-size: $font-size-content;
+  color: $color-text-primary;
 
   text {
-    font-size: 40rpx;
+    font-size: $font-size-important;
     font-weight: 600;
-    color: #EF4444;
+    color: $color-danger;
   }
 }
 
-.next-btn {
+:deep(.next-btn-custom) {
   width: 240rpx;
   height: 88rpx;
-  background: #3B82F6;
-  color: #fff;
   border-radius: 44rpx;
-  font-size: 30rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-
-  &[disabled] {
-    background: #ccc;
-  }
-
-  &::after {
-    border: none;
-  }
+  font-size: $font-size-large;
 }
 
 .confirm-section {
-  background: #fff;
-  margin: 24rpx;
-  border-radius: 24rpx;
-  padding: 32rpx;
+  background: $color-white;
+  margin: $spacing-md;
+  border-radius: $spacing-md;
+  padding: $spacing-lg;
 
   &:first-child {
     margin-top: 0;
@@ -849,10 +855,10 @@ onMounted(async () => {
 }
 
 .section-title {
-  font-size: 30rpx;
+  font-size: $font-size-large;
   font-weight: 600;
-  color: #333;
-  margin-bottom: 24rpx;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
 }
 
 .customer-row {
@@ -863,7 +869,7 @@ onMounted(async () => {
 .cart-list {
   display: flex;
   flex-direction: column;
-  gap: 20rpx;
+  gap: $spacing-sm;
 }
 
 .empty-cart-tip {
@@ -872,18 +878,18 @@ onMounted(async () => {
   align-items: center;
   justify-content: center;
   padding: 48rpx 0;
-  gap: 16rpx;
+  gap: $spacing-sm;
   
   text {
-    font-size: 26rpx;
-    color: #999;
+    font-size: $font-size-small;
+    color: $color-text-secondary;
   }
 }
 
 .cart-item {
   display: flex;
   align-items: center;
-  gap: 16rpx;
+  gap: $spacing-sm;
 }
 
 .cart-item .item-info {
@@ -891,38 +897,50 @@ onMounted(async () => {
 }
 
 .cart-item .item-name {
-  font-size: 28rpx;
-  color: #333;
+  font-size: $font-size-content;
+  color: $color-text-primary;
   margin-bottom: 4rpx;
 }
 
 .cart-item .item-price {
-  font-size: 24rpx;
-  color: #999;
+  font-size: $font-size-secondary;
+  color: $color-text-secondary;
 }
 
 .cart-item .item-total {
-  font-size: 30rpx;
+  font-size: $font-size-large;
   font-weight: 500;
-  color: #333;
+  color: $color-text-primary;
 }
 
 .remark-input {
   width: 100%;
   height: 160rpx;
-  background: #f5f5f5;
-  border-radius: 16rpx;
-  padding: 24rpx;
-  font-size: 28rpx;
+  background: $color-bg;
+  border-radius: $border-radius-lg;
+  padding: $spacing-md;
+  font-size: $font-size-content;
   box-sizing: border-box;
+}
+
+:deep(.remark-textarea-custom) {
+  width: 100%;
+  background: $color-bg;
+  border-radius: $border-radius-lg;
+  
+  .wd-textarea__inner {
+    min-height: 160rpx;
+    font-size: $font-size-content;
+    padding: $spacing-md;
+  }
 }
 
 .submit-bar {
   display: flex;
   align-items: center;
-  padding: 24rpx 32rpx;
-  background: #fff;
-  box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.05);
+  padding: $spacing-md $spacing-lg;
+  background: $color-white;
+  box-shadow: $box-shadow-md;
 }
 
 .total-info {
@@ -930,36 +948,22 @@ onMounted(async () => {
 }
 
 .total-label {
-  font-size: 28rpx;
-  color: #666;
+  font-size: $font-size-content;
+  color: $color-text-regular;
 }
 
 .total-amount {
-  font-size: 44rpx;
+  font-size: $font-size-big;
   font-weight: 600;
-  color: #EF4444;
+  color: $color-danger;
 }
 
-.submit-btn {
+:deep(.submit-btn-custom) {
   width: 280rpx;
   height: 96rpx;
-  background: #3B82F6;
-  color: #fff;
   border-radius: 48rpx;
-  font-size: 32rpx;
+  font-size: $font-size-title;
   font-weight: 500;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-
-  &[disabled] {
-    background: #ccc;
-  }
-
-  &::after {
-    border: none;
-  }
 }
 
 /* 确认提交步骤样式 */
@@ -979,9 +983,9 @@ onMounted(async () => {
   bottom: 0;
   display: flex;
   align-items: center;
-  padding: 24rpx 32rpx;
-  background: #fff;
-  box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.05);
+  padding: $spacing-md $spacing-lg;
+  background: $color-white;
+  box-shadow: $box-shadow-md;
 }
 
 /* 账单明细编辑样式 - 紧凑表格布局 */
@@ -994,7 +998,7 @@ onMounted(async () => {
 }
 
 .ledger-section {
-  background: #fff;
+  background: $color-white;
   border-radius: 24rpx;
   padding: 24rpx;
   margin-bottom: 24rpx;
@@ -1008,8 +1012,8 @@ onMounted(async () => {
 }
 
 .section-hint {
-  font-size: 22rpx;
-  color: #999;
+  font-size: $font-size-xsmall;
+  color: $color-text-secondary;
 }
 
 /* 表头样式 */
@@ -1018,8 +1022,8 @@ onMounted(async () => {
   align-items: center;
   padding: 16rpx 0;
   border-bottom: 2rpx solid #f0f0f0;
-  font-size: 22rpx;
-  color: #999;
+  font-size: $font-size-xsmall;
+  color: $color-text-secondary;
 }
 
 .line-table-header .col-name { flex: 3; }
@@ -1067,29 +1071,34 @@ onMounted(async () => {
 }
 
 /* 紧凑输入框 */
-.compact-input {
+.line-row-item :deep(.wd-input) {
   height: 64rpx;
-  background: #f8f9fa;
+  background: $color-bg;
   border: none;
   border-radius: 8rpx;
-  padding: 0 16rpx;
-  font-size: 26rpx;
-  box-sizing: border-box;
+  
+  .wd-input__inner {
+    font-size: $font-size-small;
+    padding: 0 16rpx;
+  }
 }
 
-.name-input {
+.col-name :deep(.wd-input) {
   width: 100%;
 }
 
-.qty-input,
-.price-input {
+.col-qty :deep(.wd-input),
+.col-price :deep(.wd-input) {
   width: 100%;
-  text-align: center;
+  
+  .wd-input__inner {
+    text-align: center;
+  }
 }
 
 .amount-text {
-  font-size: 26rpx;
-  color: #EF4444;
+  font-size: $font-size-small;
+  color: $color-danger;
   font-weight: 500;
 }
 
@@ -1103,7 +1112,7 @@ onMounted(async () => {
   top: 100%;
   left: 0;
   right: 0;
-  background: #fff;
+  background: $color-white;
   border-radius: 12rpx;
   box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.12);
   z-index: 100;
@@ -1128,19 +1137,19 @@ onMounted(async () => {
   }
 
   &:active {
-    background: #f5f5f5;
+    background: $color-bg;
   }
 }
 
 .sku-name {
-  font-size: 26rpx;
-  color: #333;
+  font-size: $font-size-small;
+  color: $color-text-primary;
   flex: 1;
 }
 
 .sku-price {
-  font-size: 26rpx;
-  color: #EF4444;
+  font-size: $font-size-small;
+  color: $color-danger;
   margin-left: 16rpx;
 }
 
@@ -1157,14 +1166,14 @@ onMounted(async () => {
   border-radius: 12rpx;
   
   text {
-    font-size: 26rpx;
-    color: #3B82F6;
+    font-size: $font-size-small;
+    color: $color-primary;
     font-weight: 500;
   }
 }
 
 .ledger-summary {
-  background: #fff;
+  background: $color-white;
   border-radius: 24rpx;
   padding: 32rpx;
 }
@@ -1183,19 +1192,19 @@ onMounted(async () => {
 }
 
 .ledger-summary .summary-label {
-  font-size: 28rpx;
-  color: #666;
+  font-size: $font-size-content;
+  color: $color-text-regular;
 }
 
 .ledger-summary .summary-value {
-  font-size: 28rpx;
-  color: #333;
+  font-size: $font-size-content;
+  color: $color-text-primary;
   font-weight: 500;
 }
 
 .ledger-summary .summary-row.total .summary-value {
-  font-size: 36rpx;
-  color: #EF4444;
+  font-size: $font-size-xlarge;
+  color: $color-danger;
   font-weight: 600;
 }
 

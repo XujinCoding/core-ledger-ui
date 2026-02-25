@@ -274,9 +274,10 @@ onMounted(() => {
 </template>
 
 <style lang="scss" scoped>
+
 .store-info-page {
   min-height: 100vh;
-  background: #f5f5f5;
+  background: $color-bg;
 }
 
 .navbar {
@@ -284,9 +285,9 @@ onMounted(() => {
   top: 0;
   left: 0;
   right: 0;
-  background: #fff;
+  background: $color-white;
   z-index: 100;
-  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+  box-shadow: $box-shadow-sm;
 }
 
 .navbar-content {
@@ -294,7 +295,7 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   height: 88rpx;
-  padding: 0 32rpx;
+  padding: 0 $spacing-lg;
 }
 
 .navbar-left,
@@ -303,45 +304,45 @@ onMounted(() => {
 }
 
 .navbar-title {
-  font-size: 34rpx;
+  font-size: $font-size-title;
   font-weight: 600;
-  color: #333;
+  color: $color-text-primary;
 }
 
 .create-btn {
-  color: #3B82F6;
-  font-size: 28rpx;
+  color: $color-primary;
+  font-size: $font-size-content;
 }
 
 .form-content {
-  padding: 32rpx;
+  padding: $spacing-lg;
 }
 
 .form-section {
-  background: #fff;
-  border-radius: 24rpx;
+  background: $color-white;
+  border-radius: $border-radius-xl;
   overflow: hidden;
-  margin-top: 16rpx;
-  margin-bottom: 32rpx;
+  margin-top: $spacing-sm;
+  margin-bottom: $spacing-lg;
 }
 
 .avatar-section {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24rpx 32rpx;
+  padding: $spacing-md $spacing-lg;
 }
 
 .avatar-label {
-  font-size: 28rpx;
-  color: #333;
+  font-size: $font-size-content;
+  color: $color-text-primary;
 }
 
 .address-field {
-  padding: 24rpx 32rpx;
+  padding: $spacing-md $spacing-lg;
 }
 
 .submit-section {
-  margin-top: 48rpx;
+  margin-top: $spacing-xl;
 }
 </style>

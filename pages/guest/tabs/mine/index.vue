@@ -118,13 +118,13 @@ const handleMenuClick = (menuName: string) => {
 <style lang="scss" scoped>
 .mine-page {
   height: 100%;
-  background: #f5f5f5;
+  background: $color-bg;
 }
 
 .header {
   background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
   padding: 32rpx 32rpx 48rpx;
-  color: #fff;
+  color: $color-white;
 }
 
 .user-info {
@@ -159,7 +159,7 @@ const handleMenuClick = (menuName: string) => {
 }
 
 .user-name {
-  font-size: 40rpx;
+  font-size: $font-size-important;
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
@@ -167,7 +167,7 @@ const handleMenuClick = (menuName: string) => {
 }
 
 .user-desc {
-  font-size: 26rpx;
+  font-size: $font-size-small;
   opacity: 0.9;
 }
 
@@ -179,7 +179,7 @@ const handleMenuClick = (menuName: string) => {
   padding: 24rpx;
   background: rgba(255, 255, 255, 0.2);
   border-radius: 16rpx;
-  font-size: 30rpx;
+  font-size: $font-size-large;
   font-weight: 500;
 }
 
@@ -188,7 +188,7 @@ const handleMenuClick = (menuName: string) => {
 }
 
 .menu-section {
-  background: #fff;
+  background: $color-white;
   margin: 0 32rpx 32rpx;
   border-radius: 24rpx;
   overflow: hidden;
@@ -196,8 +196,8 @@ const handleMenuClick = (menuName: string) => {
 
 .menu-title {
   padding: 28rpx 32rpx;
-  font-size: 28rpx;
-  color: #999;
+  font-size: $font-size-content;
+  color: $color-text-secondary;
   border-bottom: 2rpx solid #f5f5f5;
 }
 
@@ -221,17 +221,17 @@ const handleMenuClick = (menuName: string) => {
   justify-content: center;
   margin-right: 24rpx;
 
-  &.blue { background: #EBF5FF; color: #3B82F6; }
-  &.green { background: #D1FAE5; color: #10B981; }
-  &.orange { background: #FEF3C7; color: #F59E0B; }
-  &.purple { background: #EDE9FE; color: #8B5CF6; }
-  &.red { background: #FEE2E2; color: #EF4444; }
-  &.gray { background: #F3F4F6; color: #6B7280; }
+  &.blue { background: $color-primary-light; color: $color-primary; }
+  &.green { background: $color-success-light; color: $color-success; }
+  &.orange { background: $color-warning-light; color: $color-warning; }
+  &.purple { background: $color-primary-light; color: $color-primary; }
+  &.red { background: $color-danger-light; color: $color-danger; }
+  &.gray { background: $color-bg; color: $color-text-regular; }
 }
 
 .menu-text {
   flex: 1;
-  font-size: 30rpx;
-  color: #333;
+  font-size: $font-size-large;
+  color: $color-text-primary;
 }
 </style>

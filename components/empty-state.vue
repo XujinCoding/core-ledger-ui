@@ -21,11 +21,11 @@ const { tip } = toRefs(props)
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: #999;
+  color: $color-text-secondary;
 }
 .empty-state__icon {
   font-size: 48px;
-  color: #c0c4cc;
+  color: $color-text-placeholder;
 }
 .empty-state__tip {
   margin-top: 8px;

@@ -281,13 +281,13 @@ onUnmounted(() => {
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: #f5f5f5;
+  background: $color-bg;
   overflow: hidden;
 }
 
 .fixed-header {
   flex-shrink: 0;
-  background: #fff;
+  background: $color-white;
 }
 
 .search-bar {
@@ -297,7 +297,7 @@ onUnmounted(() => {
 .search-input-wrap {
   display: flex;
   align-items: center;
-  background: #f5f5f5;
+  background: $color-bg;
   border-radius: 40rpx;
   padding: 16rpx 24rpx;
   gap: 12rpx;
@@ -312,31 +312,31 @@ onUnmounted(() => {
 }
 
 .search-type-text {
-  font-size: 28rpx;
-  color: #333;
+  font-size: $font-size-content;
+  color: $color-text-primary;
   font-weight: 500;
 }
 
 .search-divider {
   width: 2rpx;
   height: 32rpx;
-  background: #ddd;
+  background: $color-border;
   flex-shrink: 0;
 }
 
 .search-input {
   flex: 1;
-  font-size: 28rpx;
-  color: #333;
+  font-size: $font-size-content;
+  color: $color-text-primary;
 }
 
 .placeholder {
-  color: #999;
+  color: $color-text-secondary;
 }
 
 .stats-card {
   display: flex;
-  background: #fff;
+  background: $color-white;
   margin: 24rpx;
   border-radius: 20rpx;
   padding: 32rpx 0;
@@ -354,24 +354,24 @@ onUnmounted(() => {
 }
 
 .stat-value {
-  font-size: 40rpx;
+  font-size: $font-size-important;
   font-weight: 600;
-  color: #333;
+  color: $color-text-primary;
   margin-bottom: 8rpx;
 
   &.debt {
-    color: #EF4444;
+    color: $color-danger;
   }
 }
 
 .stat-label {
-  font-size: 24rpx;
-  color: #999;
+  font-size: $font-size-secondary;
+  color: $color-text-secondary;
 }
 
 .stat-divider {
   width: 2rpx;
-  background: #f0f0f0;
+  background: $color-bg;
 }
 
 .customer-scroll {
@@ -386,8 +386,8 @@ onUnmounted(() => {
 .empty-state {
   padding: 120rpx 0;
   text-align: center;
-  color: #999;
-  font-size: 28rpx;
+  color: $color-text-secondary;
+  font-size: $font-size-content;
 
   text {
     display: block;
@@ -398,9 +398,9 @@ onUnmounted(() => {
 .add-btn-empty {
   margin-top: 32rpx;
   padding: 16rpx 48rpx;
-  background: #3B82F6;
-  color: #fff;
-  font-size: 28rpx;
+  background: $color-primary;
+  color: $color-white;
+  font-size: $font-size-content;
   border-radius: 40rpx;
   border: none;
 
@@ -419,7 +419,7 @@ onUnmounted(() => {
 .customer-card {
   display: flex;
   align-items: center;
-  background: #fff;
+  background: $color-white;
   border-radius: 20rpx;
   padding: 28rpx;
   gap: 24rpx;
@@ -430,11 +430,11 @@ onUnmounted(() => {
   height: 96rpx;
   border-radius: 50%;
   background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
-  color: #fff;
+  color: $color-white;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 36rpx;
+  font-size: $font-size-xlarge;
   font-weight: 600;
   flex-shrink: 0;
 }
@@ -452,14 +452,14 @@ onUnmounted(() => {
 }
 
 .customer-name {
-  font-size: 32rpx;
+  font-size: $font-size-title;
   font-weight: 500;
-  color: #333;
+  color: $color-text-primary;
 }
 
 .customer-nickname {
-  font-size: 24rpx;
-  color: #999;
+  font-size: $font-size-secondary;
+  color: $color-text-secondary;
 }
 
 .customer-phone,
@@ -467,8 +467,8 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 8rpx;
-  font-size: 24rpx;
-  color: #666;
+  font-size: $font-size-secondary;
+  color: $color-text-regular;
   margin-top: 4rpx;
 }
 
@@ -481,14 +481,14 @@ onUnmounted(() => {
 /* 移除重复的样式 */
 
 .customer-debt {
-  font-size: 26rpx;
-  color: #EF4444;
+  font-size: $font-size-small;
+  color: $color-danger;
   font-weight: 500;
 }
 
 .customer-orders {
-  font-size: 24rpx;
-  color: #999;
+  font-size: $font-size-secondary;
+  color: $color-text-secondary;
 }
 
 .loading-more {
@@ -497,15 +497,15 @@ onUnmounted(() => {
   justify-content: center;
   gap: 16rpx;
   padding: 32rpx;
-  color: #999;
-  font-size: 26rpx;
+  color: $color-text-secondary;
+  font-size: $font-size-small;
 }
 
 .no-more {
   text-align: center;
   padding: 32rpx;
-  color: #999;
-  font-size: 26rpx;
+  color: $color-text-secondary;
+  font-size: $font-size-small;
 }
 
 .fab-btn {
@@ -515,7 +515,7 @@ onUnmounted(() => {
   width: 112rpx;
   height: 112rpx;
   border-radius: 50%;
-  background: #3B82F6;
+  background: $color-primary;
   display: flex;
   align-items: center;
   justify-content: center;

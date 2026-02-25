@@ -98,7 +98,7 @@ const handleClick = () => {
 <style lang="scss" scoped>
 .ledger-card {
   display: flex;
-  background: #fff;
+  background: $color-white;
   border-radius: 20rpx;
   padding: 28rpx;
   box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.05);
@@ -115,11 +115,11 @@ const handleClick = () => {
   height: 80rpx;
   border-radius: 50%;
   background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-  color: #fff;
+  color: $color-white;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 32rpx;
+  font-size: $font-size-title;
   font-weight: 600;
   flex-shrink: 0;
 }
@@ -138,9 +138,9 @@ const handleClick = () => {
 
 .ledger-title {
   flex: 1;
-  font-size: 30rpx;
+  font-size: $font-size-large;
   font-weight: 500;
-  color: #333;
+  color: $color-text-primary;
   margin-right: 16rpx;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -148,9 +148,9 @@ const handleClick = () => {
 }
 
 .ledger-amount {
-  font-size: 32rpx;
+  font-size: $font-size-title;
   font-weight: 600;
-  color: #333;
+  color: $color-text-primary;
   flex-shrink: 0;
 }
 
@@ -161,38 +161,38 @@ const handleClick = () => {
 }
 
 .ledger-customer {
-  font-size: 24rpx;
-  color: #999;
+  font-size: $font-size-secondary;
+  color: $color-text-secondary;
 }
 
 .ledger-status {
-  font-size: 22rpx;
+  font-size: $font-size-xsmall;
   padding: 4rpx 12rpx;
   border-radius: 8rpx;
 
   &.status-progress {
-    background: #fef3c7;
-    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.1);
+    color: $color-warning;
   }
 
   &.status-partial {
-    background: #dbeafe;
-    color: #3b82f6;
+    background: rgba(59, 130, 246, 0.1);
+    color: $color-primary;
   }
 
   &.status-cleared {
-    background: #d1fae5;
-    color: #10b981;
+    background: rgba(16, 185, 129, 0.1);
+    color: $color-success;
   }
 
   &.status-credit {
-    background: #fee2e2;
-    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+    color: $color-danger;
   }
 
   &.status-closed {
-    background: #f3f4f6;
-    color: #6b7280;
+    background: $color-bg;
+    color: $color-text-regular;
   }
 }
 </style>

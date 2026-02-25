@@ -101,6 +101,23 @@ const inProgressLedgers = computed(() => {
 // ==================== 方法 ====================
 
 /**
+ * 快捷操作
+ */
+const quickActions = [
+  { icon: 'add-circle', label: '新建账单', color: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)', action: '新建账单' },
+  { icon: 'user-add', label: '添加客户', color: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', action: '添加客户' },
+  { icon: 'goods', label: '添加商品', color: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)', action: '添加商品' },
+  { icon: 'chart', label: '统计报表', color: 'linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%)', action: '统计报表' }
+]
+
+/**
+ * 处理快捷操作点击
+ */
+const handleQuickAction = (action: typeof quickActions[0]) => {
+  handleGuestAction(action.action)
+}
+
+/**
  * 刷新数据
  */
 const onRefresh = async () => {
@@ -206,29 +223,16 @@ onMounted(() => {
     <view class="page-content">
       <!-- 快捷操作 -->
       <view class="quick-actions">
-        <view class="action-item" @tap="handleGuestAction('新建账单')">
-          <view class="action-icon" style="background: #3B82F6;">
-            <wd-icon name="add-circle" size="44rpx" color="#fff" />
+        <view
+          v-for="action in quickActions"
+          :key="action.label"
+          class="action-item"
+          @tap="handleQuickAction(action)"
+        >
+          <view class="action-icon" :style="{ background: action.color }">
+            <wd-icon :name="action.icon" size="44rpx" color="#fff" />
           </view>
-          <text class="action-label">新建账单</text>
-        </view>
-        <view class="action-item" @tap="handleGuestAction('添加客户')">
-          <view class="action-icon" style="background: #10B981;">
-            <wd-icon name="user-add" size="44rpx" color="#fff" />
-          </view>
-          <text class="action-label">添加客户</text>
-        </view>
-        <view class="action-item" @tap="handleGuestAction('添加商品')">
-          <view class="action-icon" style="background: #F59E0B;">
-            <wd-icon name="goods" size="44rpx" color="#fff" />
-          </view>
-          <text class="action-label">添加商品</text>
-        </view>
-        <view class="action-item" @tap="handleGuestAction('统计报表')">
-          <view class="action-icon" style="background: #8B5CF6;">
-            <wd-icon name="chart" size="44rpx" color="#fff" />
-          </view>
-          <text class="action-label">统计报表</text>
+          <text class="action-label">{{ action.label }}</text>
         </view>
       </view>
 
@@ -328,9 +332,10 @@ onMounted(() => {
 </template>
 
 <style lang="scss" scoped>
+
 .home-page {
   height: 100%;
-  background: #f5f5f5;
+  background: $color-bg;
 }
 
 .home-header {
@@ -362,9 +367,9 @@ onMounted(() => {
 }
 
 .store-name {
-  font-size: 36rpx;
+  font-size: $font-size-xlarge;
   font-weight: 600;
-  color: #fff;
+  color: $color-white;
 }
 
 .header-actions {
@@ -384,18 +389,18 @@ onMounted(() => {
 }
 
 .stat-value {
-  font-size: 40rpx;
+  font-size: $font-size-important;
   font-weight: 600;
-  color: #fff;
+  color: $color-white;
   margin-bottom: 8rpx;
 
   &.debt {
-    color: #FCA5A5;
+    color: $color-danger;
   }
 }
 
 .stat-label {
-  font-size: 24rpx;
+  font-size: $font-size-secondary;
   color: rgba(255, 255, 255, 0.8);
 }
 
@@ -410,7 +415,7 @@ onMounted(() => {
 
 .quick-actions {
   display: flex;
-  background: #fff;
+  background: $color-white;
   border-radius: 24rpx;
   padding: 32rpx 16rpx;
   margin-bottom: 24rpx;
@@ -434,12 +439,12 @@ onMounted(() => {
 }
 
 .action-label {
-  font-size: 24rpx;
-  color: #666;
+  font-size: $font-size-secondary;
+  color: $color-text-regular;
 }
 
 .section {
-  background: #fff;
+  background: $color-white;
   border-radius: 24rpx;
   padding: 32rpx;
   margin-bottom: 24rpx;
@@ -453,19 +458,19 @@ onMounted(() => {
 }
 
 .section-title {
-  font-size: 32rpx;
+  font-size: $font-size-title;
   font-weight: 600;
-  color: #333;
+  color: $color-text-primary;
 }
 
 .section-date {
-  font-size: 24rpx;
-  color: #999;
+  font-size: $font-size-secondary;
+  color: $color-text-secondary;
 }
 
 .section-more {
-  font-size: 26rpx;
-  color: #3B82F6;
+  font-size: $font-size-small;
+  color: $color-primary;
 }
 
 .today-stats {
@@ -478,7 +483,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   padding: 20rpx;
-  background: #f9fafb;
+  background: $color-bg;
   border-radius: 16rpx;
 }
 
@@ -492,23 +497,23 @@ onMounted(() => {
   margin-right: 20rpx;
 
   &.blue {
-    background: #EBF5FF;
-    color: #3B82F6;
+    background: $color-primary-light;
+    color: $color-primary;
   }
 
   &.green {
-    background: #D1FAE5;
-    color: #10B981;
+    background: $color-success-light;
+    color: $color-success;
   }
 
   &.red {
-    background: #FEE2E2;
-    color: #EF4444;
+    background: $color-danger-light;
+    color: $color-danger;
   }
 
   &.purple {
-    background: #EDE9FE;
-    color: #8B5CF6;
+    background: $color-primary-light;
+    color: $color-primary;
   }
 }
 
@@ -517,22 +522,22 @@ onMounted(() => {
 }
 
 .today-label {
-  font-size: 24rpx;
-  color: #999;
+  font-size: $font-size-secondary;
+  color: $color-text-secondary;
   margin-bottom: 4rpx;
 }
 
 .today-value {
-  font-size: 32rpx;
+  font-size: $font-size-title;
   font-weight: 600;
-  color: #333;
+  color: $color-text-primary;
 }
 
 .empty-state {
   padding: 60rpx 0;
   text-align: center;
-  color: #999;
-  font-size: 28rpx;
+  color: $color-text-secondary;
+  font-size: $font-size-content;
 
   text {
     display: block;
@@ -547,7 +552,7 @@ onMounted(() => {
 }
 
 .ledger-card {
-  background: #f9fafb;
+  background: $color-bg;
   border-radius: 16rpx;
   padding: 24rpx;
 }
@@ -569,11 +574,11 @@ onMounted(() => {
   height: 72rpx;
   border-radius: 50%;
   background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
-  color: #fff;
+  color: $color-white;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 28rpx;
+  font-size: $font-size-content;
   font-weight: 600;
   margin-right: 16rpx;
 }
@@ -583,45 +588,45 @@ onMounted(() => {
 }
 
 .customer-name {
-  font-size: 28rpx;
+  font-size: $font-size-content;
   font-weight: 500;
-  color: #333;
+  color: $color-text-primary;
 }
 
 .ledger-time {
-  font-size: 22rpx;
-  color: #999;
+  font-size: $font-size-xsmall;
+  color: $color-text-secondary;
   margin-top: 4rpx;
 }
 
 .ledger-status {
   padding: 8rpx 20rpx;
   border-radius: 24rpx;
-  font-size: 22rpx;
+  font-size: $font-size-xsmall;
 
   &.pending {
-    background: #FEF3C7;
-    color: #F59E0B;
+    background: $color-warning-light;
+    color: $color-warning;
   }
 
   &.partial {
-    background: #DBEAFE;
-    color: #3B82F6;
+    background: $color-primary-light;
+    color: $color-primary;
   }
 
   &.debt {
-    background: #FEE2E2;
-    color: #EF4444;
+    background: $color-danger-light;
+    color: $color-danger;
   }
 
   &.paid {
-    background: #D1FAE5;
-    color: #10B981;
+    background: $color-success-light;
+    color: $color-success;
   }
 
   &.closed {
-    background: #F3F4F6;
-    color: #6B7280;
+    background: $color-bg;
+    color: $color-text-regular;
   }
 }
 
@@ -640,18 +645,18 @@ onMounted(() => {
 }
 
 .amount-label {
-  font-size: 24rpx;
-  color: #999;
+  font-size: $font-size-secondary;
+  color: $color-text-secondary;
 }
 
 .amount-value {
-  font-size: 36rpx;
+  font-size: $font-size-xlarge;
   font-weight: 600;
-  color: #333;
+  color: $color-text-primary;
 }
 
 .ledger-paid {
-  font-size: 24rpx;
-  color: #10B981;
+  font-size: $font-size-secondary;
+  color: $color-success;
 }
 </style>

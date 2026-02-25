@@ -290,11 +290,11 @@ onMounted(() => {
 <style lang="scss" scoped>
 .report-page {
   height: 100vh;
-  background: #f5f5f5;
+  background: $color-bg;
 }
 
 .tab-section {
-  background: #fff;
+  background: $color-white;
   margin: 24rpx 32rpx;
   border-radius: 24rpx;
   padding: 24rpx;
@@ -312,17 +312,17 @@ onMounted(() => {
   padding: 20rpx;
   border: 2rpx solid #E5E7EB;
   border-radius: 16rpx;
-  background: #fff;
-  font-size: 28rpx;
+  background: $color-white;
+  font-size: $font-size-content;
   text-align: center;
   font-weight: 500;
-  color: #374151;
+  color: $color-gray-dark;
   transition: all 0.3s;
 
   &.active {
     background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
-    color: #fff;
-    border-color: #3B82F6;
+    color: $color-white;
+    border-color: $color-primary;
   }
 }
 
@@ -335,9 +335,9 @@ onMounted(() => {
   padding: 24rpx;
   border: 2rpx solid #E5E7EB;
   border-radius: 16rpx;
-  font-size: 28rpx;
-  color: #111827;
-  background: #F9FAFB;
+  font-size: $font-size-content;
+  color: $color-gray-darker;
+  background: $color-bg;
   text-align: center;
 }
 
@@ -349,7 +349,7 @@ onMounted(() => {
 
 .summary-card {
   flex: 1;
-  background: #fff;
+  background: $color-white;
   border-radius: 20rpx;
   padding: 28rpx 20rpx;
   box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
@@ -357,23 +357,23 @@ onMounted(() => {
 }
 
 .summary-label {
-  font-size: 24rpx;
-  color: #6B7280;
+  font-size: $font-size-secondary;
+  color: $color-text-regular;
   margin-bottom: 12rpx;
 }
 
 .summary-value {
-  font-size: 36rpx;
+  font-size: $font-size-xlarge;
   font-weight: 700;
-  color: #111827;
+  color: $color-gray-darker;
 
-  &.primary { color: #3B82F6; }
-  &.success { color: #10B981; }
-  &.warning { color: #F59E0B; }
+  &.primary { color: $color-primary; }
+  &.success { color: $color-success; }
+  &.warning { color: $color-warning; }
 }
 
 .chart-section {
-  background: #fff;
+  background: $color-white;
   margin: 0 32rpx 24rpx;
   border-radius: 24rpx;
   padding: 28rpx;
@@ -381,9 +381,9 @@ onMounted(() => {
 }
 
 .section-title {
-  font-size: 32rpx;
+  font-size: $font-size-title;
   font-weight: 600;
-  color: #111827;
+  color: $color-gray-darker;
   margin-bottom: 24rpx;
 }
 
@@ -405,15 +405,15 @@ onMounted(() => {
 
 .bar-label {
   width: 140rpx;
-  font-size: 22rpx;
-  color: #6B7280;
+  font-size: $font-size-xsmall;
+  color: $color-text-regular;
   flex-shrink: 0;
 }
 
 .bar-wrapper {
   flex: 1;
   height: 32rpx;
-  background: #F3F4F6;
+  background: $color-bg;
   border-radius: 16rpx;
   overflow: hidden;
 }
@@ -428,8 +428,8 @@ onMounted(() => {
 
 .bar-value {
   width: 120rpx;
-  font-size: 24rpx;
-  color: #111827;
+  font-size: $font-size-secondary;
+  color: $color-gray-darker;
   font-weight: 500;
   text-align: right;
   flex-shrink: 0;
@@ -456,20 +456,20 @@ onMounted(() => {
 
 .legend-name {
   flex: 1;
-  font-size: 28rpx;
-  color: #374151;
+  font-size: $font-size-content;
+  color: $color-gray-dark;
 }
 
 .legend-value {
-  font-size: 26rpx;
-  color: #6B7280;
+  font-size: $font-size-small;
+  color: $color-text-regular;
   width: 80rpx;
   text-align: right;
 }
 
 .legend-amount {
-  font-size: 28rpx;
-  color: #111827;
+  font-size: $font-size-content;
+  color: $color-gray-darker;
   font-weight: 500;
   width: 140rpx;
   text-align: right;
@@ -478,7 +478,7 @@ onMounted(() => {
 .empty-chart {
   padding: 60rpx;
   text-align: center;
-  color: #9CA3AF;
-  font-size: 28rpx;
+  color: $color-gray-light;
+  font-size: $font-size-content;
 }
 </style>

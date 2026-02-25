@@ -176,7 +176,13 @@ onMounted(() => {
     <view v-else-if="categories.length === 0" class="empty-state">
       <wd-icon name="inbox" size="100rpx" color="#ddd" />
       <text>暂无分类</text>
-      <button class="add-btn-empty" @tap="openAddPopup()">添加分类</button>
+      <wd-button 
+        type="primary"
+        @click="openAddPopup()"
+        custom-class="add-btn-empty-custom"
+      >
+        添加分类
+      </wd-button>
     </view>
 
     <!-- 树形列表 -->
@@ -298,8 +304,19 @@ onMounted(() => {
         </view>
 
         <view class="popup-footer">
-          <button class="cancel-btn" @tap="showAddPopup = false">取消</button>
-          <button class="confirm-btn" @tap="submitForm">确定</button>
+          <wd-button 
+            @click="showAddPopup = false"
+            custom-class="cancel-btn-custom"
+          >
+            取消
+          </wd-button>
+          <wd-button 
+            type="primary"
+            @click="submitForm"
+            custom-class="confirm-btn-custom"
+          >
+            确定
+          </wd-button>
         </view>
       </view>
     </wd-popup>
@@ -309,7 +326,7 @@ onMounted(() => {
 <style lang="scss" scoped>
 .category-page {
   height: 100vh;
-  background: #f5f5f5;
+  background: $color-bg;
 }
 
 .loading-state {
@@ -325,8 +342,8 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: #999;
-  font-size: 28rpx;
+  color: $color-text-secondary;
+  font-size: $font-size-content;
 
   text {
     display: block;
@@ -334,18 +351,10 @@ onMounted(() => {
   }
 }
 
-.add-btn-empty {
-  display: inline-flex;
+:deep(.add-btn-empty-custom) {
   padding: 16rpx 48rpx;
-  background: #3B82F6;
-  color: #fff;
-  font-size: 28rpx;
+  font-size: $font-size-content;
   border-radius: 40rpx;
-  border: none;
-
-  &::after {
-    border: none;
-  }
 }
 
 /* 树形列表 */
@@ -360,15 +369,15 @@ onMounted(() => {
   align-items: center;
   gap: 12rpx;
   padding: 24rpx 32rpx;
-  background: #fff;
+  background: $color-white;
   border-radius: 16rpx;
   margin-bottom: 24rpx;
-  font-size: 28rpx;
-  color: #3B82F6;
+  font-size: $font-size-content;
+  color: $color-primary;
 }
 
 .tree-node {
-  background: #fff;
+  background: $color-white;
   border-radius: 16rpx;
   margin-bottom: 16rpx;
   overflow: hidden;
@@ -387,12 +396,12 @@ onMounted(() => {
 
   .level-2 & {
     padding-left: 48rpx;
-    background: #f9fafb;
+    background: $color-bg;
   }
 
   .level-3 & {
     padding-left: 80rpx;
-    background: #f5f5f5;
+    background: $color-bg;
   }
 }
 
@@ -411,8 +420,8 @@ onMounted(() => {
 
 .node-name {
   flex: 1;
-  font-size: 28rpx;
-  color: #333;
+  font-size: $font-size-content;
+  color: $color-text-primary;
   margin-left: 8rpx;
 }
 
@@ -446,9 +455,9 @@ onMounted(() => {
 }
 
 .popup-title {
-  font-size: 34rpx;
+  font-size: $font-size-title;
   font-weight: 600;
-  color: #333;
+  color: $color-text-primary;
 }
 
 .popup-content {
@@ -461,28 +470,28 @@ onMounted(() => {
 
 .form-label {
   display: block;
-  font-size: 28rpx;
-  color: #666;
+  font-size: $font-size-content;
+  color: $color-text-regular;
   margin-bottom: 16rpx;
 }
 
 .form-input {
   width: 100%;
   height: 88rpx;
-  background: #f5f5f5;
+  background: $color-bg;
   border-radius: 16rpx;
   padding: 0 24rpx;
-  font-size: 28rpx;
+  font-size: $font-size-content;
   box-sizing: border-box;
 }
 
 .parent-tag {
   display: inline-block;
   padding: 12rpx 24rpx;
-  background: #EBF5FF;
-  color: #3B82F6;
+  background: rgba(59, 130, 246, 0.1);
+  color: $color-primary;
   border-radius: 8rpx;
-  font-size: 26rpx;
+  font-size: $font-size-small;
 }
 
 .popup-footer {
@@ -490,30 +499,17 @@ onMounted(() => {
   gap: 24rpx;
 }
 
-.cancel-btn,
-.confirm-btn {
+:deep(.cancel-btn-custom),
+:deep(.confirm-btn-custom) {
   flex: 1;
   height: 88rpx;
   border-radius: 44rpx;
-  font-size: 30rpx;
+  font-size: $font-size-large;
   font-weight: 500;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-
-  &::after {
-    border: none;
-  }
 }
 
-.cancel-btn {
-  background: #f5f5f5;
-  color: #666;
-}
-
-.confirm-btn {
-  background: #3B82F6;
-  color: #fff;
+:deep(.cancel-btn-custom) {
+  background: $color-bg;
+  color: $color-text-regular;
 }
 </style>

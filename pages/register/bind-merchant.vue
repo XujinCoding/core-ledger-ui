@@ -190,11 +190,12 @@ const handleSkip = () => {
 </template>
 
 <style lang="scss" scoped>
+
 .bind-merchant-page {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background-color: #f5f5f5;
+  background-color: $color-bg;
   overflow: hidden;
 }
 
@@ -207,14 +208,14 @@ const handleSkip = () => {
 
   .title {
     display: block;
-    font-size: 36rpx;
+    font-size: $font-size-xlarge;
     font-weight: bold;
     margin-bottom: 8rpx;
   }
 
   .subtitle {
     display: block;
-    font-size: 26rpx;
+    font-size: $font-size-small;
     opacity: 0.9;
   }
 }
@@ -246,15 +247,15 @@ const handleSkip = () => {
   }
 
   .scan-title {
-    font-size: 28rpx;
+    font-size: $font-size-content;
     font-weight: bold;
-    color: #333;
+    color: $color-text-primary;
     margin-bottom: 8rpx;
   }
 
   .scan-subtitle {
-    font-size: 24rpx;
-    color: #999;
+    font-size: $font-size-secondary;
+    color: $color-text-secondary;
     margin-bottom: 30rpx;
   }
 
@@ -276,15 +277,15 @@ const handleSkip = () => {
     left: 0;
     right: 0;
     height: 1rpx;
-    background: #ddd;
+    background: $color-border;
   }
 
   .divider-text {
     position: relative;
-    background: #f5f5f5;
+    background: $color-bg;
     padding: 0 20rpx;
-    color: #999;
-    font-size: 24rpx;
+    color: $color-text-secondary;
+    font-size: $font-size-secondary;
   }
 }
 
@@ -296,9 +297,9 @@ const handleSkip = () => {
   border-radius: 12rpx;
 
   .input-title {
-    font-size: 28rpx;
+    font-size: $font-size-content;
     font-weight: bold;
-    color: #333;
+    color: $color-text-primary;
     margin-bottom: 20rpx;
   }
 
@@ -318,7 +319,7 @@ const handleSkip = () => {
   }
 
   .skip-button {
-    color: #999;
+    color: $color-text-secondary;
   }
 }
 </style>

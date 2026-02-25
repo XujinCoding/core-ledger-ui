@@ -373,9 +373,14 @@ onMounted(() => {
           <text class="total-label">共 {{ lineItems.length }} 项</text>
           <text class="total-amount">¥{{ totalAmount.toFixed(2) }}</text>
         </view>
-        <button class="submit-btn" :loading="submitting" @tap="submit">
+        <wd-button 
+          type="primary"
+          :loading="submitting" 
+          @click="submit"
+          custom-class="submit-btn-custom"
+        >
           保存修改
-        </button>
+        </wd-button>
       </view>
     </template>
   </view>
@@ -386,7 +391,7 @@ onMounted(() => {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #f5f5f5;
+  background: $color-bg;
 }
 
 .loading-state {
@@ -396,11 +401,11 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   gap: 20rpx;
-  color: #999;
+  color: $color-text-secondary;
 }
 
 .customer-section {
-  background: #fff;
+  background: $color-white;
   margin: 24rpx 24rpx 0;
   border-radius: 24rpx;
   padding: 28rpx 32rpx;
@@ -416,11 +421,11 @@ onMounted(() => {
   height: 80rpx;
   border-radius: 50%;
   background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
-  color: #fff;
+  color: $color-white;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 32rpx;
+  font-size: $font-size-title;
   font-weight: 600;
   margin-right: 24rpx;
 }
@@ -430,15 +435,15 @@ onMounted(() => {
 }
 
 .customer-name {
-  font-size: 30rpx;
+  font-size: $font-size-large;
   font-weight: 500;
-  color: #333;
+  color: $color-text-primary;
   margin-bottom: 4rpx;
 }
 
 .customer-phone {
-  font-size: 26rpx;
-  color: #999;
+  font-size: $font-size-small;
+  color: $color-text-secondary;
 }
 
 .content-scroll {
@@ -451,7 +456,7 @@ onMounted(() => {
 
 /* 账单明细编辑样式 - 紧凑表格布局 */
 .ledger-section {
-  background: #fff;
+  background: $color-white;
   border-radius: 24rpx;
   padding: 24rpx;
   margin-bottom: 24rpx;
@@ -465,14 +470,14 @@ onMounted(() => {
 }
 
 .section-title {
-  font-size: 30rpx;
+  font-size: $font-size-large;
   font-weight: 600;
-  color: #333;
+  color: $color-text-primary;
 }
 
 .section-hint {
-  font-size: 22rpx;
-  color: #999;
+  font-size: $font-size-xsmall;
+  color: $color-text-secondary;
 }
 
 /* 表头样式 */
@@ -481,8 +486,8 @@ onMounted(() => {
   align-items: center;
   padding: 16rpx 0;
   border-bottom: 2rpx solid #f0f0f0;
-  font-size: 22rpx;
-  color: #999;
+  font-size: $font-size-xsmall;
+  color: $color-text-secondary;
 }
 
 .line-table-header .col-name { flex: 3; }
@@ -514,17 +519,17 @@ onMounted(() => {
 /* 紧凑输入框 */
 .compact-input {
   height: 64rpx;
-  background: #f8f9fa;
+  background: $color-bg;
   border: none;
   border-radius: 8rpx;
   padding: 0 16rpx;
-  font-size: 26rpx;
+  font-size: $font-size-small;
   box-sizing: border-box;
 }
 
 .name-input { width: 100%; }
 .qty-input, .price-input { width: 100%; text-align: center; }
-.amount-text { font-size: 26rpx; color: #EF4444; font-weight: 500; }
+.amount-text { font-size: $font-size-small; color: $color-danger; font-weight: 500; }
 .delete-btn { padding: 8rpx; }
 
 /* SKU搜索下拉 */
@@ -533,7 +538,7 @@ onMounted(() => {
   top: 100%;
   left: 0;
   right: 0;
-  background: #fff;
+  background: $color-white;
   border-radius: 12rpx;
   box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.12);
   z-index: 100;
@@ -550,11 +555,11 @@ onMounted(() => {
   padding: 20rpx 24rpx;
   border-bottom: 1rpx solid #f5f5f5;
   &:last-child { border-bottom: none; }
-  &:active { background: #f5f5f5; }
+  &:active { background: $color-bg; }
 }
 
-.sku-name { font-size: 26rpx; color: #333; flex: 1; }
-.sku-price { font-size: 26rpx; color: #EF4444; margin-left: 16rpx; }
+.sku-name { font-size: $font-size-small; color: $color-text-primary; flex: 1; }
+.sku-price { font-size: $font-size-small; color: $color-danger; margin-left: 16rpx; }
 
 /* 添加行按钮 */
 .add-line-btn {
@@ -569,14 +574,14 @@ onMounted(() => {
   border-radius: 12rpx;
   
   text {
-    font-size: 26rpx;
-    color: #3B82F6;
+    font-size: $font-size-small;
+    color: $color-primary;
     font-weight: 500;
   }
 }
 
 .ledger-summary {
-  background: #fff;
+  background: $color-white;
   border-radius: 24rpx;
   padding: 32rpx;
 }
@@ -595,19 +600,19 @@ onMounted(() => {
 }
 
 .ledger-summary .summary-label {
-  font-size: 28rpx;
-  color: #666;
+  font-size: $font-size-content;
+  color: $color-text-regular;
 }
 
 .ledger-summary .summary-value {
-  font-size: 28rpx;
-  color: #333;
+  font-size: $font-size-content;
+  color: $color-text-primary;
   font-weight: 500;
 }
 
 .ledger-summary .summary-row.total .summary-value {
-  font-size: 36rpx;
-  color: #EF4444;
+  font-size: $font-size-xlarge;
+  color: $color-danger;
   font-weight: 600;
 }
 
@@ -620,7 +625,7 @@ onMounted(() => {
   align-items: center;
   padding: 24rpx 32rpx;
   padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
-  background: #fff;
+  background: $color-white;
   box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.05);
 }
 
@@ -629,32 +634,22 @@ onMounted(() => {
 }
 
 .total-label {
-  font-size: 26rpx;
-  color: #666;
+  font-size: $font-size-small;
+  color: $color-text-regular;
   display: block;
 }
 
 .total-amount {
-  font-size: 40rpx;
+  font-size: $font-size-important;
   font-weight: 600;
-  color: #EF4444;
+  color: $color-danger;
 }
 
-.submit-btn {
+:deep(.submit-btn-custom) {
   width: 240rpx;
   height: 88rpx;
-  background: #3B82F6;
-  color: #fff;
   border-radius: 44rpx;
-  font-size: 30rpx;
+  font-size: $font-size-large;
   font-weight: 500;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-
-  &::after {
-    border: none;
-  }
 }
 </style>

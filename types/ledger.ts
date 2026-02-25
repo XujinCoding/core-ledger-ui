@@ -63,6 +63,8 @@ export interface RecordLedgerDTO {
   paymentMethod?: PaymentMethod
   /** 备注 */
   memo?: string
+  /** 签名图片（base64或临时文件路径） */
+  signatureImage?: string
 }
 
 /**
@@ -217,6 +219,8 @@ export interface LedgerVO {
   memo?: string
   /** 账单编号 */
   code?: string
+  /** 签名图片URL */
+  signatureImageUrl?: string
   /** 创建时间 */
   createInstant: string
   /** 修改时间 */
