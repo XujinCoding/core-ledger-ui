@@ -35,7 +35,6 @@ const recordConfirmData = ref({
   recordAmount: 0,
   signatureImage: ''
 })
-const signatureRef = ref<any>(null)
 
 // 备注编辑弹窗
 const showMemoPopup = ref(false)
@@ -206,21 +205,31 @@ const cancelRecordConfirm = () => {
   clearSignature()
 }
 
-// 签字板相关方法
-const handleSignatureConfirm = (result: any) => {
-  if (result.success && result.tempFilePath) {
-    recordConfirmData.value.signatureImage = result.tempFilePath
-    console.log('签名已保存:', result.tempFilePath)
-  } else {
-    uni.showToast({ title: '签名保存失败', icon: 'none' })
-  }
+// 跳转到横屏签名页面
+const goToSignature = () => {
+  uni.navigateTo({
+    url: '/pages/merchant/tabs/ledger/signature'
+  })
+}
+
+// 从签名页面返回时接收签名数据
+const onSignatureComplete = (signatureImagePath: string) => {
+  recordConfirmData.value.signatureImage = signatureImagePath
+  uni.showToast({ 
+    title: '签字完成', 
+    icon: 'success',
+    duration: 1500
+  })
 }
 
 const clearSignature = () => {
-  if (signatureRef.value) {
-    signatureRef.value.clear()
-  }
   recordConfirmData.value.signatureImage = ''
+}
+
+// 重新签字
+const handleResign = () => {
+  clearSignature()
+  goToSignature()
 }
 
 const doSubmit = async (amount: number, signatureImage?: string) => {
@@ -313,6 +322,10 @@ onMounted(() => {
     setTimeout(() => uni.navigateBack(), 1500)
   }
   uni.$on('ledger-changed', handleLedgerChanged)
+  
+  // 暴露方法给签名页面调用
+  currentPage.$vm = currentPage.$vm || {}
+  currentPage.$vm.onSignatureComplete = onSignatureComplete
 })
 
 onUnmounted(() => { uni.$off('ledger-changed', handleLedgerChanged) })
@@ -633,27 +646,49 @@ onPullDownRefresh(() => { onRefresh() })
           <view class="signature-section">
             <view class="signature-header">
               <text class="signature-label">客户签字</text>
+              <view v-if="recordConfirmData.signatureImage" class="signature-status">
+                <wd-icon name="check-circle" size="32rpx" color="#10B981" />
+                <text class="signature-status-text">已签字</text>
+              </view>
             </view>
-            <wd-signature
-              ref="signatureRef"
-              :pen-color="'#000000'"
-              :line-width="3"
-              :custom-style="{ height: '300rpx', background: '#fafafa', borderRadius: '16rpx', border: '2rpx dashed #d1d5db' }"
-              @confirm="handleSignatureConfirm"
-            >
-              <template #footer="{ clear, confirm }">
-                <view class="signature-footer">
-                  <wd-button size="small" plain @click="clear">
-                    <wd-icon name="delete" size="24rpx" />
-                    清除
-                  </wd-button>
-                  <wd-button size="small" type="primary" @click="confirm">
-                    <wd-icon name="check" size="24rpx" />
-                    完成签字
-                  </wd-button>
-                </view>
-              </template>
-            </wd-signature>
+            
+            <!-- 未签字：显示签字按钮 -->
+            <view v-if="!recordConfirmData.signatureImage" class="signature-action">
+              <wd-button 
+                type="primary"
+                size="large"
+                block
+                custom-class="signature-btn"
+                @click="goToSignature"
+              >
+                <wd-icon name="edit-outline" size="32rpx" />
+                点击进入横屏签字
+              </wd-button>
+              <view class="signature-tip">
+                <wd-icon name="info-circle" size="24rpx" color="#999" />
+                <text>横屏签字可获得更大的签名区域</text>
+              </view>
+            </view>
+            
+            <!-- 已签字：显示签名预览 -->
+            <view v-else class="signature-preview">
+              <image 
+                :src="recordConfirmData.signatureImage" 
+                class="signature-preview-image" 
+                mode="aspectFit"
+              />
+              <view class="signature-preview-mask" @tap="handleResign">
+                <wd-button 
+                  size="small" 
+                  type="primary" 
+                  plain
+                  custom-class="resign-btn"
+                >
+                  <wd-icon name="edit-outline" size="24rpx" />
+                  重新签字
+                </wd-button>
+              </view>
+            </view>
           </view>
 
           <view class="record-confirm-btns">
@@ -1442,16 +1477,89 @@ onPullDownRefresh(() => { onRefresh() })
   color: $color-text-primary;
 }
 
-.signature-footer {
+.signature-status {
   display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 8rpx 16rpx;
+  background: rgba(16, 185, 129, 0.1);
+  border-radius: 8rpx;
+}
+
+.signature-status-text {
+  font-size: $font-size-small;
+  color: #10B981;
+  font-weight: 500;
+}
+
+.signature-action {
+  display: flex;
+  flex-direction: column;
   gap: 16rpx;
-  padding: 16rpx 0 0;
-  justify-content: flex-end;
+}
+
+:deep(.signature-btn) {
+  height: 96rpx !important;
+  min-height: 96rpx !important;
+  border-radius: 48rpx;
+  font-size: $font-size-large !important;
+  font-weight: 500;
   
-  :deep(.wd-button) {
-    flex: 0 0 auto;
-    min-width: 120rpx;
+  .wd-button__content {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 12rpx !important;
   }
+}
+
+.signature-tip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  font-size: $font-size-secondary;
+  color: $color-text-secondary;
+  padding: 8rpx 0;
+}
+
+.signature-preview {
+  position: relative;
+  width: 100%;
+  height: 300rpx;
+  background: #fafafa;
+  border: 2rpx solid #10B981;
+  border-radius: 16rpx;
+  overflow: hidden;
+}
+
+.signature-preview-image {
+  width: 100%;
+  height: 100%;
+}
+
+.signature-preview-mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s;
+  cursor: pointer;
+  
+  &:active {
+    opacity: 1;
+  }
+}
+
+:deep(.resign-btn) {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-color: $color-primary !important;
 }
 
 .record-confirm-btns {
